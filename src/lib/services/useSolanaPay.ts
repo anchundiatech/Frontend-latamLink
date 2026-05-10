@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import { useConnection, useAnchorWallet } from "@solana/wallet-adapter-react"
-import { PublicKey } from "@solana/web3.js"
+import { PublicKey, Connection } from "@solana/web3.js"
 import {
   buildSolanaPayUrl,
   generateReferenceKey,
@@ -10,11 +9,13 @@ import {
   getTokenMint,
 } from "./solanaPay"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { config } from "@/lib/config"
 
+const connection = new Connection(config.rpcEndpoint, "confirmed")
+
 export function useSolanaPay() {
-  const { connection } = useConnection()
-  const wallet = useAnchorWallet()
+  const wallet = usePrivyWallet()
   const { walletAddress, name, terminalId } = useMerchantStore()
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "confirmed" | "failed">("idle")
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
