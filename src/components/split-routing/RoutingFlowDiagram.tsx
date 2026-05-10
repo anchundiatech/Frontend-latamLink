@@ -20,14 +20,14 @@ export function RoutingFlowDiagram({ destinations }: RoutingFlowDiagramProps) {
           <DollarSign className="w-8 h-8 text-success" />
         </div>
         <p className="text-xs font-heading text-on-surface mt-2 mb-1">Incoming Payment</p>
-        <p className="text-xs text-on-surface-variant mb-4">Customer sends USDC/SOL</p>
+        <p className="text-xs text-on-surface-variant mb-4">Customer sends payment</p>
 
         <div className="w-px h-8 bg-gradient-to-b from-success/50 to-electric-purple/50" />
         <ArrowDown className="w-4 h-4 text-electric-purple -my-1" />
 
         <div className="glass rounded-lg p-4 w-full mt-2 mb-4">
           <p className="text-xs text-on-surface-variant text-center font-heading">
-            Smart Contract Split
+            Automatic Split
           </p>
         </div>
 
