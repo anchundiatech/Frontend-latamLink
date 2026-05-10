@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowRight, QrCode, Wallet, Zap } from "lucide-react"
+import { ArrowRight, QrCode, Zap, TrendingUp, Clock } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
@@ -72,38 +72,64 @@ export function Hero() {
             className="hidden lg:flex justify-center"
           >
             <div className="glass-strong rounded-xl p-8 w-full max-w-md">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-electric-purple/20 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-electric-purple" />
+              {/* POS Terminal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-electric-purple/20 flex items-center justify-center">
+                    <QrCode className="w-5 h-5 text-electric-purple" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-heading text-on-surface">POS Terminal</p>
+                    <p className="text-xs text-on-surface-variant">Ready to accept payments</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-heading text-on-surface">{t.hero.livePayment}</p>
-                  <p className="text-xs text-on-surface-variant">USDC &bull; Just now</p>
+                <span className="flex items-center gap-1.5 text-xs text-success">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  Online
+                </span>
+              </div>
+
+              {/* Amount Display */}
+              <div className="text-center py-4 mb-4 bg-surface-container-highest/50 rounded-lg">
+                <p className="text-xs text-on-surface-variant mb-1">{t.hero.livePayment}</p>
+                <div className="text-4xl font-heading font-bold text-on-surface tracking-tight">
+                  $45.00
                 </div>
-                <div className="ml-auto">
-                  <span className="text-sm font-heading text-success">+$45.00</span>
+                <p className="text-xs text-on-surface-variant mt-2">Customer scans QR to pay</p>
+              </div>
+
+              {/* QR Code Placeholder */}
+              <div className="flex justify-center mb-6">
+                <div className="w-28 h-28 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                  <QrCode className="w-14 h-14 text-black/80" />
                 </div>
               </div>
+
+              {/* Sales Metrics */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-sm">
+                  <TrendingUp className="w-4 h-4 text-electric-teal" />
                   <span className="text-on-surface-variant">{t.hero.dailyRevenue}</span>
-                  <span className="font-heading text-on-surface">$1,234.56</span>
+                  <span className="ml-auto font-heading text-on-surface">$1,234.56</span>
                 </div>
                 <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden">
                   <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-electric-purple to-electric-teal" />
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="w-4 h-4 text-electric-teal" />
                   <span className="text-on-surface-variant">{t.hero.transactions}</span>
-                  <span className="font-heading text-on-surface">47 today</span>
+                  <span className="ml-auto font-heading text-on-surface">47 today</span>
                 </div>
               </div>
+
+              {/* Footer Status */}
               <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
-                  <Wallet className="w-4 h-4 text-on-surface-variant" />
+                <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-success" />
                 </div>
                 <div className="text-xs text-on-surface-variant">
-                  <p className="text-on-surface font-heading">{t.hero.connected}</p>
-                  <p>0x7a3...9f2b</p>
+                  <p className="text-on-surface font-heading">Instant Settlement</p>
+                  <p>Funds available immediately</p>
                 </div>
               </div>
             </div>
