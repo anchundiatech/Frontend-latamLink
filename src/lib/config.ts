@@ -12,6 +12,7 @@ const mints = {
 }
 
 export const config = {
+  privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "",
   programId: "GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC",
   cluster: CLUSTER,
   rpcEndpoint: "https://api.devnet.solana.com",
