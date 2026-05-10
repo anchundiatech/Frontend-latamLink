@@ -30,9 +30,9 @@ export function StatsCards() {
       positive: true,
     },
     {
-      label: "Wallet Balance",
+      label: "Available Balance",
       value: `0.00 ${paymentToken.toUpperCase()}`,
-      change: "Connect wallet to check balance",
+      change: "Connect account to check balance",
       icon: Wallet,
       positive: true,
     },
