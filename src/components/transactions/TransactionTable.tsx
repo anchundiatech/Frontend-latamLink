@@ -21,7 +21,7 @@ export function TransactionTable() {
         <AlertCircle className="w-8 h-8 text-on-surface-variant mx-auto" />
         <p className="text-sm text-on-surface-variant">No transactions found</p>
         <p className="text-xs text-on-surface-variant/60">
-          Complete a payment to see it here, or connect a wallet with transaction history.
+          Complete a payment to see it here.
         </p>
         <button
           onClick={refresh}
