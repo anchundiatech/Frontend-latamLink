@@ -41,7 +41,7 @@ export function SplitRoutingConfig() {
     })
     setNewLabel("")
     setNewAddress("")
-    toast.success("Destination added")
+    toast.success("Recipient added")
   }
 
   const handlePercentageChange = (id: string, value: number) => {
@@ -63,7 +63,7 @@ export function SplitRoutingConfig() {
     <div className="space-y-4">
       <div className="glass rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-heading text-on-surface">Destinations</h3>
+          <h3 className="text-sm font-heading text-on-surface">Recipients</h3>
           <span
             className={`text-xs font-heading ${
               totalPercentage === 100
@@ -91,7 +91,7 @@ export function SplitRoutingConfig() {
 
         <div className="mt-4 p-4 rounded-lg bg-white/[0.02] space-y-3">
           <p className="text-xs font-heading text-on-surface-variant uppercase tracking-wider">
-            Add Destination
+            Add Recipient
           </p>
           <div className="grid sm:grid-cols-3 gap-2">
             <input
@@ -103,7 +103,7 @@ export function SplitRoutingConfig() {
             <input
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
-              placeholder="Wallet address"
+              placeholder="Account address"
               className="sm:col-span-1 bg-surface-container-low border border-white/10 rounded-default px-3 py-2 text-xs text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-electric-purple/50 font-mono"
             />
             <button
