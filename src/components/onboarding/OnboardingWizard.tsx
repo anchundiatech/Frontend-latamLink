@@ -3,23 +3,21 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check } from "lucide-react"
-import { StepConnectWallet } from "./StepConnectWallet"
 import { StepCreateBusiness } from "./StepCreateBusiness"
-import { StepCreatePOS } from "./StepCreatePOS"
+import { StepConfigureTerminal } from "./StepConfigureTerminal"
 import { StepStartAccepting } from "./StepStartAccepting"
 
 const steps = [
-  { id: 1, label: "Connect Wallet" },
-  { id: 2, label: "Create Account" },
-  { id: 3, label: "Create POS Terminal" },
-  { id: 4, label: "Start Selling" },
+  { id: 1, label: "Create Account" },
+  { id: 2, label: "Configure Terminal" },
+  { id: 3, label: "Start Selling" },
 ]
 
 export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1)
 
   const handleNext = () => {
-    if (currentStep < 4) setCurrentStep((prev) => prev + 1)
+    if (currentStep < 3) setCurrentStep((prev) => prev + 1)
   }
 
   const handlePrev = () => {
@@ -79,15 +77,12 @@ export function OnboardingWizard() {
           transition={{ duration: 0.2 }}
         >
           {currentStep === 1 && (
-            <StepConnectWallet onNext={handleNext} />
-          )}
-          {currentStep === 2 && (
             <StepCreateBusiness onNext={handleNext} />
           )}
-          {currentStep === 3 && (
-            <StepCreatePOS onNext={handleNext} onPrev={handlePrev} />
+          {currentStep === 2 && (
+            <StepConfigureTerminal onNext={handleNext} onPrev={handlePrev} />
           )}
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <StepStartAccepting />
           )}
         </motion.div>
