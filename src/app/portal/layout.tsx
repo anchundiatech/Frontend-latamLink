@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/portal/Sidebar"
 import { Menu, LogOut } from "lucide-react"
 import { Logo } from "@/components/Logo"
+import { usePrivy } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useAuthStore } from "@/lib/store/useAuthStore"
 
 export default function PortalLayout({
   children,
@@ -16,16 +16,30 @@ export default function PortalLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [checking, setChecking] = useState(true)
   const { name } = useMerchantStore()
-  const { isAuthenticated, email, logout } = useAuthStore()
+  const { authenticated, user, logout: privyLogout } = usePrivy()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authenticated) {
       router.replace("/login")
     } else {
+      const { userId: storedUserId, isActive, walletAddress } = useMerchantStore.getState()
+      const currentUserId = user?.id ?? ""
+
+      if (storedUserId && storedUserId !== currentUserId) {
+        useMerchantStore.getState().reset()
+        router.replace("/onboarding")
+        return
+      }
+
+      if (!isActive || !walletAddress) {
+        router.replace("/onboarding")
+        return
+      }
+
       setChecking(false)
     }
-  }, [isAuthenticated, router])
+  }, [authenticated, router, user])
 
   if (checking) return null
 
@@ -52,10 +66,10 @@ export default function PortalLayout({
               </div>
             </div>
             <span className="hidden sm:block text-[10px] text-on-surface-variant/60 font-mono">
-              {email}
+              {user?.email?.address ?? user?.google?.email ?? ""}
             </span>
             <button
-              onClick={() => { logout(); router.push("/") }}
+              onClick={() => { privyLogout(); router.push("/") }}
               className="text-on-surface-variant hover:text-error transition-colors"
               title="Sign out"
             >
