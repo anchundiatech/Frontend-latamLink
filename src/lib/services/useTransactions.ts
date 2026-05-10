@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useCallback } from "react"
-import { useConnection } from "@solana/wallet-adapter-react"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
+import { Connection } from "@solana/web3.js"
+import { config } from "@/lib/config"
+
+const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function useTransactions() {
-  const { connection } = useConnection()
   const { walletAddress, terminalId } = useMerchantStore()
   const transactions = useTxStore((s) => s.transactions)
   const loading = useTxStore((s) => s.loading)
