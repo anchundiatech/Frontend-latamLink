@@ -6,20 +6,20 @@ import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Logo } from "@/components/Logo"
-import { useAuthStore } from "@/lib/store/useAuthStore"
+import { usePrivy } from "@privy-io/react-auth"
 
 export default function OnboardingPage() {
   const [checking, setChecking] = useState(true)
-  const { isAuthenticated } = useAuthStore()
+  const { authenticated } = usePrivy()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authenticated) {
       router.replace("/login")
     } else {
       setChecking(false)
     }
-  }, [isAuthenticated, router])
+  }, [authenticated, router])
 
   if (checking) return null
 
