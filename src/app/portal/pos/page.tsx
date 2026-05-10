@@ -8,7 +8,7 @@ import { QRCodeDisplay } from "@/components/pos/QRCodeDisplay"
 import { PaymentStatus } from "@/components/pos/PaymentStatus"
 import { PaymentSuccessAnimation } from "@/components/pos/PaymentSuccessAnimation"
 import { ArrowLeft } from "lucide-react"
-import { useAnchorWallet } from "@solana/wallet-adapter-react"
+import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { Logo } from "@/components/Logo"
 import { useSolanaPay } from "@/lib/services/useSolanaPay"
@@ -19,7 +19,7 @@ export default function POSPage() {
   const [step, setStep] = useState<"input" | "qr">("input")
   const [showSuccess, setShowSuccess] = useState(false)
   const { walletAddress, setWalletAddress, name } = useMerchantStore()
-  const wallet = useAnchorWallet()
+  const wallet = usePrivyWallet()
   const { solanaPayUrl, paymentStatus, generateUrl, startWatching, reset } = useSolanaPay()
   const walletConnected = !!(walletAddress || wallet?.publicKey)
   const noWallet = !walletConnected
@@ -54,7 +54,7 @@ export default function POSPage() {
             POS Terminal
           </h1>
           <p className="text-xs text-on-surface-variant">
-            Accept payments via Solana Pay
+            Accept instant payments
           </p>
         </div>
         {step === "qr" && (
@@ -73,14 +73,14 @@ export default function POSPage() {
           <TokenSelector selected={token} onSelect={setToken} />
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-xs text-success font-heading">Solana Pay</span>
+            <span className="text-xs text-success font-heading">Live</span>
           </div>
         </div>
 
         {noWallet && (
           <div className="mb-6 p-3 glass rounded-lg border border-warning/20 text-center">
             <p className="text-xs text-warning font-heading">
-              No wallet detected. Connect your Phantom wallet or go to Settings.
+              No payment account detected. Go to Settings to configure one.
             </p>
           </div>
         )}
@@ -120,16 +120,11 @@ export default function POSPage() {
                       Scanning the network for the transaction...
                     </p>
                   </div>
-                ) : (
-                  <>
+                  ) : (
                     <p className="text-xs text-on-surface-variant">
-                      Customer scans this QR with their Solana wallet to pay.
+                      Customer scans this QR with their phone to pay.
                     </p>
-                    <p className="text-xs text-on-surface-variant/60 mt-1">
-                      Compatible with Phantom, Solflare, and any Solana Pay wallet
-                    </p>
-                  </>
-                )}
+                  )}
               </div>
             </motion.div>
           )}
