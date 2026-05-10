@@ -17,8 +17,9 @@ import { Logo } from "@/components/Logo"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
 const navItems = [
-  { name: "POS Terminal", href: "/portal/pos", icon: CreditCard },
+
   { name: "Dashboard", href: "/portal/dashboard", icon: LayoutDashboard },
+  { name: "POS Terminal", href: "/portal/pos", icon: CreditCard },
   { name: "Split Routing", href: "/portal/split-routing", icon: GitBranch },
   { name: "Transactions", href: "/portal/transactions", icon: ArrowLeftRight },
   { name: "Settings", href: "/portal/settings", icon: Settings },
