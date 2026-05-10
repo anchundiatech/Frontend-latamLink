@@ -10,8 +10,8 @@ export function Hero() {
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(168,85,247,0.12),transparent_50%),radial-gradient(ellipse_at_bottom_left,_rgba(45,212,191,0.08),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_rgba(221,183,255,0.03),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.12),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(45,212,191,0.08),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(221,183,255,0.03),transparent_50%)]" />
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
@@ -113,7 +113,7 @@ export function Hero() {
                   <span className="ml-auto font-heading text-on-surface">$1,234.56</span>
                 </div>
                 <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden">
-                  <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-electric-purple to-electric-teal" />
+                  <div className="h-full w-3/4 rounded-full bg-linear-to-r from-electric-purple to-electric-teal" />
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="w-4 h-4 text-electric-teal" />
