@@ -11,8 +11,8 @@ interface TokenSelectorProps {
 
 export function TokenSelector({ selected, onSelect }: TokenSelectorProps) {
   const tokens: { id: Token; label: string; icon: string }[] = [
-    { id: "usdc", label: "USDC", icon: "$" },
-    { id: "sol", label: "SOL", icon: "◎" },
+    { id: "usdc", label: "USD Coin", icon: "$" },
+    { id: "sol", label: "Solana", icon: "◎" },
   ]
 
   return (
