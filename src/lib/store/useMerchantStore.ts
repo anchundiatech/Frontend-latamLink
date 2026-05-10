@@ -9,6 +9,7 @@ export interface Destination {
 }
 
 export interface MerchantState {
+  userId: string
   name: string
   email: string
   terminalId: string
@@ -39,6 +40,7 @@ export interface MerchantState {
 }
 
 const initialState = {
+  userId: "",
   name: "Mi Tienda",
   email: "",
   terminalId: "POS-001",
@@ -52,7 +54,7 @@ const initialState = {
     { id: "3", address: "", label: "Suppliers", percentage: 20 },
   ],
   minPaymentAmount: 1,
-  isActive: true,
+  isActive: false,
   totalPaymentsReceived: 0,
   totalVolume: 0,
   walletAddress: "",
