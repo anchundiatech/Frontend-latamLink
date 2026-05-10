@@ -1,10 +1,10 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Wallet, QrCode, Zap, BarChart3 } from "lucide-react"
+import { UserPlus, QrCode, Zap, BarChart3 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
-const icons = [Wallet, QrCode, Zap, BarChart3]
+const icons = [UserPlus, QrCode, Zap, BarChart3]
 
 export function HowItWorks() {
   const { t } = useLanguage()
