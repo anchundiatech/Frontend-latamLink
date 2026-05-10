@@ -18,7 +18,7 @@ export default function SplitRoutingPage() {
             Split Routing
           </h1>
           <p className="text-xs text-on-surface-variant">
-            Configure how payments are distributed across your wallets
+            Configure how payments are distributed across your accounts
           </p>
         </div>
       </div>
