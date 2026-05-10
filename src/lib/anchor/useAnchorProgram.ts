@@ -1,19 +1,22 @@
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react"
-import { AnchorProvider, BN, type Provider } from "@coral-xyz/anchor"
-import { PublicKey, SystemProgram } from "@solana/web3.js"
+"use client"
+
+import { AnchorProvider, BN } from "@coral-xyz/anchor"
+import { Connection, PublicKey, SystemProgram } from "@solana/web3.js"
 import { useCallback, useMemo } from "react"
 import { getProgram, fetchMerchantAccount, deriveMerchantPDA, deriveVaultPDA, deriveGasVaultPDA } from "@/lib/anchor/client"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { config } from "@/lib/config"
 
+const connection = new Connection(config.rpcEndpoint, "confirmed")
+
 export function useProgram() {
-  const wallet = useAnchorWallet()
-  const { connection } = useConnection()
+  const wallet = usePrivyWallet()
 
   const provider = useMemo(() => {
     if (!wallet) return null
     return new AnchorProvider(connection, wallet, { commitment: "confirmed" })
-  }, [connection, wallet])
+  }, [wallet])
 
   const program = useMemo(() => {
     if (!provider) return null
@@ -29,14 +32,7 @@ export function useInitializeMerchant() {
 
   const initialize = useCallback(async () => {
     if (!program || !provider || !wallet) {
-      console.warn("Wallet not connected, using mock")
-      store.setMerchant({
-        merchantPda: "mock_merchant_pda",
-        vaultPda: "mock_vault_pda",
-        gasVaultPda: "mock_gas_vault_pda",
-        isActive: true,
-      })
-      return { success: true, mock: true }
+      throw new Error("Wallet not available")
     }
 
     const merchantIdBN = new BN(store.merchantId ?? 0)
@@ -111,9 +107,7 @@ export function useProcessPayment() {
   const processPayment = useCallback(
     async (amount: number) => {
       if (!program || !provider || !wallet || !store.merchantPda) {
-        await new Promise((r) => setTimeout(r, 2000))
-        store.incrementPayments(amount)
-        return { success: true, mock: true }
+        throw new Error("Wallet or merchant not available")
       }
 
       const merchantPda = new PublicKey(store.merchantPda)
@@ -164,14 +158,10 @@ export function useProcessPayment() {
 
 export function useFetchMerchant() {
   const { program, provider } = useProgram()
-  const store = useMerchantStore()
 
   const fetchMerchant = useCallback(
     async (merchantPda: string) => {
-      if (!provider) {
-        console.warn("Provider not ready")
-        return null
-      }
+      if (!provider) return null
       const pda = new PublicKey(merchantPda)
       return await fetchMerchantAccount(provider, pda)
     },
@@ -187,13 +177,7 @@ export function useUpdateConfig() {
 
   const update = useCallback(async () => {
     if (!program || !provider || !wallet || !store.merchantPda) {
-      store.setMerchant({
-        feeBps: store.feeBps,
-        posFeeBps: store.posFeeBps,
-        minPaymentAmount: store.minPaymentAmount,
-        destinations: store.destinations,
-      })
-      return { success: true, mock: true }
+      throw new Error("Wallet or merchant not available")
     }
 
     const merchantPda = new PublicKey(store.merchantPda)
