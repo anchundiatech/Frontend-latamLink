@@ -22,7 +22,7 @@ export function RoutingFlowDiagram({ destinations }: RoutingFlowDiagramProps) {
         <p className="text-xs font-heading text-on-surface mt-2 mb-1">Incoming Payment</p>
         <p className="text-xs text-on-surface-variant mb-4">Customer sends payment</p>
 
-        <div className="w-px h-8 bg-gradient-to-b from-success/50 to-electric-purple/50" />
+        <div className="w-px h-8 bg-linear-to-b from-success/50 to-electric-purple/50" />
         <ArrowDown className="w-4 h-4 text-electric-purple -my-1" />
 
         <div className="glass rounded-lg p-4 w-full mt-2 mb-4">
@@ -31,7 +31,7 @@ export function RoutingFlowDiagram({ destinations }: RoutingFlowDiagramProps) {
           </p>
         </div>
 
-        <div className="w-px h-8 bg-gradient-to-b from-electric-purple/50 to-electric-teal/50" />
+        <div className="w-px h-8 bg-linear-to-b from-electric-purple/50 to-electric-teal/50" />
         <ArrowDown className="w-4 h-4 text-electric-teal -my-1" />
 
         <div className="w-full space-y-2 mt-2">

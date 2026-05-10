@@ -57,7 +57,7 @@ export function OnboardingWizard() {
             </div>
             {i < steps.length - 1 && (
               <div
-                className={`flex-1 h-px mx-3 mt-[-1.5rem] ${
+                className={`flex-1 h-px mx-3 -mt-6 ${
                   currentStep > step.id
                     ? "bg-electric-teal/50"
                     : "bg-surface-container-highest"

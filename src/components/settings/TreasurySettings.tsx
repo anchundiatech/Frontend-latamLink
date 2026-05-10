@@ -20,11 +20,11 @@ export function TreasurySettings() {
         {destinations.map((dest) => (
           <div
             key={dest.id}
-            className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]"
+            className="flex items-center justify-between p-3 rounded-lg bg-white/2"
           >
             <div>
               <p className="text-sm text-on-surface">{dest.label}</p>
-              <p className="text-xs font-mono text-on-surface-variant truncate max-w-[250px]">
+              <p className="text-xs font-mono text-on-surface-variant truncate max-w-62.5">
                 {dest.address}
               </p>
             </div>

@@ -89,7 +89,7 @@ export function SplitRoutingConfig() {
           ))}
         </div>
 
-        <div className="mt-4 p-4 rounded-lg bg-white/[0.02] space-y-3">
+        <div className="mt-4 p-4 rounded-lg bg-white/2 space-y-3">
           <p className="text-xs font-heading text-on-surface-variant uppercase tracking-wider">
             Add Recipient
           </p>

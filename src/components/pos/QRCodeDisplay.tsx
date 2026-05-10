@@ -49,14 +49,14 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
             level="M"
           />
         ) : (
-          <div className="w-[220px] h-[220px] flex items-center justify-center">
+          <div className="w-55 h-55 flex items-center justify-center">
             <p className="text-xs text-on-surface-variant">Generating QR...</p>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="glass rounded-lg px-3 py-2 max-w-[220px] truncate">
+        <div className="glass rounded-lg px-3 py-2 max-w-55 truncate">
           <span className="text-xs font-mono text-on-surface-variant">
             {shortenAddress(recipientAddress)}
           </span>

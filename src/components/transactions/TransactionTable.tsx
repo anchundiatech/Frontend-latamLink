@@ -66,7 +66,7 @@ export function TransactionTable() {
               return (
                 <tr
                   key={tx.id}
-                  className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-white/5 last:border-0 hover:bg-white/2 transition-colors"
                 >
                   <td className="px-4 py-3.5">
                     <span className="text-sm font-heading text-on-surface">
