@@ -10,10 +10,10 @@ export function TreasurySettings() {
     <div className="glass rounded-lg p-4 space-y-4">
       <div>
         <h3 className="text-sm font-heading text-on-surface mb-1">
-          Treasury Wallets
+          Treasury Accounts
         </h3>
         <p className="text-xs text-on-surface-variant">
-          Manage your revenue distribution wallets
+          Manage your revenue distribution accounts
         </p>
       </div>
       <div className="space-y-2">
