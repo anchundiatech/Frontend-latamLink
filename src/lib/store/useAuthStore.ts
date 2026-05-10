@@ -1,25 +1,7 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-
-export interface AuthState {
-  email: string
-  isAuthenticated: boolean
-  sessionToken: string | null
-  login: (email: string, token: string) => void
-  logout: () => void
-  setEmail: (email: string) => void
-}
-
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      email: "",
-      isAuthenticated: false,
-      sessionToken: null,
-      login: (email, token) => set({ email, sessionToken: token, isAuthenticated: true }),
-      logout: () => set({ email: "", sessionToken: null, isAuthenticated: false }),
-      setEmail: (email) => set({ email }),
-    }),
-    { name: "latamlink-auth" }
-  )
-)
+// Auth is now handled by Privy (@privy-io/react-auth).
+// Use `usePrivy()` instead of this store.
+// - authenticated → usePrivy().authenticated
+// - login → usePrivy().login()
+// - logout → usePrivy().logout()
+// - email → usePrivy().user?.email?.address
+export {}
