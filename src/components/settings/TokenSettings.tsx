@@ -8,10 +8,10 @@ export function TokenSettings() {
   return (
     <div className="glass rounded-lg p-4">
       <h3 className="text-sm font-heading text-on-surface mb-1">
-        Payment Token
+        Payment Currency
       </h3>
       <p className="text-xs text-on-surface-variant mb-4">
-        Select the default token for your POS terminal
+        Select the default currency for payments
       </p>
       <div className="flex items-center gap-3">
         {["usdc", "sol"].map((token) => (
