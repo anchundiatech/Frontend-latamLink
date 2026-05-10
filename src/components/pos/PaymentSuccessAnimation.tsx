@@ -55,7 +55,7 @@ export function PaymentSuccessAnimation({ onDone }: { onDone: () => void }) {
               className="flex items-center justify-center gap-2 text-sm text-on-surface-variant"
             >
               <PartyPopper className="w-4 h-4 text-warning" />
-              <span>Funds distributed to your treasury</span>
+              <span>Funds distributed to your accounts</span>
             </motion.div>
           </motion.div>
         </motion.div>
