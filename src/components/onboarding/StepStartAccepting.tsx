@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Check, ArrowRight, PartyPopper } from "lucide-react"
 import Link from "next/link"
@@ -9,11 +10,16 @@ import { useMerchantStore } from "@/lib/store/useMerchantStore"
 export function StepStartAccepting() {
   const [show, setShow] = useState(false)
   const { name } = useMerchantStore()
+  const router = useRouter()
 
   useEffect(() => {
-    const timer = setTimeout(() => setShow(true), 500)
-    return () => clearTimeout(timer)
-  }, [])
+    const showTimer = setTimeout(() => setShow(true), 500)
+    const redirectTimer = setTimeout(() => router.replace("/portal/pos"), 3000)
+    return () => {
+      clearTimeout(showTimer)
+      clearTimeout(redirectTimer)
+    }
+  }, [router])
 
   return (
     <div className="glass-strong rounded-xl p-8 text-center space-y-6">
@@ -60,7 +66,7 @@ export function StepStartAccepting() {
               { label: "Terminal", value: "Active" },
               { label: "QR Code", value: "Generated" },
               { label: "Split Routing", value: "Configured" },
-              { label: "Ready for", value: "USDC / SOL" },
+              { label: "Ready for", value: "Digital Payments" },
             ].map((item) => (
               <div key={item.label}>
                 <p className="text-xs text-on-surface-variant">{item.label}</p>

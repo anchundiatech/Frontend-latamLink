@@ -2,25 +2,23 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Building2, ArrowRight, Globe, Mail, CheckCircle, Loader2 } from "lucide-react"
+import { Building2, ArrowRight, Globe, Mail, CheckCircle } from "lucide-react"
+import { usePrivy } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useAuthStore } from "@/lib/store/useAuthStore"
-import { useInitializeMerchant } from "@/lib/anchor/useAnchorProgram"
 
 export function StepCreateBusiness({ onNext }: { onNext: () => void }) {
   const { setMerchant } = useMerchantStore()
-  const { email: authEmail } = useAuthStore()
-  const { initialize } = useInitializeMerchant()
-  const [form, setForm] = useState({ name: "", email: authEmail, country: "Mexico" })
+  const { user } = usePrivy()
+  const [form, setForm] = useState({
+    name: "",
+    email: user?.email?.address ?? user?.google?.email ?? "",
+    country: "Mexico",
+  })
   const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setMerchant({ name: form.name, email: form.email })
-    await initialize()
-    setLoading(false)
     setSubmitted(true)
     setTimeout(() => onNext(), 1200)
   }
