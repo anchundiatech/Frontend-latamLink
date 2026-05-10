@@ -64,7 +64,7 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
         <button
           onClick={handleCopy}
           className="glass glass-hover rounded-lg p-2 transition-all relative group"
-          title="Copy Solana Pay URL"
+          title="Copy payment link"
         >
           {copied ? (
             <Check className="w-4 h-4 text-success" />
@@ -76,7 +76,7 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
 
       <div className="flex flex-col items-center gap-2">
         <p className="text-xs text-on-surface-variant text-center max-w-xs">
-          Customer scans this QR code with their Solana wallet (Phantom, Solflare) to pay.
+          Customer scans this QR code with their phone to pay.
         </p>
         {solanaPayUrl && (
           <a
@@ -86,7 +86,7 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
             className="flex items-center gap-1 text-xs text-electric-purple hover:text-electric-purple/80 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
-            Open in wallet
+            Open payment link
           </a>
         )}
       </div>
