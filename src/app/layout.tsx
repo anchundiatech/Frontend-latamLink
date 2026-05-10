@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Inter } from "next/font/google"
-import { SolanaWalletProvider } from "@/components/wallet/WalletProvider"
+import { PrivyProvider } from "@/components/wallet/PrivyProvider"
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider"
 import { Toaster } from "sonner"
-import "@solana/wallet-adapter-react-ui/styles.css"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -38,7 +37,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SolanaWalletProvider>
+        <PrivyProvider>
           <LanguageProvider>
             {children}
           </LanguageProvider>
@@ -53,7 +52,7 @@ export default function RootLayout({
               },
             }}
           />
-        </SolanaWalletProvider>
+        </PrivyProvider>
       </body>
     </html>
   )
