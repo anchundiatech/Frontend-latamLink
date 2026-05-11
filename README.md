@@ -362,7 +362,7 @@ Respuesta HTTP 402:
 ---
 
 <p align="center">
-  <img src="/LATAMLink.png" alt="LatamLink Pay" width="40" height="40" />
+  <img src="public/LATAMLink.png" alt="LatamLink Pay" width="40" height="40" />
   <br />
   <strong>Your money, at the speed of Solana</strong>
   <br />
