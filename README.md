@@ -79,6 +79,7 @@
 |------------|-------------|----------------|
 | **Frontend** | [github.com/anchundiatech/Frontend-latamLink](https://github.com/anchundiatech/Frontend-latamLink) | [frontend-latam-link.vercel.app](https://frontend-latam-link.vercel.app) |
 | **Smart Contract** | [github.com/XxHugheadxX/LATAMLINKPAY](https://github.com/XxHugheadxX/LATAMLINKPAY) | Program ID: `GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC` |
+| Video Demo | [https://youtu.be/ZuP7Oh42JdE?si=tN1hIwWfj_KZyqm_](https://youtu.be/ZuP7Oh42JdE?si=tN1hIwWfj_KZyqm_)
 
 **Datos del Frontend:**
 - **Lenguaje:** TypeScript (96.9%), CSS (2.8%), JavaScript (0.3%)
@@ -339,10 +340,10 @@ Respuesta HTTP 402:
 |------|--------|-------------|
 | **Smart Contract** | ✅ Completado | `lib.rs` + 6 pruebas en Playground |
 | **Frontend base** | ✅ Completado | Next.js + Privy + Vercel (41 commits) |
-| **Endpoint x402** | 🔜 Pendiente | Servidor HTTP que lee on-chain y responde HTTP 402 |
-| **Dashboard** | 🔜 Pendiente | Historial de pagos, balances, retiros |
-| **Integración Anchor** | 🔜 Pendiente | Conectar frontend con IDL y program ID |
-| **QR x402** | 🔜 Pendiente | Generación de QR estándar para Solana Pay |
+| **Endpoint x402** | ✅ Completado | Servidor HTTP que lee on-chain y responde HTTP 402 |
+| **Dashboard** | ✅ Completado  | Historial de pagos, balances, retiros |
+| **Integración Anchor** | ✅ Completado | Conectar frontend con IDL y program ID |
+| **QR x402** |✅ Completado   | Generación de QR estándar para Solana Pay |
 | **Relayer de gas** | 🔜 Pendiente | Servicio que retira gas_vault y paga SOL |
 | **Testing e2e** | 🔜 Pendiente | 3 wallets Phantom reales en devnet |
 | **Auditoría** | 🔜 Pendiente | Revisión externa de seguridad |
