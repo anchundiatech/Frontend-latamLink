@@ -1,18 +1,75 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { DollarSign, Wallet, CreditCard, Activity } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
+import { DollarSign, Wallet, CreditCard, Activity, Loader } from "lucide-react"
+import { formatCurrency, formatSOL, formatUSDC } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTransactions } from "@/lib/services/useTransactions"
+import { Connection, PublicKey } from "@solana/web3.js"
+import { getAssociatedTokenAddress } from "@solana/spl-token"
+import { config } from "@/lib/config"
+
+const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function StatsCards() {
-  const { totalPaymentsReceived, totalVolume, name, isActive, paymentToken } = useMerchantStore()
+  const { totalPaymentsReceived, totalVolume, walletAddress, isActive, paymentToken } = useMerchantStore()
   const { transactions } = useTransactions()
+  const [balance, setBalance] = useState<number | null>(null)
+  const [balanceLoading, setBalanceLoading] = useState(false)
+
+  useEffect(() => {
+    if (!walletAddress) {
+      setBalance(null)
+      return
+    }
+
+    setBalanceLoading(true)
+
+    const fetchBalance = async () => {
+      try {
+        const pubkey = new PublicKey(walletAddress)
+        if (paymentToken === "sol") {
+          const lamports = await connection.getBalance(pubkey)
+          setBalance(lamports / 1_000_000_000)
+        } else {
+          const mint = new PublicKey(config.usdcMint)
+          const ata = await getAssociatedTokenAddress(mint, pubkey)
+          const accountInfo = await connection.getTokenAccountBalance(ata)
+          setBalance(accountInfo.value.uiAmount)
+        }
+      } catch {
+        setBalance(null)
+      } finally {
+        setBalanceLoading(false)
+      }
+    }
+
+    fetchBalance()
+  }, [walletAddress, paymentToken])
 
   const totalRevenue = totalVolume || transactions.reduce((sum, tx) => sum + tx.amount, 0)
   const paymentCount = totalPaymentsReceived || transactions.length
+
+  const walletConnected = !!walletAddress
+  const balanceDisplay = walletConnected
+    ? balance !== null
+      ? paymentToken === "sol"
+        ? formatSOL(Math.round(balance * 1_000_000_000))
+        : formatUSDC(balance)
+      : balanceLoading
+        ? "—"
+        : "0.00"
+    : "0.00"
+
+  const balanceChange = walletConnected
+    ? balanceLoading
+      ? "Checking balance..."
+      : balance !== null
+        ? "Available"
+        : "Balance unavailable"
+    : "Connect account to check balance"
 
   const stats = [
     {
@@ -31,10 +88,10 @@ export function StatsCards() {
     },
     {
       label: "Available Balance",
-      value: `0.00 ${paymentToken.toUpperCase()}`,
-      change: "Connect account to check balance",
-      icon: Wallet,
-      positive: true,
+      value: balanceDisplay,
+      change: balanceChange,
+      icon: balanceLoading ? Loader : Wallet,
+      positive: !!walletAddress,
     },
     {
       label: "POS Status",
