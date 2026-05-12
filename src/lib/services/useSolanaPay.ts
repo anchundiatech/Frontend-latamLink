@@ -9,6 +9,7 @@ import {
   getTokenMint,
 } from "./solanaPay"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { useTxStore } from "@/lib/store/useTxStore"
 import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { config } from "@/lib/config"
 
@@ -21,6 +22,7 @@ export function useSolanaPay() {
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
   const [referenceKey, setReferenceKey] = useState<string | null>(null)
   const watcherRef = useRef<{ stop: () => void } | null>(null)
+  const currentAmountRef = useRef(0)
 
   const stopWatching = useCallback(() => {
     watcherRef.current?.stop()
@@ -33,6 +35,7 @@ export function useSolanaPay() {
 
   const generateUrl = useCallback(
     (amount: number, token: "usdc" | "sol") => {
+      currentAmountRef.current = amount
       stopWatching()
       setPaymentStatus("idle")
 
@@ -66,6 +69,8 @@ export function useSolanaPay() {
       watcherRef.current = watchForPayment(connection, reference, (status) => {
         if (status === "confirmed") {
           setPaymentStatus("confirmed")
+          useMerchantStore.getState().incrementPayments(currentAmountRef.current)
+          useTxStore.setState({ lastFetched: 0 })
           setTimeout(() => {
             setPaymentStatus("idle")
             setSolanaPayUrl(null)
