@@ -30,7 +30,7 @@ export default function CompareSection() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="overflow-x-auto border border-border rounded-3xl bg-white dark:bg-surface shadow-sm"
       >
-        <table className="w-full border-collapse text-left min-w-[600px]">
+        <table className="w-full border-collapse text-left min-w-150">
           <thead>
             <tr className="border-b border-border">
               <th className="p-5 text-sm font-medium text-text-secondary w-1/3"></th>
