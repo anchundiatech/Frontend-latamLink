@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image";
 
 export function Logo({ className = "", size = 40 }: { className?: string; size?: number }) {
   const [error, setError] = useState(false)
@@ -17,7 +18,7 @@ export function Logo({ className = "", size = 40 }: { className?: string; size?:
   }
 
   return (
-    <img
+    <Image
       src="/LATAMLink.png"
       alt="LatamLink Pay"
       width={size}
