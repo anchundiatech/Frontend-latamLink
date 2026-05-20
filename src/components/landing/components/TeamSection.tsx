@@ -41,7 +41,7 @@ export default function TeamSection() {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               className="bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all duration-300 flex flex-col items-center"
             >
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} text-white font-heading font-semibold text-xl flex items-center justify-center mb-5 shadow-inner`}>
+              <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${gradient} text-white font-heading font-semibold text-xl flex items-center justify-center mb-5 shadow-inner`}>
                 {member.initials}
               </div>
               <h3 className="font-heading font-medium text-lg text-text-primary mb-1">
