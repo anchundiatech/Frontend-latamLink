@@ -2,19 +2,22 @@ import type { Locale } from "./config"
 
 const en = {
   nav: {
-    features: "Features",
-    howItWorks: "How It Works",
-    getStarted: "Get Started",
+    howitworks: "How it works",
+    benefits: "Benefits",
+    Aboutus: "About us",
+    Getstarted: "Get started for free"
   },
   hero: {
-    badge: "For Small Businesses in Latin America",
-    title1: "Accept Payments.",
-    title2: "No Bank Account Required.",
+    live: "Available on Devnet",
+    badge: "He charges in dollars",
+    title1: "instantly",
+    title2: "from your box",
     subtitle:
-      "LatamLink Pay lets you accept digital payments from customers instantly. No monthly fees, no technical setup, no bank needed.",
-    cta1: "Create Your Free Account",
+      "Accept digital payments in your store without a bank, without exorbitant fees, and without waiting days. Your money arrives in seconds.",
+    cta1: "I want to try it",
     cta2: "How It Works",
-    merchants: "merchants onboarded",
+    merchants: "Store Fernández",
+    merchantslogo: "SF",
     livePayment: "Payment Received",
     dailyRevenue: "Today's Sales",
     transactions: "Transactions",
@@ -26,58 +29,78 @@ const en = {
     steps: [
       {
         title: "Create Your Account",
-        description: "Sign up with your email and create your business profile in seconds.",
+        description: "Sign up with your email and create your profile in seconds.",
       },
       {
-        title: "Set Up Your POS",
-        description: "Configure your payment terminal and set up your revenue split rules.",
+        title: "Show the QR",
+        description: "Generate a QR code from your phone or tablet on each sale. Your client scans and pays.",
       },
       {
-        title: "Accept Payments",
-        description: "Show the QR code to your customer. They scan and pay from their phone.",
-      },
-      {
-        title: "Grow Your Business",
-        description: "Track sales, manage your funds, and scale with confidence.",
+        title: "The money arrives",
+        description: "In less than 3 seconds the payment is automatically distributed according to your rules.",
       },
     ],
   },
   features: {
-    title: "Everything You Need",
-    subtitle: "Built for real-world commerce. Simple, fast, and secure.",
+    eyebrow: "Why LatamLink Pay",
+    title: "Designed for the real merchant",
     items: [
       {
-        title: "Instant Payments",
-        description: "Funds arrive in seconds. No more waiting days for bank transfers.",
+        title: "Stable dollar collections",
+        description: "You receive USDC — a digital dollar that is always worth exactly $1. Without the volatility of other cryptocurrencies.",
       },
       {
-        title: "No-Code Onboarding",
-        description: "Create your POS terminal without writing a single line of code.",
+        title: "Instant settlement",
+        description: "No waiting 3 business days. The money is available in seconds, not days.",
       },
       {
-        title: "QR Code Payments",
-        description: "Generate a unique QR code for each transaction. Your customer scans and pays instantly.",
+        title: "Automatic distribution",
+        description: "You define once how to distribute each payment and the system does it on its own. Payment to suppliers, savings, and cash register without lifting a finger.",
       },
       {
-        title: "Treasury Management",
-        description: "Automatically organize your revenue across different accounts.",
-      },
-      {
-        title: "Automatic Revenue Split",
-        description: "Distribute payments across your team, suppliers, and savings automatically.",
-      },
-      {
-        title: "Sales Analytics",
-        description: "Track revenue, transaction history, and business performance in real time.",
+        title: "No exorbitant fees",
+        description: "You pay less than 0.5% per transaction. The network fee is automatically deducted from the payment — you don't pay anything extra.",
       },
     ],
   },
+  compare: {
+    title: "The difference",
+    subtitle: "Compare with what you are using today",
+    headers: ["Bank / processor", "LatamLink Pay"],
+    features: [
+      { name: "Collection commission", them: "3–7%", us: "< 0.5%", status: "bad" },
+      { name: "Settlement time", them: "1–3 business days", us: "< 3 seconds", status: "good" },
+      { name: "Distribution of funds", them: "Manual", us: "Automatic", status: "good" },
+      { name: "Access to dollars", them: "Restricted", us: "From the first collection", status: "good" },
+      { name: "Requires bank account", them: "Yes", us: "No", status: "good" },
+    ]
+  },
+  countries: {
+    badge: "Our market",
+    title: "Built by and for LatAm merchants",
+    subtitle: "We are three founders who experienced this problem firsthand in our countries.",
+    cta: "I want to be among the first",
+    list: [
+      { name: "Ecuador", flag: "🇪🇨" },
+      { name: "Bolivia", flag: "🇧🇴" },
+      { name: "Mexico", flag: "🇲🇽" },
+    ]
+  },
+  team: {
+    badge: "The team",
+    title: "Three countries, one problem, one solution",
+    members: [
+      { name: "Founder Ecuador", role: "CEO & Product", location: "🇪🇨 Guayaquil", initials: "EC" },
+      { name: "Founder Bolivia", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "BO" },
+      { name: "Founder Mexico", role: "Growth & Ops", location: "🇲🇽 Ciudad de México", initials: "MX" },
+    ]
+  },
   cta: {
-    title: "Ready to Start Accepting Payments?",
-    subtitle:
-      "Join thousands of merchants already using LatamLink Pay to grow their business.",
-    button: "Create Your POS Now",
-    footnote: "No credit card required. 100% free to start.",
+    title: "Ready to collect better?",
+    subtitle: "Leave your email and we'll notify you when LatamLink Pay arrives in your city.",
+    placeholder: "your@email.com",
+    button: "I want early access",
+    success: "Ready! We'll notify you soon 🎉"
   },
   footer: {
     description:
@@ -87,93 +110,115 @@ const en = {
     rights: "All rights reserved.",
     builtOn: "Secure Network",
     poweredBy: "Powered by LatamLink",
+    hackathonNote: "© 2025 LatamLink Pay. Built in Dev3pack Hackathon.",
   },
-
   welcome: {
     title: "Welcome to LatamLink Pay",
     subtitle: "Sign in to start accepting payments"
-
   },
 }
 
 const es: typeof en = {
   nav: {
-    features: "Características",
-    howItWorks: "Cómo Funciona",
-    getStarted: "Comenzar",
+    howitworks: "Cómo funciona",
+    benefits: "Beneficios",
+    Aboutus: "Nosotros",
+    Getstarted: "Empezar gratis"
   },
   hero: {
-    badge: "Para Pequeños Negocios en Latinoamérica",
-    title1: "Acepta Pagos.",
-    title2: "Sin Necesidad de Banco.",
+    live: "Disponible en Devnet",
+    badge: "Cobra en dólares",
+    title1: "al instante",
+    title2: "desde tu caja.",
     subtitle:
-      "LatamLink Pay te permite aceptar pagos digitales de tus clientes al instante. Sin cuotas mensuales, sin configuración técnica, sin necesidad de banco.",
-    cta1: "Crea tu Cuenta Gratis",
-    cta2: "Cómo Funciona",
-    merchants: "comercios registrados",
-    livePayment: "Pago Recibido",
+      "Acepta pagos digitales en tu tienda sin banco, sin comisiones abusivas y sin esperar días. Tu plata llega en segundos.",
+    cta1: "Quiero probarlo",
+    cta2: "Ver cómo funciona",
+    merchants: "Tienda Fernández",
+    merchantslogo: "TF",
+    livePayment: "Pago recibido en USDC",
     dailyRevenue: "Ventas de Hoy",
     transactions: "Transacciones",
     connected: "Conectado",
   },
   howItWorks: {
-    title: "Cómo Funciona",
-    subtitle: "Comienza en minutos. Sin código, sin configuración compleja.",
+    title: "Cómo funciona",
+    subtitle: "Tan fácil como cobrar en efectivo",
     steps: [
       {
-        title: "Crea tu Cuenta",
-        description: "Regístrate con tu correo y crea tu perfil de negocio en segundos.",
+        title: "Registrás tu negocio",
+        description: "En 5 minutos configurás tu perfil y definís cómo querés repartir tus cobros: caja, proveedores, ahorro.",
       },
       {
-        title: "Configura tu POS",
-        description: "Configura tu terminal de pago y establece las reglas de división de ingresos.",
+        title: "Mostrás el QR",
+        description: "En cada venta generás un código QR desde tu celular o tableta. Tu cliente lo escanea y paga desde su app.",
       },
       {
-        title: "Acepta Pagos",
-        description: "Muestra el código QR a tu cliente. Ellos escanean y pagan desde su teléfono.",
-      },
-      {
-        title: "Haz Crecer tu Negocio",
-        description: "Monitorea ventas, administra tus fondos y escala con confianza.",
+        title: "El dinero llega solo",
+        description: "En menos de 3 segundos el pago se distribuye automáticamente según tus reglas. Sin esperar, sin banco intermediario.",
       },
     ],
   },
   features: {
-    title: "Todo lo que Necesitas",
-    subtitle: "Construido para el comercio real. Simple, rápido y seguro.",
+    eyebrow: "Por qué LatamLink Pay",
+    title: "Diseñado para el comerciante real",
     items: [
       {
-        title: "Pagos Instantáneos",
-        description: "Los fondos llegan en segundos. Sin esperar días por transferencias bancarias.",
+        title: "Cobros en dólares estables",
+        description: "Recibís USDC — un dólar digital que vale exactamente $1 siempre. Sin la volatilidad de otras criptomonedas.",
       },
       {
-        title: "Registro Sin Código",
-        description: "Crea tu terminal POS sin escribir una sola línea de código.",
+        title: "Liquidación al instante",
+        description: "Nada de esperar 3 días hábiles. El dinero está disponible en segundos, no en días.",
       },
       {
-        title: "Pagos con Código QR",
-        description: "Genera un código QR único para cada transacción. Tu cliente escanea y paga al instante.",
+        title: "Distribución automática",
+        description: "Definís una vez cómo repartir cada cobro y el sistema lo hace solo. Pago a proveedores, ahorro y caja sin mover un dedo.",
       },
       {
-        title: "Gestión de Tesorería",
-        description: "Organiza automáticamente tus ingresos en diferentes cuentas.",
-      },
-      {
-        title: "División Automática de Ingresos",
-        description: "Distribuye pagos entre tu equipo, proveedores y ahorros automáticamente.",
-      },
-      {
-        title: "Analíticas de Ventas",
-        description: "Monitorea ingresos, historial de transacciones y rendimiento en tiempo real.",
+        title: "Sin comisiones abusivas",
+        description: "Pagás menos del 0.5% por transacción. La tarifa de red se descuenta sola del pago — vos no pagás nada extra.",
       },
     ],
   },
+  compare: {
+    title: "La diferencia",
+    subtitle: "Compará con lo que estás usando hoy",
+    headers: ["Banco / procesadora", "LatamLink Pay"],
+    features: [
+      { name: "Comisión por cobro", them: "3–7%", us: "< 0.5%", status: "bad" },
+      { name: "Tiempo de liquidación", them: "1–3 días hábiles", us: "< 3 segundos", status: "good" },
+      { name: "Distribución de fondos", them: "Manual", us: "Automática", status: "good" },
+      { name: "Acceso al dólar", them: "Restringido", us: "Desde el primer cobro", status: "good" },
+      { name: "Requiere cuenta bancaria", them: "Sí", us: "No", status: "good" },
+    ]
+  },
+  countries: {
+    badge: "Nuestro mercado",
+    title: "Construido por y para comerciantes de LatAm",
+    subtitle: "Somos tres fundadores que vivimos este problema de primera mano en nuestros países.",
+    cta: "Quiero ser de los primeros",
+    list: [
+      { name: "Ecuador", flag: "🇪🇨" },
+      { name: "Bolivia", flag: "🇧🇴" },
+      { name: "México", flag: "🇲🇽" },
+    ]
+  },
+  team: {
+    badge: "El equipo",
+    title: "Tres países, un problema, una solución",
+    members: [
+      { name: "Fundador Ecuador", role: "CEO & Product", location: "🇪🇨 Guayaquil", initials: "EC" },
+      { name: "Fundador Bolivia", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "BO" },
+      { name: "Fundador México", role: "Growth & Ops", location: "🇲🇽 Ciudad de México", initials: "MX" },
+    ]
+  },
   cta: {
-    title: "¿Listo para Aceptar Pagos?",
-    subtitle:
-      "Únete a miles de comercios que ya usan LatamLink Pay para hacer crecer su negocio.",
-    button: "Crea tu POS Ahora",
-    footnote: "Sin tarjeta de crédito. 100% gratis para empezar.",
+    title: "¿Listo para cobrar mejor?",
+    subtitle: "Dejá tu correo y te avisamos cuando LatamLink Pay llegue a tu ciudad.",
+    placeholder: "tu@correo.com",
+    button: "Quiero acceso anticipado",
+    success: "¡Listo! Te avisamos pronto 🎉"
   },
   footer: {
     description:
@@ -183,6 +228,7 @@ const es: typeof en = {
     rights: "Todos los derechos reservados.",
     builtOn: "Red Segura",
     poweredBy: "Impulsado por LatamLink",
+    hackathonNote: "© 2025 LatamLink Pay. Construido en Dev3pack Hackathon.",
   },
   welcome: {
     title: "Bienvenido a LatamLink Pay",

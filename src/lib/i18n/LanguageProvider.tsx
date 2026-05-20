@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 import { type Locale, defaultLocale, locales } from "./config"
 import { dictionaries } from "./dictionary"
 
@@ -18,6 +18,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((newLocale: Locale) => {
     if (locales.includes(newLocale)) {
       setLocaleState(newLocale)
+      localStorage.setItem("locale", newLocale)
+    }
+  }, [])
+
+  useEffect(() => {
+    const savedLocale = localStorage.getItem("locale") as Locale
+    if (savedLocale && locales.includes(savedLocale)) {
+      setLocaleState(savedLocale)
+    } else {
+      const browserLang = navigator.language.slice(0, 2) as Locale
+      if (locales.includes(browserLang)) {
+        setLocaleState(browserLang)
+      }
     }
   }, [])
 
@@ -35,3 +48,4 @@ export function useLanguage() {
   if (!ctx) throw new Error("useLanguage must be used within LanguageProvider")
   return ctx
 }
+

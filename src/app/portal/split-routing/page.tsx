@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { RoutingFlowDiagram } from "@/components/split-routing/RoutingFlowDiagram"
 import { SplitRoutingConfig } from "@/components/split-routing/SplitRoutingConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { Logo } from "@/components/Logo"
+
 
 export default function SplitRoutingPage() {
   const { destinations } = useMerchantStore()
