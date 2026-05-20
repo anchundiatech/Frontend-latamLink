@@ -45,7 +45,7 @@ export function Features() {
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="flex gap-5 bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${iconBg}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${iconBg}`}>
                   {emoji}
                 </div>
                 <div>
