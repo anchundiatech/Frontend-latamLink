@@ -25,7 +25,8 @@ const en = {
   },
   howItWorks: {
     title: "How It Works",
-    subtitle: "Get started in minutes. No coding, no complex setup.",
+    subtitle: "As easy as collecting cash",
+    description: "No technical knowledge required.",
     steps: [
       {
         title: "Create Your Account",
@@ -110,7 +111,7 @@ const en = {
     rights: "All rights reserved.",
     builtOn: "Secure Network",
     poweredBy: "Powered by LatamLink",
-    hackathonNote: "© 2025 LatamLink Pay. Built in Dev3pack Hackathon.",
+    hackathonNote: "© 2025 LatamLink Pay. Built for the future of payments in Latam.",
   },
   welcome: {
     title: "Welcome to LatamLink Pay",
@@ -144,6 +145,7 @@ const es: typeof en = {
   howItWorks: {
     title: "Cómo funciona",
     subtitle: "Tan fácil como cobrar en efectivo",
+    description: "No necesitas saber de tecnología.",
     steps: [
       {
         title: "Registrás tu negocio",
@@ -228,7 +230,7 @@ const es: typeof en = {
     rights: "Todos los derechos reservados.",
     builtOn: "Red Segura",
     poweredBy: "Impulsado por LatamLink",
-    hackathonNote: "© 2025 LatamLink Pay. Construido en Dev3pack Hackathon.",
+    hackathonNote: "© 2025 LatamLink Pay. Construyendo el futuro de los pagos en Latam.",
   },
   welcome: {
     title: "Bienvenido a LatamLink Pay",
