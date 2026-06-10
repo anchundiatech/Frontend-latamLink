@@ -5,12 +5,13 @@
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Image from "next/image";
 import Link from "next/link";
-import { Moon, Sun, Languages } from "lucide-react";
+import { Moon, Sun, Languages, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function HeaderLanding() {
   const { t, locale, setLocale } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return false;
