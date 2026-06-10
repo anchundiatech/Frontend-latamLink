@@ -2,27 +2,13 @@
 
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { Check, Smartphone, Store } from "lucide-react"
 
 
-const steps = [
-  {
-    number: "01",
-    icon: <Store className="hover:text-primary"  />,
-    title: "Registrás tu negocio",
-    desc: "En 5 minutos configurás tu perfil."
-  },
-  {
-    number: "02",
-    icon: <Smartphone />,
-    title: "Mostrás el QR",
-    desc: "Tu cliente escanea y paga."
-  },
-  {
-    number: "03",
-    icon: <Check className="text-pretty" />,
-    title: "El dinero llega",
-    desc: "Liquidación instantánea."
-  }
+const stepIcons = [
+  <Store key="store" className="hover:text-primary" />,
+  <Smartphone key="phone" />,
+  <Check key="check" className="text-pretty" />
 ]
 
 export default function HowItWorksSection() {
@@ -35,43 +21,47 @@ export default function HowItWorksSection() {
     >
 
       <div className="text-primary uppercase tracking-[0.2em] text-xs font-medium mb-4">
-        {t.howitworks.title}
+        {t.howItWorks.title}
       </div>
 
       <h2 className="font-heading text-5xl tracking-tight mb-5">
-        Tan fácil como cobrar en efectivo
+        {t.howItWorks.subtitle}
       </h2>
 
       <p className="text-text-secondary max-w-2xl leading-relaxed mb-16">
-        No necesitas saber de tecnología.
+        {t.howItWorks.description}
       </p>
 
       <div className="grid md:grid-cols-3 gap-6">
 
-        {steps.map((step) => (
-          <div
-            key={step.number}
-            className="bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all"
-          >
+        {t.howItWorks.steps.map((step, i) => {
+          const number = `0${i + 1}`
+          const icon = stepIcons[i]
+          return (
+            <div
+              key={number}
+              className="bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all"
+            >
 
-            <div className="font-heading text-6xl opacity-20 mb-5">
-              {step.number}
+              <div className="font-heading text-6xl opacity-20 mb-5">
+                {number}
+              </div>
+
+              <div className="text-3xl mb-5 ">
+                {icon}
+              </div>
+
+              <h3 className="font-semibold text-lg mb-3">
+                {step.title}
+              </h3>
+
+              <p className="text-text-secondary leading-relaxed">
+                {step.description}
+              </p>
+
             </div>
-
-            <div className="text-3xl mb-5 ">
-              {step.icon}
-            </div>
-
-            <h3 className="font-semibold text-lg mb-3">
-              {step.title}
-            </h3>
-
-            <p className="text-text-secondary leading-relaxed">
-              {step.desc}
-            </p>
-
-          </div>
-        ))}
+          )
+        })}
 
       </div>
 
