@@ -1,7 +1,7 @@
 "use client"
 
-import { Check, Smartphone, Store } from "lucide-react"
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
 
 const steps = [
@@ -26,6 +26,8 @@ const steps = [
 ]
 
 export default function HowItWorksSection() {
+
+  const { t } = useLanguage()
   return (
     <section
       id="como-funciona"
@@ -33,7 +35,7 @@ export default function HowItWorksSection() {
     >
 
       <div className="text-primary uppercase tracking-[0.2em] text-xs font-medium mb-4">
-        Cómo funciona
+        {t.howitworks.title}
       </div>
 
       <h2 className="font-heading text-5xl tracking-tight mb-5">
