@@ -7,47 +7,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { Moon, Sun, Languages, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getTheme, toggleTheme } from "@/lib/theme";
 
 export default function HeaderLanding() {
   const { t, locale, setLocale } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      return savedTheme === "dark";
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-
-    const savedTheme = localStorage.getItem("theme");
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    }
+    setIsDark(getTheme() === "dark");
   }, []);
 
-  const toggleTheme = () => {
-    const html = document.documentElement;
-
-    html.classList.toggle("dark");
-
-    const isDarkMode = html.classList.contains("dark");
-
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-
-    setIsDark(isDarkMode);
+  const handleToggleTheme = () => {
+    const next = toggleTheme();
+    setIsDark(next === "dark");
   };
 
   const toggleLanguage = () => {
@@ -116,7 +92,7 @@ export default function HeaderLanding() {
           {/* DARK MODE BUTTON */}
           <li>
             <button
-              onClick={toggleTheme}
+              onClick={handleToggleTheme}
               className="p-2 rounded-lg hover:bg-surface transition-colors"
             >
               {mounted && (isDark ? <Sun size={18} /> : <Moon size={18} />)}
@@ -125,12 +101,12 @@ export default function HeaderLanding() {
 
           {/* CTA */}
           <li>
-            <Link
-              href="/login"
-              className="bg-primary text-background px-5 py-2 rounded-lg text-[14px] font-medium transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
+            <a
+              href="#contacto"
+              className="bg-primary text-background px-5 py-2 rounded-lg text-[14px] font-medium transition-all duration-200 hover:opacity-90 hover:scale-[1.02] inline-block"
             >
               {t.nav.Getstarted}
-            </Link>
+            </a>
           </li>
         </ul>
       </nav>

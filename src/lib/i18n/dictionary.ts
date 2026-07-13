@@ -5,7 +5,7 @@ const en = {
     howitworks: "How it works",
     benefits: "Benefits",
     Aboutus: "About us",
-    Getstarted: "Get started for free"
+    Getstarted: "Join the waitlist"
   },
   hero: {
     live: "Available on Devnet",
@@ -14,7 +14,7 @@ const en = {
     title2: "from your box",
     subtitle:
       "Accept digital payments in your store without a bank, without exorbitant fees, and without waiting days. Your money arrives in seconds.",
-    cta1: "I want to try it",
+    cta1: "Join the waitlist",
     cta2: "How It Works",
     merchants: "Store Fernández",
     merchantslogo: "SF",
@@ -80,7 +80,7 @@ const en = {
     badge: "Our market",
     title: "Built by and for LatAm merchants",
     subtitle: "We are three founders who experienced this problem firsthand in our countries.",
-    cta: "I want to be among the first",
+    cta: "Join the waitlist",
     list: [
       { name: "Ecuador", flag: "🇪🇨" },
       { name: "Bolivia", flag: "🇧🇴" },
@@ -111,11 +111,20 @@ const en = {
     rights: "All rights reserved.",
     builtOn: "Secure Network",
     poweredBy: "Powered by LatamLink",
-    hackathonNote: "© 2025 LatamLink Pay. Built for the future of payments in Latam.",
+    hackathonNote: "© 2026 LatamLink Pay. Built for the future of payments in Latam.",
   },
   welcome: {
     title: "Welcome to LatamLink Pay",
     subtitle: "Sign in to start accepting payments"
+  },
+  comingSoon: {
+    title: "Coming soon",
+    subtitle: "We're putting the finishing touches on LatamLink Pay. Leave your email and we'll let you know the moment it's ready.",
+    ctaPlaceholder: "your@email.com",
+    ctaButton: "Notify me",
+    ctaSuccess: "Ready! We'll notify you soon 🎉",
+    landingLink: "Back to home",
+    footerNote: "© 2026 LatamLink Pay. All rights reserved.",
   },
 }
 
@@ -124,7 +133,7 @@ const es: typeof en = {
     howitworks: "Cómo funciona",
     benefits: "Beneficios",
     Aboutus: "Nosotros",
-    Getstarted: "Empezar gratis"
+    Getstarted: "Únete a la lista"
   },
   hero: {
     live: "Disponible en Devnet",
@@ -133,7 +142,7 @@ const es: typeof en = {
     title2: "desde tu caja.",
     subtitle:
       "Acepta pagos digitales en tu tienda sin banco, sin comisiones abusivas y sin esperar días. Tu plata llega en segundos.",
-    cta1: "Quiero probarlo",
+    cta1: "Únete a la lista",
     cta2: "Ver cómo funciona",
     merchants: "Tienda Fernández",
     merchantslogo: "TF",
@@ -199,7 +208,7 @@ const es: typeof en = {
     badge: "Nuestro mercado",
     title: "Construido por y para comerciantes de LatAm",
     subtitle: "Somos tres fundadores que vivimos este problema de primera mano en nuestros países.",
-    cta: "Quiero ser de los primeros",
+    cta: "Únete a la lista",
     list: [
       { name: "Ecuador", flag: "🇪🇨" },
       { name: "Bolivia", flag: "🇧🇴" },
@@ -230,11 +239,20 @@ const es: typeof en = {
     rights: "Todos los derechos reservados.",
     builtOn: "Red Segura",
     poweredBy: "Impulsado por LatamLink",
-    hackathonNote: "© 2025 LatamLink Pay. Construyendo el futuro de los pagos en Latam.",
+    hackathonNote: "© 2026 LatamLink Pay. Construyendo el futuro de los pagos en Latam.",
   },
   welcome: {
     title: "Bienvenido a LatamLink Pay",
     subtitle: "Inicia sesión para comenzar a aceptar pagos"
+  },
+  comingSoon: {
+    title: "Muy pronto",
+    subtitle: "Estamos dando los últimos retoques a LatamLink Pay. Dejá tu correo y te avisamos apenas esté listo.",
+    ctaPlaceholder: "tu@correo.com",
+    ctaButton: "Avisarme",
+    ctaSuccess: "¡Listo! Te avisamos pronto 🎉",
+    landingLink: "Volver al inicio",
+    footerNote: "© 2026 LatamLink Pay. Todos los derechos reservados.",
   },
 }
 

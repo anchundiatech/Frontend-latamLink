@@ -4,19 +4,49 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
-export function CTASection() {
-  const { t } = useLanguage()
-  const [email, setEmail] = useState("")
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
+type Status = "idle" | "loading" | "success" | "error"
 
-  const handleSubmit = (e: React.FormEvent) => {
+export function CTASection() {
+  const { t, locale } = useLanguage()
+  const [email, setEmail] = useState("")
+  const [status, setStatus] = useState<Status>("idle")
+  const [message, setMessage] = useState("")
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setMessage("")
+
     if (!email || !email.includes("@")) {
       setStatus("error")
-      setTimeout(() => setStatus("idle"), 1500)
+      setMessage(locale === "es" ? "Correo inválido" : "Invalid email")
+      setTimeout(() => { setStatus("idle"); setMessage("") }, 2000)
       return
     }
-    setStatus("success")
+
+    setStatus("loading")
+
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, locale }),
+      })
+
+      if (res.status === 409) {
+        setStatus("success")
+        return
+      }
+
+      if (!res.ok) {
+        throw new Error("Server error")
+      }
+
+      setStatus("success")
+    } catch {
+      setStatus("error")
+      setMessage(locale === "es" ? "Algo salió mal. Intenta de nuevo." : "Something went wrong. Try again.")
+      setTimeout(() => { setStatus("idle"); setMessage("") }, 3000)
+    }
   }
 
   return (
@@ -54,7 +84,7 @@ export function CTASection() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={status === "success"}
+            disabled={status === "loading" || status === "success"}
             placeholder={t.cta.placeholder}
             className={`w-full px-5 py-3 rounded-xl border bg-white dark:bg-surface text-text-primary outline-none transition-all duration-200 ${
               status === "error"
@@ -64,16 +94,38 @@ export function CTASection() {
           />
           <button
             type="submit"
-            disabled={status === "success"}
+            disabled={status === "loading" || status === "success"}
             className={`w-full sm:w-auto whitespace-nowrap px-6 py-3 rounded-xl font-medium tracking-wide transition-all shadow-sm ${
               status === "success"
                 ? "bg-success text-white border border-success cursor-default"
-                : "bg-obsidian hover:bg-obsidian/90 dark:bg-surface-bright dark:hover:bg-surface-bright/80 text-white dark:text-text-primary border border-border"
+                : "bg-obsidian hover:bg-obsidian/90 dark:bg-surface-bright dark:hover:bg-surface-bright/80 text-white dark:text-text-primary border border-border cursor-pointer"
             }`}
           >
-            {status === "success" ? t.cta.success : t.cta.button}
+            {status === "loading" ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {locale === "es" ? "Enviando..." : "Sending..."}
+              </span>
+            ) : status === "success" ? (
+              t.cta.success
+            ) : (
+              t.cta.button
+            )}
           </button>
         </motion.form>
+
+        {message && (
+          <motion.p
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-error mt-4"
+          >
+            {message}
+          </motion.p>
+        )}
       </div>
     </section>
   )
