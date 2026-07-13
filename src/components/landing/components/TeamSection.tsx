@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { ExternalLink } from "lucide-react"
 
 const teamGradients = [
   "from-[#2dd4bf] to-[#0891b2]",
@@ -47,12 +48,27 @@ export default function TeamSection() {
               <h3 className="font-heading font-medium text-lg text-text-primary mb-1">
                 {member.name}
               </h3>
-              <p className="text-sm text-text-secondary mb-3 font-medium">
+              <p className="text-sm text-text-secondary mb-2 font-medium">
                 {member.role}
               </p>
-              <p className="text-xs text-text-secondary bg-surface-dim/50 dark:bg-surface-bright/20 rounded-full px-3 py-1 font-light">
+              {member.bio && (
+                <p className="text-xs text-text-secondary leading-relaxed mb-4 max-w-xs">
+                  {member.bio}
+                </p>
+              )}
+              <p className="text-xs text-text-secondary bg-surface-dim/50 dark:bg-surface-bright/20 rounded-full px-3 py-1 font-light mb-3">
                 {member.location}
               </p>
+              {member.linkedin && member.linkedin !== "#" && (
+                <a
+                  href={member.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-text-secondary hover:text-primary transition-colors"
+                >
+                  <ExternalLink size={16} />
+                </a>
+              )}
             </motion.div>
           )
         })}

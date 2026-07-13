@@ -5,16 +5,16 @@ const en = {
     howitworks: "How it works",
     benefits: "Benefits",
     Aboutus: "About us",
-    Getstarted: "Join the waitlist"
+    Getstarted: "Get early access"
   },
   hero: {
     live: "Available on Devnet",
-    badge: "He charges in dollars",
+    badge: "Get paid in dollars",
     title1: "instantly",
-    title2: "from your box",
+    title2: "right from your register",
     subtitle:
       "Accept digital payments in your store without a bank, without exorbitant fees, and without waiting days. Your money arrives in seconds.",
-    cta1: "Join the waitlist",
+    cta1: "Get early access",
     cta2: "How It Works",
     merchants: "Store Fernández",
     merchantslogo: "SF",
@@ -27,6 +27,17 @@ const en = {
     commission: "commission banks and processors charge",
     settlement: "your payment arrives in",
     buy: "you need to buy",
+  },
+  socialProof: {
+    label: "Backed by",
+    accelerator: "Programa de Aceleración LatAm",
+    stack: "Powered by",
+    techs: ["Solana", "USDC", "Circle"],
+  },
+  manifesto: {
+    badge: "Our belief",
+    title: "We believe no merchant should lose 7% of their sale or wait 3 days for their own money.",
+    body: "We refuse to accept a Latin America where access to dollars is a privilege, not a right. We are building the payment infrastructure that merchants in our countries deserve — not the one that big banks want them to have.",
   },
   howItWorks: {
     title: "How It Works",
@@ -85,7 +96,7 @@ const en = {
     badge: "Our market",
     title: "Built by and for LatAm merchants",
     subtitle: "We are three founders who experienced this problem firsthand in our countries.",
-    cta: "Join the waitlist",
+    cta: "Get early access",
     list: [
       { name: "Ecuador", flag: "🇪🇨" },
       { name: "Bolivia", flag: "🇧🇴" },
@@ -96,9 +107,9 @@ const en = {
     badge: "The team",
     title: "Three countries, one problem, one solution",
     members: [
-      { name: "Founder Ecuador", role: "CEO & Product", location: "🇪🇨 Guayaquil", initials: "EC" },
-      { name: "Founder Bolivia", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "BO" },
-      { name: "Founder Mexico", role: "Growth & Ops", location: "🇲🇽 Ciudad de México", initials: "MX" },
+      { name: "Alejandro Anchundia", role: "CEO & Product", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Previously built payment solutions processing +$2M in LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/" },
+      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, built blockchain-based payment rails.", linkedin: "#" },
+      { name: "Diego López", role: "Backend Developer ", location: "🇲🇽 Ciudad de México", initials: "DL", bio: ".", linkedin: "#" },
     ]
   },
   cta: {
@@ -160,6 +171,17 @@ const es: typeof en = {
     commission: "de comisión cobran bancos y procesadoras",
     settlement: "tarda tu pago en llegar",
     buy: "necesitas comprar",
+  },
+  socialProof: {
+    label: "Respaldados por",
+    accelerator: "Programa de Aceleración LatAm",
+    stack: "Tecnología",
+    techs: ["Solana", "USDC", "Circle"],
+  },
+  manifesto: {
+    badge: "Nuestra creencia",
+    title: "Creemos que ningún comerciante debería perder el 7% de su venta ni esperar 3 días por su propio dinero.",
+    body: "Nos negamos a aceptar un Latinoamérica donde acceder al dólar sea un privilegio y no un derecho. Estamos construyendo la infraestructura de pagos que los comerciantes de nuestros países merecen — no la que los grandes bancos quieren que tengan.",
   },
   howItWorks: {
     title: "Cómo funciona",
@@ -229,9 +251,9 @@ const es: typeof en = {
     badge: "El equipo",
     title: "Tres países, un problema, una solución",
     members: [
-      { name: "Fundador Ecuador", role: "CEO & Product", location: "🇪🇨 Guayaquil", initials: "EC" },
-      { name: "Fundador Bolivia", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "BO" },
-      { name: "Fundador México", role: "Growth & Ops", location: "🇲🇽 Ciudad de México", initials: "MX" },
+      { name: "Alejandro Anchundia", role: "CEO & Producto", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Construyó soluciones de pago procesando +$2M en LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/" },
+      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, construyó sistemas de pago blockchain.", linkedin: "#" },
+      { name: "Diego López", role: "Backend Developer ", location: "🇲🇽 Ciudad de México", initials: "DL", bio: "", linkedin: "#" },
     ]
   },
   cta: {

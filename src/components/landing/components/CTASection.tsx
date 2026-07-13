@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
@@ -11,6 +11,16 @@ export function CTASection() {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<Status>("idle")
   const [message, setMessage] = useState("")
+
+  useEffect(() => {
+    if (status === "success") {
+      const timer = setTimeout(() => {
+        setStatus("idle")
+        setEmail("")
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [status])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
