@@ -29,7 +29,7 @@ export async function sendWaitlistConfirmation(email: string, locale?: string) {
     : "LatamLink Pay — Payment infrastructure for Latin American merchants"
 
   const { error } = await resend.emails.send({
-    from: "LatamLink Pay <onboarding@latamlinkpay.com>",
+    from: "LatamLink Pay <hello@latamlinkpay.xyz>",
     to: email,
     subject,
     html: `<!DOCTYPE html>

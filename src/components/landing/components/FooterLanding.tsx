@@ -11,7 +11,7 @@ export function Footer() {
         <div className="font-heading text-lg font-semibold tracking-tight">
           LatamLink <span className="text-primary">Pay</span>
         </div>
-        
+
         <div className="flex gap-6">
           <a
             href="https://x.com/LatamLinkpay"
@@ -29,14 +29,7 @@ export function Footer() {
           >
             LinkedIn
           </a>
-          <a
-            href="https://github.com/anchundiatech/Frontend-latamLinkhttps://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-[#988d9f] hover:text-white transition-colors"
-          >
-            GitHub
-          </a>
+
         </div>
 
         <div className="text-xs text-[#988d9f]">
