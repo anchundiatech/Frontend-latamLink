@@ -1,4 +1,4 @@
-const CLUSTER = "devnet" as const
+const CLUSTER = (process.env.NEXT_PUBLIC_CLUSTER as "devnet" | "mainnet") ?? "devnet";
 
 const mints = {
   mainnet: {
@@ -9,13 +9,14 @@ const mints = {
     usdc: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     sol: "So11111111111111111111111111111111111111112",
   },
+
 }
 
 export const config = {
   privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "",
-  programId: "GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC",
+  programId: process.env.NEXT_PUBLIC_PROGRAM_ID ?? "",
   cluster: CLUSTER,
-  rpcEndpoint: "https://api.devnet.solana.com",
+  rpcEndpoint: process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com",
   usdcMint: mints[CLUSTER].usdc,
   solMint: mints[CLUSTER].sol,
   appName: "LatamLink Pay",
@@ -25,8 +26,9 @@ export const config = {
 }
 
 export const navigation = [
-  { name: "POS Terminal", href: "/portal/pos", icon: "credit-card" },
+
   { name: "Dashboard", href: "/portal/dashboard", icon: "layout-dashboard" },
+  { name: "POS Terminal", href: "/portal/pos", icon: "credit-card" },
   { name: "Split Routing", href: "/portal/split-routing", icon: "git-branch" },
   { name: "Transactions", href: "/portal/transactions", icon: "arrow-left-right" },
   { name: "Settings", href: "/portal/settings", icon: "settings" },
