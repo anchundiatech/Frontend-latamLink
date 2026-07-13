@@ -38,8 +38,36 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var key = "latamlink-theme";
+                  var theme = localStorage.getItem(key);
+                  if (theme !== "dark" && theme !== "light") {
+                    theme = localStorage.getItem("theme");
+                    if (theme === "dark" || theme === "light") {
+                      localStorage.setItem(key, theme);
+                      localStorage.removeItem("theme");
+                    }
+                  }
+                  if (!theme || (theme !== "dark" && theme !== "light")) {
+                    theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                  }
+                  if (theme === "dark") {
+                    document.documentElement.classList.add("dark");
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-background text-text-primary font-body">
 
         <PrivyProvider>
