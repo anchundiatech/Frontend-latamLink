@@ -1,4 +1,10 @@
+"use client"
+
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
+
 export default function StatsSection() {
+  const { t } = useLanguage()
+
   return (
     <section className="border-y border-border bg-white dark:bg-surface px-8 py-16">
 
@@ -10,7 +16,7 @@ export default function StatsSection() {
           </div>
 
           <p className="text-text-secondary mt-3">
-            de comisión cobran bancos y procesadoras
+            {t.stats.commission}
           </p>
         </div>
 
@@ -20,7 +26,7 @@ export default function StatsSection() {
           </div>
 
           <p className="text-text-secondary mt-3">
-            tarda tu pago en llegar
+            {t.stats.settlement}
           </p>
         </div>
 
@@ -30,12 +36,11 @@ export default function StatsSection() {
           </div>
 
           <p className="text-text-secondary mt-3">
-            necesitas comprar
+            {t.stats.buy}
           </p>
         </div>
 
       </div>
-
     </section>
   )
 }

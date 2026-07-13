@@ -23,6 +23,11 @@ const en = {
     transactions: "Transactions",
     connected: "Connected",
   },
+  stats: {
+    commission: "commission banks and processors charge",
+    settlement: "your payment arrives in",
+    buy: "you need to buy",
+  },
   howItWorks: {
     title: "How It Works",
     subtitle: "As easy as collecting cash",
@@ -150,6 +155,11 @@ const es: typeof en = {
     dailyRevenue: "Ventas de Hoy",
     transactions: "Transacciones",
     connected: "Conectado",
+  },
+  stats: {
+    commission: "de comisión cobran bancos y procesadoras",
+    settlement: "tarda tu pago en llegar",
+    buy: "necesitas comprar",
   },
   howItWorks: {
     title: "Cómo funciona",
