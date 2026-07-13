@@ -30,7 +30,8 @@ const en = {
   },
   socialProof: {
     label: "Backed by",
-    accelerator: "Programa de Aceleración LatAm",
+    accelerator: "Dev3Pack Accelerator",
+    incubator: "Waylearn x Solana Foundation",
     stack: "Powered by",
     techs: ["Solana", "USDC", "Circle"],
   },
@@ -174,7 +175,8 @@ const es: typeof en = {
   },
   socialProof: {
     label: "Respaldados por",
-    accelerator: "Programa de Aceleración LatAm",
+    accelerator: "Aceleradora Dev3Pack",
+    incubator: "Waylearn x Solana Foundation",
     stack: "Tecnología",
     techs: ["Solana", "USDC", "Circle"],
   },

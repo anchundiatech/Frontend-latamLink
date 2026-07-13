@@ -9,7 +9,6 @@ import SocialProofSection from './components/SocialProofSection'
 import ManifestoSection from './components/ManifestoSection'
 import CompareSection from './components/CompareSection'
 import CountriesSection from './components/CountriesSection'
-import TeamSection from './components/TeamSection'
 
 export default function LandingPage() {
   return (
@@ -23,7 +22,6 @@ export default function LandingPage() {
       <ManifestoSection />
       <CompareSection />
       <CountriesSection />
-      <TeamSection />
       <CTASection />
       <Footer />
     </>
