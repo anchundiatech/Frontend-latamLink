@@ -19,7 +19,7 @@ export function Logo({ className = "", size = 40 }: { className?: string; size?:
 
   return (
     <Image
-      src="/LATAMLink.png"
+      src="/Logo.webp"
       alt="LatamLink Pay"
       width={size}
       height={size}
