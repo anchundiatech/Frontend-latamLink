@@ -9,11 +9,11 @@ const en = {
   },
   hero: {
     live: "Available on Devnet",
-    badge: "Get paid in dollars",
-    title1: "instantly",
-    title2: "right from your register",
+    badge: "Ditch the terminal.",
+    title1: "Get paid by QR",
+    title2: "— instantly.",
     subtitle:
-      "Accept digital payments in your store without a bank, without exorbitant fees, and without waiting days. Your money arrives in seconds.",
+      "Replace expensive payment terminals with a simple QR-based POS that works from any device and settles in seconds.",
     cta1: "Get early access",
     cta2: "How It Works",
     merchants: "Store Fernández",
@@ -154,11 +154,11 @@ const es: typeof en = {
   },
   hero: {
     live: "Disponible en Devnet",
-    badge: "Cobra en dólares",
-    title1: "al instante",
-    title2: "desde tu caja.",
+    badge: "Olvídate del terminal.",
+    title1: "Cobra por QR",
+    title2: "— al instante.",
     subtitle:
-      "Acepta pagos digitales en tu tienda sin banco, sin comisiones abusivas y sin esperar días. Tu plata llega en segundos.",
+      "Reemplaza los costosos terminales de pago con un POS simple basado en QR que funciona desde cualquier dispositivo y liquida en segundos.",
     cta1: "Únete a la lista",
     cta2: "Ver cómo funciona",
     merchants: "Tienda Fernández",
