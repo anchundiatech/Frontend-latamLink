@@ -30,10 +30,10 @@ const en = {
   },
   socialProof: {
     label: "Backed by",
-    accelerator: "Dev3Pack Accelerator",
-    incubator: "Waylearn x Solana Foundation",
-    stack: "Powered by",
-    techs: ["Solana", "USDC", "Circle"],
+    accelerator: "The Bridge Accelerator",
+    incubator: "Waylearn x Solana Latam Lab",
+    stack: "Built on",
+    techs: ["Dev3Pack", "Solana"],
   },
   manifesto: {
     badge: "Our belief",
@@ -175,10 +175,10 @@ const es: typeof en = {
   },
   socialProof: {
     label: "Respaldados por",
-    accelerator: "Aceleradora Dev3Pack",
-    incubator: "Waylearn x Solana Foundation",
-    stack: "Tecnología",
-    techs: ["Solana", "USDC", "Circle"],
+    accelerator: "Aceleradora The Bridge",
+    incubator: "Waylearn x Solana Latam Lab",
+    stack: "Construido en",
+    techs: ["Dev3Pack", "Solana"],
   },
   manifesto: {
     badge: "Nuestra creencia",
