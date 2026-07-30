@@ -4,19 +4,25 @@ import { useState } from "react"
 import { Plus, Save, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
+import { PublicKey } from "@solana/web3.js"
 import { WalletDestinationCard } from "./WalletDestinationCard"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useUpdateConfig } from "@/lib/anchor/useAnchorProgram"
+import {
+  useUpdateConfig,
+  useInitializeMerchant,
+  InsufficientFundsError,
+} from "@/lib/anchor/useAnchorProgram"
 
 const cardColors = ["#a855f7", "#2dd4bf", "#adc6ff"]
 
 export function SplitRoutingConfig() {
-  const { destinations, addDestination, removeDestination, updateDestination } =
+  const { destinations, merchantPda, addDestination, removeDestination, updateDestination } =
     useMerchantStore()
   const [newLabel, setNewLabel] = useState("")
   const [newAddress, setNewAddress] = useState("")
 
   const { update } = useUpdateConfig()
+  const { initialize } = useInitializeMerchant()
   const [saving, setSaving] = useState(false)
 
   const totalPercentage = destinations.reduce(
@@ -25,7 +31,10 @@ export function SplitRoutingConfig() {
   )
 
   const handleAdd = () => {
-    if (!newLabel.trim() || !newAddress.trim()) {
+    const label = newLabel.trim()
+    const address = newAddress.trim()
+
+    if (!label || !address) {
       toast.error("Please fill in both label and address")
       return
     }
@@ -33,10 +42,21 @@ export function SplitRoutingConfig() {
       toast.error("Maximum 10 destinations allowed")
       return
     }
+    try {
+      new PublicKey(address)
+    } catch {
+      toast.error("That doesn't look like a valid account address")
+      return
+    }
+    if (destinations.some((d) => d.address === address)) {
+      toast.error("That account is already added")
+      return
+    }
+
     addDestination({
       id: String(Date.now()),
-      label: newLabel.trim(),
-      address: newAddress.trim(),
+      label,
+      address,
       percentage: 0,
     })
     setNewLabel("")
@@ -44,7 +64,35 @@ export function SplitRoutingConfig() {
     toast.success("Recipient added")
   }
 
+  // Moving one slider rebalances the rest proportionally so the total always
+  // stays at 100% — the merchant never has to do the arithmetic by hand.
   const handlePercentageChange = (id: string, value: number) => {
+    const others = destinations.filter((d) => d.id !== id)
+    if (others.length === 0) {
+      updateDestination(id, { percentage: value })
+      return
+    }
+
+    const remaining = 100 - value
+    const othersTotal = others.reduce((sum, d) => sum + d.percentage, 0)
+
+    let allocated = 0
+    others.forEach((d, i) => {
+      let share: number
+      if (i === others.length - 1) {
+        share = remaining - allocated
+      } else {
+        // floor keeps the running total under `remaining`, so the last
+        // destination can always absorb the exact difference.
+        share =
+          othersTotal > 0
+            ? Math.floor((d.percentage / othersTotal) * remaining)
+            : Math.floor(remaining / others.length)
+        allocated += share
+      }
+      updateDestination(d.id, { percentage: Math.max(0, share) })
+    })
+
     updateDestination(id, { percentage: value })
   }
 
@@ -53,10 +101,33 @@ export function SplitRoutingConfig() {
       toast.error(`Total must be 100%. Currently: ${totalPercentage}%`)
       return
     }
+    const missingAddress = destinations.find((d) => d.percentage > 0 && !d.address.trim())
+    if (missingAddress) {
+      toast.error(`Add an account address for "${missingAddress.label}" before saving`)
+      return
+    }
+
     setSaving(true)
-    await update()
-    setSaving(false)
-    toast.success("Split routing configuration saved!")
+    try {
+      // Signup is blockchain-free, so the on-chain merchant account may not
+      // exist yet. First save creates it (network cost sponsored by the
+      // platform — the merchant never funds anything); later saves update it.
+      if (!merchantPda) {
+        await initialize()
+      } else {
+        await update()
+      }
+      toast.success("Split routing configuration saved!")
+    } catch (err) {
+      console.error("Failed to save split routing config", err)
+      if (err instanceof InsufficientFundsError) {
+        toast.error("We couldn't cover the network setup cost right now. Please try again in a few minutes.")
+      } else {
+        toast.error("Couldn't save your configuration. Please try again.")
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -103,7 +174,7 @@ export function SplitRoutingConfig() {
             <input
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
-              placeholder="Account address"
+              placeholder="Destination account"
               className="sm:col-span-1 bg-surface-container-low border border-white/10 rounded-default px-3 py-2 text-xs text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-electric-purple/50 font-mono"
             />
             <button

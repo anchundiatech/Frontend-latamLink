@@ -2,6 +2,7 @@
 
 import { Trash2 } from "lucide-react"
 import { DistributionSlider } from "./DistributionSlider"
+import { shortenAddress } from "@/lib/utils"
 
 interface WalletDestinationCardProps {
   id: string
@@ -33,7 +34,7 @@ export function WalletDestinationCard({
           <div>
             <p className="text-sm font-heading text-on-surface">{label}</p>
             <p className="text-xs font-mono text-on-surface-variant truncate max-w-[200px]">
-              {address}
+              {address ? shortenAddress(address, 6) : "No account set"}
             </p>
           </div>
         </div>
@@ -41,7 +42,8 @@ export function WalletDestinationCard({
           <span className="text-sm font-heading text-on-surface">{percentage}%</span>
           <button
             onClick={() => onRemove(id)}
-            className="text-on-surface-variant hover:text-error transition-colors"
+            aria-label={`Remove ${label}`}
+            className="text-on-surface-variant hover:text-error transition-colors p-2 -m-2"
           >
             <Trash2 className="w-4 h-4" />
           </button>

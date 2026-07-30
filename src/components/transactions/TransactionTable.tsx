@@ -6,10 +6,10 @@ import { useTransactions } from "@/lib/services/useTransactions"
 
 type TxStatus = "confirmed" | "pending" | "failed"
 
-const statusConfig: Record<TxStatus, { icon: typeof CheckCircle; color: string; bg: string }> = {
-  confirmed: { icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
-  pending: { icon: Clock, color: "text-warning", bg: "bg-warning/10" },
-  failed: { icon: XCircle, color: "text-error", bg: "bg-error/10" },
+const statusConfig: Record<TxStatus, { icon: typeof CheckCircle; label: string; color: string; bg: string }> = {
+  confirmed: { icon: CheckCircle, label: "Completed", color: "text-success", bg: "bg-success/10" },
+  pending: { icon: Clock, label: "Processing", color: "text-warning", bg: "bg-warning/10" },
+  failed: { icon: XCircle, label: "Failed", color: "text-error", bg: "bg-error/10" },
 }
 
 export function TransactionTable() {
@@ -87,7 +87,7 @@ export function TransactionTable() {
                       )}
                     >
                       <StatusIcon className="w-3 h-3" />
-                      {tx.status}
+                      {statusConfig[tx.status].label}
                     </span>
                   </td>
                   <td className="px-4 py-3.5 hidden md:table-cell">
