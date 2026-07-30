@@ -69,7 +69,7 @@ export function StatsCards() {
       : balance !== null
         ? "Available"
         : "Balance unavailable"
-    : "Connect account to check balance"
+    : "Complete setup to view your balance"
 
   const stats = [
     {

@@ -102,7 +102,7 @@ export function RecentPayments() {
                   : "text-warning bg-warning/10"
               )}
             >
-              {payment.status}
+              {payment.status === "confirmed" ? "Completed" : "Processing"}
             </span>
           </div>
         ))}
