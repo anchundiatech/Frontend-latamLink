@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { AmountInput } from "@/components/pos/AmountInput"
 import { TokenSelector } from "@/components/pos/TokenSelector"
 import { QRCodeDisplay } from "@/components/pos/QRCodeDisplay"
 import { PaymentStatus } from "@/components/pos/PaymentStatus"
 import { PaymentSuccessAnimation } from "@/components/pos/PaymentSuccessAnimation"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Clock, X } from "lucide-react"
+import { toast } from "sonner"
 import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { Logo } from "@/components/Logo"
@@ -17,19 +18,26 @@ export default function POSPage() {
   const [amount, setAmount] = useState("")
   const [token, setToken] = useState<"usdc" | "sol">("usdc")
   const [step, setStep] = useState<"input" | "qr">("input")
-  const [showSuccess, setShowSuccess] = useState(false)
-  const { walletAddress, setWalletAddress, name } = useMerchantStore()
+  const [converting, setConverting] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  const { walletAddress, setWalletAddress, name, minPaymentAmount } = useMerchantStore()
   const wallet = usePrivyWallet()
-  const { solanaPayUrl, paymentStatus, generateUrl, startWatching, reset } = useSolanaPay()
+  const { solanaPayUrl, cryptoAmount, paymentStatus, generateUrl, startWatching, reset } = useSolanaPay()
   const walletConnected = !!(walletAddress || wallet?.publicKey)
   const noWallet = !walletConnected
 
-  const handleGenerateQR = useCallback(() => {
+  const handleGenerateQR = useCallback(async () => {
     if (amount && parseFloat(amount) > 0) {
       if (wallet?.publicKey && !walletAddress) {
         setWalletAddress(wallet.publicKey.toBase58())
       }
-      const result = generateUrl(parseFloat(amount), token)
+      setConverting(true)
+      const result = await generateUrl(parseFloat(amount), token)
+      setConverting(false)
+      if (result.error === "price_unavailable") {
+        toast.error("Couldn't get the current exchange rate. Please try again.")
+        return
+      }
       if (!result.solanaPayUrl) return
       setStep("qr")
       startWatching(result.referenceKey)
@@ -37,11 +45,29 @@ export default function POSPage() {
   }, [amount, token, wallet, walletAddress, setWalletAddress, generateUrl, startWatching])
 
   const handleSuccessDone = useCallback(() => {
-    setShowSuccess(false)
     setStep("input")
     setAmount("")
     reset()
   }, [reset])
+
+  const handleCancel = useCallback(() => {
+    reset()
+    setStep("input")
+  }, [reset])
+
+  // The payment watcher polls for ~100s (20 attempts x 5s) before giving up;
+  // this countdown mirrors that window so the merchant can see it.
+  useEffect(() => {
+    if (step !== "qr" || paymentStatus !== "pending") {
+      setSecondsLeft(null)
+      return
+    }
+    setSecondsLeft(100)
+    const interval = setInterval(() => {
+      setSecondsLeft((s) => (s !== null && s > 0 ? s - 1 : 0))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [step, paymentStatus])
 
   const recipientAddress = walletAddress || wallet?.publicKey.toBase58() || ""
 
@@ -97,6 +123,8 @@ export default function POSPage() {
                 amount={amount}
                 onAmountChange={setAmount}
                 onSubmit={handleGenerateQR}
+                submitting={converting}
+                minAmount={minPaymentAmount}
               />
             </motion.div>
           ) : (
@@ -109,29 +137,53 @@ export default function POSPage() {
               <QRCodeDisplay
                 amount={amount}
                 token={token}
+                cryptoAmount={cryptoAmount}
                 solanaPayUrl={solanaPayUrl}
                 recipientAddress={recipientAddress}
               />
-              <div className="mt-6 p-4 glass rounded-xl text-center">
+              <div className="mt-6 p-4 glass rounded-xl text-center space-y-3">
                 {paymentStatus === "pending" ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-electric-purple border-t-transparent rounded-full animate-spin" />
-                    <p className="text-xs text-on-surface-variant">
-                      Scanning the network for the transaction...
-                    </p>
-                  </div>
-                  ) : (
-                    <p className="text-xs text-on-surface-variant">
-                      Customer scans this QR with their phone to pay.
-                    </p>
-                  )}
+                  <>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-electric-purple border-t-transparent rounded-full animate-spin" />
+                      <p className="text-xs text-on-surface-variant">
+                        Waiting for the customer&apos;s payment...
+                      </p>
+                    </div>
+                    {secondsLeft !== null && (
+                      <div className="flex items-center justify-center gap-1.5 text-xs text-on-surface-variant">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-on-surface-variant">
+                    Customer scans this QR with their phone to pay.
+                  </p>
+                )}
+                <button
+                  onClick={handleCancel}
+                  className="inline-flex items-center gap-1.5 text-xs font-heading text-on-surface-variant hover:text-error transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  Cancel payment
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <PaymentStatus status={paymentStatus} />
+      <PaymentStatus
+        status={paymentStatus}
+        onRetry={() => {
+          reset()
+          setStep("input")
+        }}
+      />
       {paymentStatus === "confirmed" && (
         <PaymentSuccessAnimation onDone={handleSuccessDone} />
       )}

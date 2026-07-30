@@ -9,11 +9,12 @@ import { shortenAddress } from "@/lib/utils"
 interface QRCodeDisplayProps {
   amount: string
   token: string
+  cryptoAmount?: number | null
   solanaPayUrl: string | null
   recipientAddress: string
 }
 
-export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }: QRCodeDisplayProps) {
+export function QRCodeDisplay({ amount, token, cryptoAmount, solanaPayUrl, recipientAddress }: QRCodeDisplayProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -34,9 +35,13 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
           Scan to Pay
         </p>
         <p className="text-headline-lg font-heading text-on-surface">
-          ${parseFloat(amount).toFixed(2)}{" "}
-          <span className="text-on-surface-variant">{token.toUpperCase()}</span>
+          ${parseFloat(amount).toFixed(2)}
         </p>
+        {token === "sol" && cryptoAmount != null && (
+          <p className="text-xs text-on-surface-variant mt-1">
+            ≈ {cryptoAmount.toFixed(4)} SOL at today&apos;s rate
+          </p>
+        )}
       </div>
 
       <div className="glass-strong rounded-xl p-6">
@@ -65,6 +70,7 @@ export function QRCodeDisplay({ amount, token, solanaPayUrl, recipientAddress }:
           onClick={handleCopy}
           className="glass glass-hover rounded-lg p-2 transition-all relative group"
           title="Copy payment link"
+          aria-label="Copy payment link"
         >
           {copied ? (
             <Check className="w-4 h-4 text-success" />

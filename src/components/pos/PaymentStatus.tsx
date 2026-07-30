@@ -1,18 +1,21 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle, XCircle } from "lucide-react"
+import { XCircle } from "lucide-react"
 
 type PaymentStatusType = "idle" | "pending" | "confirmed" | "failed"
 
 interface PaymentStatusProps {
   status: PaymentStatusType
+  onRetry?: () => void
 }
 
-export function PaymentStatus({ status }: PaymentStatusProps) {
+// Failure overlay only — success is handled exclusively by
+// PaymentSuccessAnimation so the merchant never sees two stacked modals.
+export function PaymentStatus({ status, onRetry }: PaymentStatusProps) {
   return (
     <AnimatePresence mode="wait">
-      {(status === "confirmed" || status === "failed") && (
+      {status === "failed" && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -20,41 +23,27 @@ export function PaymentStatus({ status }: PaymentStatusProps) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
         >
           <div className="glass-strong rounded-xl p-8 text-center max-w-sm mx-4">
-            {status === "confirmed" && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="space-y-4"
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="space-y-4"
+            >
+              <XCircle className="w-12 h-12 text-error mx-auto" />
+              <div>
+                <h3 className="text-lg font-heading text-on-surface mb-1">
+                  Payment Failed
+                </h3>
+                <p className="text-sm text-on-surface-variant">
+                  The transaction could not be processed. Please try again.
+                </p>
+              </div>
+              <button
+                onClick={onRetry}
+                className="w-full bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium py-3 rounded-default transition-all duration-200 text-sm"
               >
-                <CheckCircle className="w-12 h-12 text-success mx-auto" />
-                <div>
-                  <h3 className="text-lg font-heading text-on-surface mb-1">
-                    Payment Confirmed!
-                  </h3>
-                  <p className="text-sm text-on-surface-variant">
-                    The transaction has been processed successfully.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-
-            {status === "failed" && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="space-y-4"
-              >
-                <XCircle className="w-12 h-12 text-error mx-auto" />
-                <div>
-                  <h3 className="text-lg font-heading text-on-surface mb-1">
-                    Payment Failed
-                  </h3>
-                  <p className="text-sm text-on-surface-variant">
-                    The transaction could not be processed. Please try again.
-                  </p>
-                </div>
-              </motion.div>
-            )}
+                Try Again
+              </button>
+            </motion.div>
           </div>
         </motion.div>
       )}
