@@ -1,6 +1,7 @@
 "use client"
 
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { shortenAddress } from "@/lib/utils"
 import { Trash2 } from "lucide-react"
 
 export function TreasurySettings() {
@@ -25,7 +26,7 @@ export function TreasurySettings() {
             <div>
               <p className="text-sm text-on-surface">{dest.label}</p>
               <p className="text-xs font-mono text-on-surface-variant truncate max-w-62.5">
-                {dest.address}
+                {dest.address ? shortenAddress(dest.address, 6) : "No account set"}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -34,7 +35,8 @@ export function TreasurySettings() {
               </span>
               <button
                 onClick={() => removeDestination(dest.id)}
-                className="text-on-surface-variant hover:text-error transition-colors"
+                aria-label={`Remove ${dest.label}`}
+                className="text-on-surface-variant hover:text-error transition-colors p-2 -m-2"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

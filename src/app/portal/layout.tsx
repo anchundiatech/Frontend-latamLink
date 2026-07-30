@@ -41,7 +41,13 @@ export default function PortalLayout({
     }
   }, [authenticated, router, user])
 
-  if (checking) return null
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-electric-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -50,7 +56,8 @@ export default function PortalLayout({
         <header className="glass border-b border-white/5 h-14 flex items-center px-4 lg:px-8 sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-on-surface-variant hover:text-on-surface mr-3"
+            aria-label="Open menu"
+            className="lg:hidden text-on-surface-variant hover:text-on-surface mr-1 p-2 -ml-2"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -70,8 +77,9 @@ export default function PortalLayout({
             </span>
             <button
               onClick={() => { privyLogout(); router.push("/") }}
-              className="text-on-surface-variant hover:text-error transition-colors"
+              className="text-on-surface-variant hover:text-error transition-colors p-2 -mr-2"
               title="Sign out"
+              aria-label="Sign out"
             >
               <LogOut className="w-4 h-4" />
             </button>

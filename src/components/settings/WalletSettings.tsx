@@ -2,6 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { shortenAddress } from "@/lib/utils"
 import { CheckCircle, Wallet } from "lucide-react"
 
 export function WalletSettings() {
@@ -33,7 +34,7 @@ export function WalletSettings() {
               onClick={() => logout()}
               className="text-xs text-on-surface-variant hover:text-error transition-colors shrink-0"
             >
-              Disconnect
+              Sign Out
             </button>
           </div>
 
@@ -41,9 +42,9 @@ export function WalletSettings() {
             <div className="flex items-center gap-3 p-3 glass rounded-lg">
               <Wallet className="w-5 h-5 text-on-surface-variant shrink-0" />
               <div className="text-left min-w-0">
-                <p className="text-xs text-on-surface-variant">Account ID</p>
+                <p className="text-xs text-on-surface-variant">Payment Account Number</p>
                 <p className="text-sm font-mono text-on-surface truncate">
-                  {walletAddress}
+                  {shortenAddress(walletAddress, 6)}
                 </p>
               </div>
             </div>

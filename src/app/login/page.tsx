@@ -35,6 +35,14 @@ export default function LoginPage() {
         store.setWalletAddress(resolvedAddress)
       }
 
+      // Honor the page the user was originally heading to (e.g. /admin)
+      // instead of always dropping them at the POS. Internal paths only.
+      const next = new URLSearchParams(window.location.search).get("next")
+      if (next && next.startsWith("/") && !next.startsWith("//")) {
+        router.replace(next)
+        return
+      }
+
       router.replace(store.isActive && resolvedAddress ? "/portal/pos" : "/onboarding")
     }
   }, [authenticated, ready, router, user])

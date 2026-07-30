@@ -42,9 +42,11 @@ export function TerminalSettings() {
           </label>
           <input
             type="number"
+            min={0}
+            step={0.01}
             value={minPaymentAmount}
             onChange={(e) =>
-              setMerchant({ minPaymentAmount: parseFloat(e.target.value) || 0 })
+              setMerchant({ minPaymentAmount: Math.max(0, parseFloat(e.target.value) || 0) })
             }
             className="w-full bg-surface-container-low border border-white/10 rounded-default px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-electric-purple/50"
           />

@@ -56,7 +56,8 @@ export function Sidebar({
           </Link>
           <button
             onClick={onClose}
-            className="lg:hidden text-on-surface-variant hover:text-on-surface transition-colors"
+            aria-label="Close menu"
+            className="lg:hidden text-on-surface-variant hover:text-on-surface transition-colors p-2 -mr-2"
           >
             <X className="w-4 h-4" />
           </button>
