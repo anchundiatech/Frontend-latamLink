@@ -2,11 +2,8 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Smartphone, ArrowRight, Check, Loader2 } from "lucide-react"
-import { usePrivy } from "@privy-io/react-auth"
+import { Smartphone, ArrowRight, Check } from "lucide-react"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useInitializeMerchant } from "@/lib/anchor/useAnchorProgram"
-import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 
 const paymentMethods = [
   { id: "usdc" as const, label: "USD Coin", icon: "$", desc: "Stable digital dollar" },
@@ -14,29 +11,16 @@ const paymentMethods = [
 ]
 
 export function StepConfigureTerminal({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
-  const { terminalId, paymentToken, setMerchant, name, setWalletAddress } = useMerchantStore()
-  const { initialize } = useInitializeMerchant()
-  const privyWallet = usePrivyWallet()
-  const { user } = usePrivy()
+  const { terminalId, paymentToken, setMerchant, name } = useMerchantStore()
   const [config, setConfig] = useState({
     terminalName: terminalId,
     token: paymentToken,
   })
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitting(true)
-    setMerchant({ terminalId: config.terminalName, paymentToken: config.token })
-    try {
-      await initialize()
-    } catch {
-      setMerchant({ isActive: true })
-      const address = privyWallet?.publicKey.toBase58() ?? user?.wallet?.address
-      if (address) setWalletAddress(address)
-    }
-    setSubmitting(false)
+    setMerchant({ terminalId: config.terminalName, paymentToken: config.token, isActive: true })
     setSubmitted(true)
     setTimeout(() => onNext(), 1200)
   }
@@ -150,20 +134,10 @@ export function StepConfigureTerminal({ onNext, onPrev }: { onNext: () => void; 
           </button>
           <button
             type="submit"
-            disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 disabled:opacity-50 text-white font-heading font-medium px-6 py-3 rounded-default transition-all duration-200 text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium px-6 py-3 rounded-default transition-all duration-200 text-sm"
           >
-            {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                Create Terminal
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
+            Create Terminal
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </form>

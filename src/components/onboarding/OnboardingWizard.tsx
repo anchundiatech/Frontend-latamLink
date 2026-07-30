@@ -17,7 +17,7 @@ export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1)
 
   const handleNext = () => {
-    if (currentStep < 3) setCurrentStep((prev) => prev + 1)
+    if (currentStep < steps.length) setCurrentStep((prev) => prev + 1)
   }
 
   const handlePrev = () => {

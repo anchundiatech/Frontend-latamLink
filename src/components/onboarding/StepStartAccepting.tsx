@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Check, ArrowRight, PartyPopper } from "lucide-react"
@@ -11,22 +11,36 @@ export function StepStartAccepting() {
   const [show, setShow] = useState(false)
   const { name } = useMerchantStore()
   const router = useRouter()
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const showTimer = setTimeout(() => setShow(true), 500)
-    const redirectTimer = setTimeout(() => router.replace("/portal/pos"), 3000)
+    redirectTimerRef.current = setTimeout(() => router.replace("/portal/pos"), 6000)
     return () => {
       clearTimeout(showTimer)
-      clearTimeout(redirectTimer)
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current)
     }
   }, [router])
 
+  // If the merchant starts reading or reaching for a button, don't yank
+  // them away with the automatic redirect.
+  const cancelAutoRedirect = () => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current)
+      redirectTimerRef.current = null
+    }
+  }
+
   return (
-    <div className="glass-strong rounded-xl p-8 text-center space-y-6">
+    <div
+      className="glass-strong rounded-xl p-8 text-center space-y-6"
+      onPointerMove={cancelAutoRedirect}
+      onPointerDown={cancelAutoRedirect}
+    >
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+        transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
         className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto"
       >
         <motion.div
