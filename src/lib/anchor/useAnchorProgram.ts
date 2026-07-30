@@ -6,9 +6,41 @@ import { useCallback, useMemo } from "react"
 import { getProgram, fetchMerchantAccount, deriveMerchantPDA, deriveVaultPDA, deriveGasVaultPDA } from "@/lib/anchor/client"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
+import { sponsorMerchantSetup } from "@/lib/actions/sponsorMerchantSetup"
 import { config } from "@/lib/config"
 
 const connection = new Connection(config.rpcEndpoint, "confirmed")
+
+// A brand-new embedded wallet has 0 SOL, so it can't pay the network fee for
+// its own setup transaction. The merchant must never fund it themselves —
+// the platform treasury sponsors the setup cost (server action), with the
+// devnet faucet as a fallback for unconfigured dev environments.
+export class InsufficientFundsError extends Error {
+  constructor(public walletAddress: string) {
+    super("Wallet has no funds to cover the network fee")
+    this.name = "InsufficientFundsError"
+  }
+}
+
+async function ensureDevnetFunds(owner: PublicKey): Promise<void> {
+  if (config.cluster !== "devnet") return
+
+  const balance = await connection.getBalance(owner)
+  if (balance >= 10_000_000) return // 0.01 SOL comfortably covers fees + rent
+
+  const sponsored = await sponsorMerchantSetup(owner.toBase58())
+  if (sponsored.funded) return
+
+  try {
+    const signature = await connection.requestAirdrop(owner, 1_000_000_000)
+    const latest = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({ signature, ...latest }, "confirmed")
+  } catch {
+    // Both the treasury and the rate-limited faucet failed; surface the
+    // address so the developer can fund it manually.
+    throw new InsufficientFundsError(owner.toBase58())
+  }
+}
 
 export function useProgram() {
   const wallet = usePrivyWallet()
@@ -34,6 +66,8 @@ export function useInitializeMerchant() {
     if (!program || !provider || !wallet) {
       throw new Error("Wallet not available")
     }
+
+    await ensureDevnetFunds(wallet.publicKey)
 
     const merchantIdBN = new BN(store.merchantId ?? 0)
     const paymentTokenMint = new PublicKey(

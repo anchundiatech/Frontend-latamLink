@@ -1,4 +1,4 @@
-import { PublicKey, SystemProgram } from "@solana/web3.js"
+import { PublicKey, SystemProgram, type Connection } from "@solana/web3.js"
 import { type Provider, Program, type BN } from "@coral-xyz/anchor"
 import { IDL } from "./idl"
 
@@ -65,4 +65,13 @@ export async function fetchMerchantAccount(
   } catch {
     return null
   }
+}
+
+// Read-only scan of every merchant registered in the program — used by the
+// platform admin dashboard. Needs no wallet, only a connection.
+export async function fetchAllMerchantAccounts(
+  connection: Connection
+): Promise<{ publicKey: PublicKey; account: MerchantAccount }[]> {
+  const program = new Program(IDL as any, { connection } as unknown as Provider) as any
+  return await program.account.merchant.all()
 }
