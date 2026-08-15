@@ -125,3 +125,46 @@ export const createDestination = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+// Obtener comercio por ID con sus terminales y destinos
+export const getMerchantById = async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: merchantId },
+      include: {
+        terminals: true,
+        destinations: true,
+      },
+    });
+
+    if (!merchant) {
+      return res.status(404).json({ status: 'error', message: 'Comercio no encontrado' });
+    }
+
+    res.status(200).json({ status: 'success', data: serializeBigInt(merchant) });
+  } catch (error: any) {
+    res.status(400).json({ status: 'error', message: 'Error al consultar comercio', error: error.message || error });
+  }
+};
+
+// Obtener historial de pagos de un comercio
+export const getPaymentsByMerchant = async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+
+    const payments = await prisma.payment.findMany({
+      where: { merchantId },
+      orderBy: { timestamp: 'desc' }, // Los más recientes primero
+      include: {
+        terminal: true, // Incluimos detalles de la terminal que cobró
+      },
+    });
+
+    res.status(200).json({ status: 'success', count: payments.length, data: serializeBigInt(payments) });
+  } catch (error: any) {
+    res.status(400).json({ status: 'error', message: 'Error al consultar pagos', error: error.message || error });
+  }
+};

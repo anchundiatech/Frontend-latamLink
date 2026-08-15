@@ -1,39 +1,23 @@
 {
-  "name": "latamlinkpay-api",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "src/index.ts",
-  "scripts": {
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/index.ts"
-  },
-  "dependencies": {
-    "@prisma/client": "5.22.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.12.7",
-    "nodemon": "^3.1.0",
-    "prisma": "5.22.0",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.23.1",
-    "typescript": "^5.4.5"
   "name": "latamlink-pay",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
+    "dev:backend": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/index.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:server": "tsx --project tsconfig.server.json src/index.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@privy-io/react-auth": "^3.23.1",
+    "@prisma/client": "5.22.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -52,6 +36,8 @@
     "@supabase/supabase-js": "^2.110.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
@@ -71,15 +57,20 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^20",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "jsdom": "^29.1.1",
+    "nodemon": "^3.1.0",
+    "prisma": "5.22.0",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.1",
+    "typescript": "^5.4.5",
     "vitest": "^4.1.9"
   }
 }
