@@ -1,0 +1,45 @@
+import { z } from 'zod'; // Importamos Zod
+
+// Definimos las reglas de validación
+export const createMerchantOwnerSchema = z.object({
+  pubkey: z.string().min(32, "La pubkey debe tener al menos 32 caracteres"),
+  email: z.string().email("Formato de email inválido").optional(),
+  name: z.string().min(2, "El nombre es muy corto").optional(),
+  embeddedWalletPda: z.string().min(32, "La PDA debe ser válida"),
+});
+
+// Nuevo esquema para validar la creación de un comercio
+export const createMerchantSchema = z.object({
+  name: z.string().min(3, "El nombre del comercio es muy corto"),
+  description: z.string().optional(),
+  ownerId: z.string().uuid("El ID del dueño debe ser un UUID válido"), 
+});
+
+// Esquema para validar una nueva Terminal
+export const createTerminalSchema = z.object({
+  terminalId: z.string().min(8, "El ID de la terminal es muy corto"), // Identificador físico/lógico
+  merchantId: z.string().uuid("El merchantId debe ser un UUID válido"), // Relación con el comercio
+  isActive: z.boolean().default(true), // Estado de la terminal
+});
+
+// Esquema para validar un Pago
+export const createPaymentSchema = z.object({
+  txSignature: z.string().min(32, "Firma de transacción inválida"),
+  merchantId: z.string().uuid("merchantId debe ser un UUID"),
+  posTerminalId: z.string().uuid("posTerminalId debe ser un UUID"),
+  payerPubkey: z.string().min(32, "Payer Pubkey inválida"),
+  amountGross: z.string().transform((val) => BigInt(val)), // Prisma usa BigInt
+  posFee: z.string().transform((val) => BigInt(val)),
+  gasFee: z.string().transform((val) => BigInt(val)),
+  dust: z.string().transform((val) => BigInt(val)),
+  timestamp: z.string().datetime(), // ISO 8601
+  status: z.enum(['PENDING', 'CONFIRMED', 'FAILED']).default('PENDING'),
+});
+
+// Esquema para validar esl destinatario de pago
+export const createDestinationSchema = z.object({
+  merchantId: z.string().uuid("El merchantId debe ser un UUID válido"),
+  destinationPubkey: z.string().min(32, "La pubkey de destino es muy corta"),
+  percentage: z.number().int().min(0).max(10000, "El porcentaje debe estar entre 0 y 10000"), // 10000 = 100%
+  positionIndex: z.number().int().min(0, "El índice debe ser positivo"),
+});
