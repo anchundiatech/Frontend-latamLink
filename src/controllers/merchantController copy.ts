@@ -3,10 +3,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-/**
- * Utilidad global para serializar objetos que contengan tipos BigInt,
- * convirtiéndolos a String para evitar errores de serialización en Express.
- */
 const serializeBigInt = (data: any) => {
   return JSON.parse(
     JSON.stringify(data, (key, value) =>
@@ -14,10 +10,6 @@ const serializeBigInt = (data: any) => {
     )
   );
 };
-
-// ==========================================
-// MÓDULO DE CREACIÓN (CREATE)
-// ==========================================
 
 // Crear dueño: Mantiene estructura manual para asegurar campos
 export const createMerchantOwner = async (req: Request, res: Response) => {
@@ -56,9 +48,10 @@ export const createMerchant = async (req: Request, res: Response) => {
       });
     });
 
+    // Respuesta usando el serializador que definimos
     res.status(201).json({ status: 'success', data: serializeBigInt(newMerchant) });
   } catch (error: any) {
-    // Si es P2002, enviamos un mensaje claro al usuario por duplicidad
+    // Si es P2002, enviamos un mensaje claro al usuario
     if (error.code === 'P2002') {
       return res.status(409).json({ status: 'error', message: 'Conflicto: Este comercio o PDA ya existe.' });
     }
@@ -66,7 +59,7 @@ export const createMerchant = async (req: Request, res: Response) => {
   }
 };
 
-// Crear terminal POS
+// Crear terminal
 export const createTerminal = async (req: Request, res: Response) => {
   try {
     const newTerminal = await prisma.posTerminal.create({ data: req.body });
@@ -76,7 +69,7 @@ export const createTerminal = async (req: Request, res: Response) => {
   }
 };
 
-// Crear pago: Conversión de BigInt necesaria para montos y comisiones
+// Crear pago: Conversión de BigInt necesaria aquí también
 export const createPayment = async (req: Request, res: Response) => {
   try {
     const { txSignature, merchantId, posTerminalId, payerPubkey, amountGross, posFee, gasFee, dust, timestamp, status } = req.body;
@@ -96,6 +89,7 @@ export const createPayment = async (req: Request, res: Response) => {
       },
     });
 
+    // Usamos serializeBigInt para evitar el error de serialización JSON de Prisma
     res.status(201).json({ status: 'success', data: serializeBigInt(newPayment) });
   } catch (error: any) {
     res.status(400).json({ 
@@ -106,7 +100,7 @@ export const createPayment = async (req: Request, res: Response) => {
   }
 };
 
-// Crear billetera de destino
+// Crear destino
 export const createDestination = async (req: Request, res: Response) => {
   try {
     const { merchantId, destinationPubkey, percentage, positionIndex, isActive, description } = req.body;
@@ -132,11 +126,8 @@ export const createDestination = async (req: Request, res: Response) => {
   }
 };
 
-// ==========================================
-// MÓDULO DE CONSULTA (READ)
-// ==========================================
 
-// Obtener comercio por ID con sus terminales y destinos relacionados
+// Obtener comercio por ID con sus terminales y destinos
 export const getMerchantById = async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
@@ -159,16 +150,16 @@ export const getMerchantById = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener historial de pagos de un comercio ordenados del más reciente al más antiguo
+// Obtener historial de pagos de un comercio
 export const getPaymentsByMerchant = async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
 
     const payments = await prisma.payment.findMany({
       where: { merchantId },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: 'desc' }, // Los más recientes primero
       include: {
-        terminal: true, // Incluimos detalles de la terminal que efectuó el cobro
+        terminal: true, // Incluimos detalles de la terminal que cobró
       },
     });
 
@@ -178,11 +169,9 @@ export const getPaymentsByMerchant = async (req: Request, res: Response) => {
   }
 };
 
-// ==========================================
-// MÓDULO DE ACTUALIZACIÓN (UPDATE)
-// ==========================================
 
-// Actualizar datos generales del comercio (nombre, comisiones, estado, etc.)
+// --- Módulo de Actualización (UPDATE) ---
+
 export const updateMerchant = async (req: Request, res: Response) => {
   const { merchantId } = req.params;
   try {
@@ -191,7 +180,14 @@ export const updateMerchant = async (req: Request, res: Response) => {
       data: req.body,
     });
 
-    res.status(200).json({ status: 'success', data: serializeBigInt(updatedMerchant) });
+    // Convertimos cualquier BigInt a Number/String para que Express no falle al serializar
+    const serializedMerchant = JSON.parse(
+      JSON.stringify(updatedMerchant, (_, v) =>
+        typeof v === 'bigint' ? v.toString() : v
+      )
+    );
+
+    res.status(200).json({ status: 'success', data: serializedMerchant });
   } catch (error: any) {
     res.status(400).json({ 
       status: 'error', 
@@ -201,49 +197,8 @@ export const updateMerchant = async (req: Request, res: Response) => {
   }
 };
 
-// Actualizar datos de una terminal POS específica
-export const updateTerminal = async (req: Request, res: Response) => {
-  const { terminalId } = req.params;
-  try {
-    const updatedTerminal = await prisma.posTerminal.update({
-      where: { id: terminalId },
-      data: req.body,
-    });
+// --- Módulo de Soft Delete (Desactivación lógica) ---
 
-    res.status(200).json({ status: 'success', data: serializeBigInt(updatedTerminal) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al actualizar terminal', 
-      errorDetail: error.message || String(error) 
-    });
-  }
-};
-
-// Actualizar datos de una billetera de destino específica
-export const updateDestination = async (req: Request, res: Response) => {
-  const { destinationId } = req.params;
-  try {
-    const updatedDestination = await prisma.merchantDestination.update({
-      where: { id: destinationId },
-      data: req.body,
-    });
-
-    res.status(200).json({ status: 'success', data: serializeBigInt(updatedDestination) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al actualizar destino', 
-      errorDetail: error.message || String(error) 
-    });
-  }
-};
-
-// ==========================================
-// MÓDULO DE DESACTIVACIÓN LÓGICA (SOFT DELETE)
-// ==========================================
-
-// Desactivación lógica de una terminal POS (isActive: false)
 export const deactivateTerminal = async (req: Request, res: Response) => {
   const { terminalId } = req.params;
   try {
@@ -251,13 +206,12 @@ export const deactivateTerminal = async (req: Request, res: Response) => {
       where: { id: terminalId },
       data: { isActive: false },
     });
-    res.status(200).json({ status: 'success', message: 'Terminal desactivada correctamente', data: serializeBigInt(updatedTerminal) });
-  } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al desactivar terminal', error: error.message });
+    res.status(200).json({ status: 'success', message: 'Terminal desactivada correctamente', data: updatedTerminal });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: 'Error al desactivar terminal', error });
   }
 };
 
-// Desactivación lógica de una billetera de destino (isActive: false)
 export const deactivateDestination = async (req: Request, res: Response) => {
   const { destinationId } = req.params;
   try {
@@ -265,8 +219,23 @@ export const deactivateDestination = async (req: Request, res: Response) => {
       where: { id: destinationId },
       data: { isActive: false },
     });
-    res.status(200).json({ status: 'success', message: 'Destino desactivado correctamente', data: serializeBigInt(updatedDestination) });
+    res.status(200).json({ status: 'success', message: 'Destino desactivado correctamente', data: updatedDestination });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: 'Error al desactivar destino', error });
+  }
+};
+
+
+//actualizar terminal
+export const updateTerminal = async (req: Request, res: Response) => {
+  const { terminalId } = req.params;
+  try {
+    const updatedTerminal = await prisma.posTerminal.update({
+      where: { id: terminalId },
+      data: req.body, // Permite actualizar posTerminalId, etc.
+    });
+    res.status(200).json({ status: 'success', data: updatedTerminal });
   } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al desactivar destino', error: error.message });
+    res.status(400).json({ status: 'error', message: 'Error al actualizar terminal', errorDetail: error.message });
   }
 };
