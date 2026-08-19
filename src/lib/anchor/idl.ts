@@ -1,3 +1,6 @@
+// El IDL es un objeto JSON generado por Anchor; se valida en tiempo de
+// ejecución al construir el Program, no en tipos.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const IDL: Record<string, any> = {
   address: "GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC",
   metadata: {

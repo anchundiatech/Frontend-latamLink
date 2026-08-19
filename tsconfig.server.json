@@ -9,6 +9,16 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*"],
+  // Solo el servidor Express. Con `src/**/*` entraban también las pantallas de
+  // Next, que son JSX y dependen del entorno del navegador: la comprobación de
+  // tipos del servidor fallaba con cientos de errores ajenos a la API.
+  "include": [
+    "src/index.ts",
+    "src/controllers/**/*.ts",
+    "src/routes/**/*.ts",
+    "src/schemas/**/*.ts",
+    "src/middleware/**/*.ts",
+    "src/lib/prisma.ts"
+  ],
   "exclude": ["node_modules", ".next"]
 }

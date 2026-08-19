@@ -1,5 +1,5 @@
 import { PublicKey, SystemProgram, type Connection } from "@solana/web3.js"
-import { type Provider, Program, type BN } from "@coral-xyz/anchor"
+import { type Provider, Program, type BN, type Idl } from "@coral-xyz/anchor"
 import { IDL } from "./idl"
 
 export type MerchantAccount = {
@@ -20,8 +20,21 @@ export type MerchantAccount = {
 
 export const LATAMLINK_PROGRAM_ID = new PublicKey("GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC")
 
-export function getProgram(provider: Provider) {
-  return new Program(IDL as any, provider)
+/**
+ * Vista tipada del programa. El IDL se carga como JSON, así que Anchor no puede
+ * inferir las cuentas: se declara aquí la forma que realmente usamos.
+ */
+type MerchantProgram = Program<Idl> & {
+  account: {
+    merchant: {
+      fetch(address: PublicKey): Promise<MerchantAccount>
+      all(): Promise<{ publicKey: PublicKey; account: MerchantAccount }[]>
+    }
+  }
+}
+
+export function getProgram(provider: Provider): MerchantProgram {
+  return new Program(IDL as Idl, provider) as unknown as MerchantProgram
 }
 
 export function deriveMerchantPDA(owner: PublicKey, merchantId: BN): PublicKey {
@@ -59,7 +72,7 @@ export async function fetchMerchantAccount(
   merchantPda: PublicKey
 ): Promise<MerchantAccount | null> {
   try {
-    const program = getProgram(provider) as any
+    const program = getProgram(provider)
     const account = await program.account.merchant.fetch(merchantPda)
     return account as MerchantAccount
   } catch {
@@ -72,6 +85,9 @@ export async function fetchMerchantAccount(
 export async function fetchAllMerchantAccounts(
   connection: Connection
 ): Promise<{ publicKey: PublicKey; account: MerchantAccount }[]> {
-  const program = new Program(IDL as any, { connection } as unknown as Provider) as any
+  const program = new Program(
+    IDL as Idl,
+    { connection } as unknown as Provider
+  ) as unknown as MerchantProgram
   return await program.account.merchant.all()
 }

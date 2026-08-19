@@ -1,25 +1,27 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Connection } from '@solana/web3.js';
+import { prisma, serializeBigInt } from '../lib/prisma.js';
 
 /**
- * Utilidad global para serializar objetos que contengan tipos BigInt,
- * convirtiéndolos a String para evitar errores de serialización en Express.
+ * Los errores internos (Prisma, RPC, red) pueden contener rutas, cadenas de
+ * conexión y nombres de tabla. Se registran en el servidor y al cliente solo le
+ * llega un mensaje de dominio.
  */
-const serializeBigInt = (data: any) => {
-  return JSON.parse(
-    JSON.stringify(data, (key, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )
-  );
+const fail = (res: Response, status: number, message: string, error?: unknown) => {
+  if (error) console.error(`[merchantController] ${message}:`, error);
+  return res.status(status).json({ status: 'error', message });
 };
+
+/** Código de error de Prisma (P2002 duplicado, P2003 relación, P2025 no existe). */
+const prismaErrorCode = (error: unknown): string | undefined =>
+  typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code: unknown }).code)
+    : undefined;
 
 // ==========================================
 // MÓDULO DE CREACIÓN (CREATE)
 // ==========================================
 
-// Crear dueño: Mantiene estructura manual para asegurar campos
 export const createMerchantOwner = async (req: Request, res: Response) => {
   try {
     const { pubkey, email, name, embeddedWalletPda } = req.body;
@@ -28,88 +30,153 @@ export const createMerchantOwner = async (req: Request, res: Response) => {
     });
     res.status(201).json({ status: 'success', data: newOwner });
   } catch (error) {
-    res.status(400).json({ status: 'error', message: 'Error al crear dueño', error });
+    if (prismaErrorCode(error) === 'P2002') {
+      return fail(res, 409, 'Ya existe un dueño con esa pubkey o wallet');
+    }
+    return fail(res, 400, 'No se pudo crear el dueño', error);
   }
 };
 
-// Crear comercio: Mapeo manual para manejar BigInt y evitar errores de asignación masiva
 export const createMerchant = async (req: Request, res: Response) => {
   try {
-    const { merchantOwnerId, merchantIdOnchain, pdaAddress, pdaPaymentVault, pdaGasVault, name, feeBps, posFeeBps, minPaymentAmount, isActive, totalVolume } = req.body;
-    
-    // Usamos $transaction para garantizar que o se guarda todo, o no se guarda nada
-    const newMerchant = await prisma.$transaction(async (tx) => {
-      return await tx.merchant.create({
-        data: {
-          merchantOwnerId,
-          merchantIdOnchain: BigInt(merchantIdOnchain),
-          pdaAddress,
-          pdaPaymentVault,
-          pdaGasVault,
-          name,
-          feeBps,
-          posFeeBps,
-          minPaymentAmount: BigInt(minPaymentAmount),
-          isActive,
-          totalVolume: BigInt(totalVolume)
-        },
-      });
+    const {
+      merchantOwnerId,
+      merchantIdOnchain,
+      pdaAddress,
+      pdaPaymentVault,
+      pdaGasVault,
+      name,
+      feeBps,
+      posFeeBps,
+      minPaymentAmount,
+      isActive,
+      totalVolume,
+    } = req.body;
+
+    const newMerchant = await prisma.merchant.create({
+      data: {
+        merchantOwnerId,
+        merchantIdOnchain: BigInt(merchantIdOnchain),
+        pdaAddress,
+        pdaPaymentVault,
+        pdaGasVault,
+        name,
+        feeBps,
+        posFeeBps,
+        minPaymentAmount: BigInt(minPaymentAmount),
+        isActive,
+        totalVolume: BigInt(totalVolume ?? 0),
+      },
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newMerchant) });
-  } catch (error: any) {
-    // Si es P2002, enviamos un mensaje claro al usuario por duplicidad
-    if (error.code === 'P2002') {
-      return res.status(409).json({ status: 'error', message: 'Conflicto: Este comercio o PDA ya existe.' });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
+      return fail(res, 409, 'Conflicto: este comercio o PDA ya existe');
     }
-    res.status(400).json({ status: 'error', message: 'No se pudo crear el comercio', error: error.message });
+    if (prismaErrorCode(error) === 'P2003') {
+      return fail(res, 404, 'El dueño indicado no existe');
+    }
+    return fail(res, 400, 'No se pudo crear el comercio', error);
   }
 };
 
-// Crear terminal POS
 export const createTerminal = async (req: Request, res: Response) => {
   try {
-    const newTerminal = await prisma.posTerminal.create({ data: req.body });
+    // Campos explícitos: `accessToken` lo genera la base de datos y no puede
+    // llegar desde el cliente.
+    const { merchantId, posTerminalId, isActive } = req.body;
+    const newTerminal = await prisma.posTerminal.create({
+      data: { merchantId, posTerminalId, isActive },
+    });
     res.status(201).json({ status: 'success', data: newTerminal });
   } catch (error) {
-    res.status(400).json({ status: 'error', message: 'No se pudo crear la terminal', error });
+    if (prismaErrorCode(error) === 'P2002') {
+      return fail(res, 409, 'Ese comercio ya tiene una terminal con ese identificador');
+    }
+    if (prismaErrorCode(error) === 'P2003') {
+      return fail(res, 404, 'El comercio indicado no existe');
+    }
+    return fail(res, 400, 'No se pudo crear la terminal', error);
   }
 };
 
-// Crear pago: Conversión de BigInt necesaria para montos y comisiones
+/**
+ * Comprueba que una firma exista realmente en la red antes de dar un cobro por
+ * confirmado. Sin esto, el historial de pagos sería una lista de lo que
+ * cualquiera quisiera declarar.
+ *
+ * Solo se exige para pagos `CONFIRMED`: los `PENDING` los registra el relayer
+ * en cuanto envía la transacción, cuando todavía no es consultable.
+ */
+const signatureExistsOnChain = async (signature: string): Promise<boolean> => {
+  const rpcUrl = process.env.RPC_URL ?? process.env.NEXT_PUBLIC_RPC_URL;
+  if (!rpcUrl) return true; // sin RPC configurado no se puede verificar
+
+  const connection = new Connection(rpcUrl, 'confirmed');
+  const [status] = (await connection.getSignatureStatuses([signature])).value;
+  if (!status || status.err) return false;
+  return status.confirmationStatus === 'confirmed' || status.confirmationStatus === 'finalized';
+};
+
 export const createPayment = async (req: Request, res: Response) => {
   try {
-    const { txSignature, merchantId, posTerminalId, payerPubkey, amountGross, posFee, gasFee, dust, timestamp, status } = req.body;
-    
+    const {
+      txSignature,
+      merchantId,
+      posTerminalId,
+      payerPubkey,
+      amountGross,
+      posFee,
+      gasFee,
+      dust,
+      timestamp,
+      status,
+    } = req.body;
+
+    if (status === 'CONFIRMED') {
+      let exists: boolean;
+      try {
+        exists = await signatureExistsOnChain(txSignature);
+      } catch (error) {
+        return fail(res, 503, 'No se pudo verificar la transacción contra la red', error);
+      }
+      if (!exists) {
+        return fail(res, 422, 'La transacción no está confirmada en la red');
+      }
+    }
+
     const newPayment = await prisma.payment.create({
       data: {
-        txSignature, 
-        merchantId, 
-        posTerminalId, 
-        payerPubkey, 
-        status: status || 'PENDING', // Blindaje con respaldo por defecto
+        txSignature,
+        merchantId,
+        posTerminalId,
+        payerPubkey,
+        status: status || 'PENDING',
         amountGross: BigInt(amountGross),
         posFee: BigInt(posFee),
         gasFee: BigInt(gasFee),
         dust: BigInt(dust),
-        timestamp: new Date(timestamp) // Aseguramos formato fecha
+        timestamp: new Date(timestamp),
       },
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newPayment) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error en pago', 
-      error: error.message || error 
-    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
+      return fail(res, 409, 'Ese pago ya está registrado');
+    }
+    if (prismaErrorCode(error) === 'P2003') {
+      return fail(res, 404, 'El comercio o la terminal indicados no existen');
+    }
+    return fail(res, 400, 'No se pudo registrar el pago', error);
   }
 };
 
-// Crear billetera de destino
 export const createDestination = async (req: Request, res: Response) => {
   try {
-    const { merchantId, destinationPubkey, percentage, positionIndex, isActive, description } = req.body;
+    const { merchantId, destinationPubkey, percentage, positionIndex, isActive, description } =
+      req.body;
 
     const newDestination = await prisma.merchantDestination.create({
       data: {
@@ -123,12 +190,14 @@ export const createDestination = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newDestination) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al crear destino', 
-      error: error.message || error 
-    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
+      return fail(res, 409, 'Ese destino ya está registrado en el comercio');
+    }
+    if (prismaErrorCode(error) === 'P2003') {
+      return fail(res, 404, 'El comercio indicado no existe');
+    }
+    return fail(res, 400, 'No se pudo crear el destino', error);
   }
 };
 
@@ -136,7 +205,6 @@ export const createDestination = async (req: Request, res: Response) => {
 // MÓDULO DE CONSULTA (READ)
 // ==========================================
 
-// Obtener comercio por ID con sus terminales y destinos relacionados
 export const getMerchantById = async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
@@ -144,45 +212,68 @@ export const getMerchantById = async (req: Request, res: Response) => {
     const merchant = await prisma.merchant.findUnique({
       where: { id: merchantId },
       include: {
-        terminals: true,
-        destinations: true,
+        terminals: { where: { isActive: true } },
+        destinations: { where: { isActive: true }, orderBy: { positionIndex: 'asc' } },
       },
     });
 
     if (!merchant) {
-      return res.status(404).json({ status: 'error', message: 'Comercio no encontrado' });
+      return fail(res, 404, 'Comercio no encontrado');
     }
 
     res.status(200).json({ status: 'success', data: serializeBigInt(merchant) });
-  } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al consultar comercio', error: error.message || error });
+  } catch (error) {
+    return fail(res, 400, 'Error al consultar el comercio', error);
   }
 };
 
-// Obtener historial de pagos de un comercio ordenados del más reciente al más antiguo
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
+
 export const getPaymentsByMerchant = async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
 
-    const payments = await prisma.payment.findMany({
-      where: { merchantId },
-      orderBy: { timestamp: 'desc' },
-      include: {
-        terminal: true, // Incluimos detalles de la terminal que efectuó el cobro
-      },
-    });
+    // Sin paginación, un comercio con historial largo devolvía todo de una vez.
+    const requestedLimit = Number(req.query.limit);
+    const limit =
+      Number.isFinite(requestedLimit) && requestedLimit > 0
+        ? Math.min(Math.floor(requestedLimit), MAX_PAGE_SIZE)
+        : DEFAULT_PAGE_SIZE;
+    const requestedOffset = Number(req.query.offset);
+    const offset =
+      Number.isFinite(requestedOffset) && requestedOffset > 0 ? Math.floor(requestedOffset) : 0;
 
-    res.status(200).json({ status: 'success', count: payments.length, data: serializeBigInt(payments) });
-  } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al consultar pagos', error: error.message || error });
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        where: { merchantId },
+        orderBy: { timestamp: 'desc' },
+        include: { terminal: true },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.payment.count({ where: { merchantId } }),
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      count: payments.length,
+      total,
+      limit,
+      offset,
+      data: serializeBigInt(payments),
+    });
+  } catch (error) {
+    return fail(res, 400, 'Error al consultar los pagos', error);
   }
 };
 
 // ==========================================
 // MÓDULO DE ACTUALIZACIÓN (UPDATE)
 // ==========================================
+// `req.body` ya viene validado y saneado por validateSchema: solo contiene los
+// campos que un operador puede modificar (nunca las PDAs ni las estadísticas).
 
-// Actualizar datos generales del comercio (nombre, comisiones, estado, etc.)
 export const updateMerchant = async (req: Request, res: Response) => {
   const { merchantId } = req.params;
   try {
@@ -190,18 +281,13 @@ export const updateMerchant = async (req: Request, res: Response) => {
       where: { id: merchantId },
       data: req.body,
     });
-
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedMerchant) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al actualizar comercio', 
-      errorDetail: error.message || String(error) 
-    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Comercio no encontrado');
+    return fail(res, 400, 'Error al actualizar el comercio', error);
   }
 };
 
-// Actualizar datos de una terminal POS específica
 export const updateTerminal = async (req: Request, res: Response) => {
   const { terminalId } = req.params;
   try {
@@ -209,18 +295,13 @@ export const updateTerminal = async (req: Request, res: Response) => {
       where: { id: terminalId },
       data: req.body,
     });
-
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedTerminal) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al actualizar terminal', 
-      errorDetail: error.message || String(error) 
-    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Terminal no encontrada');
+    return fail(res, 400, 'Error al actualizar la terminal', error);
   }
 };
 
-// Actualizar datos de una billetera de destino específica
 export const updateDestination = async (req: Request, res: Response) => {
   const { destinationId } = req.params;
   try {
@@ -228,14 +309,10 @@ export const updateDestination = async (req: Request, res: Response) => {
       where: { id: destinationId },
       data: req.body,
     });
-
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedDestination) });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'error', 
-      message: 'Error al actualizar destino', 
-      errorDetail: error.message || String(error) 
-    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Destino no encontrado');
+    return fail(res, 400, 'Error al actualizar el destino', error);
   }
 };
 
@@ -243,7 +320,6 @@ export const updateDestination = async (req: Request, res: Response) => {
 // MÓDULO DE DESACTIVACIÓN LÓGICA (SOFT DELETE)
 // ==========================================
 
-// Desactivación lógica de una terminal POS (isActive: false)
 export const deactivateTerminal = async (req: Request, res: Response) => {
   const { terminalId } = req.params;
   try {
@@ -251,13 +327,17 @@ export const deactivateTerminal = async (req: Request, res: Response) => {
       where: { id: terminalId },
       data: { isActive: false },
     });
-    res.status(200).json({ status: 'success', message: 'Terminal desactivada correctamente', data: serializeBigInt(updatedTerminal) });
-  } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al desactivar terminal', error: error.message });
+    res.status(200).json({
+      status: 'success',
+      message: 'Terminal desactivada correctamente',
+      data: serializeBigInt(updatedTerminal),
+    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Terminal no encontrada');
+    return fail(res, 400, 'Error al desactivar la terminal', error);
   }
 };
 
-// Desactivación lógica de una billetera de destino (isActive: false)
 export const deactivateDestination = async (req: Request, res: Response) => {
   const { destinationId } = req.params;
   try {
@@ -265,8 +345,13 @@ export const deactivateDestination = async (req: Request, res: Response) => {
       where: { id: destinationId },
       data: { isActive: false },
     });
-    res.status(200).json({ status: 'success', message: 'Destino desactivado correctamente', data: serializeBigInt(updatedDestination) });
-  } catch (error: any) {
-    res.status(400).json({ status: 'error', message: 'Error al desactivar destino', error: error.message });
+    res.status(200).json({
+      status: 'success',
+      message: 'Destino desactivado correctamente',
+      data: serializeBigInt(updatedDestination),
+    });
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Destino no encontrado');
+    return fail(res, 400, 'Error al desactivar el destino', error);
   }
 };
