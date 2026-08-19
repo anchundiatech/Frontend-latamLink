@@ -30,5 +30,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  // `backend/` es un servicio Node aparte, con su propio tsconfig (ES2022) y su
+  // propia comprobación de tipos en CI. Sin excluirlo, el build de Next lo
+  // type-chequea con esta configuración (ES2017) y falla, por ejemplo, en los
+  // literales BigInt que usa para los montos.
+  "exclude": ["node_modules", "backend"]
 }

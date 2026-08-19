@@ -1,34 +1,61 @@
-import { Router } from 'express'; // Importamos el Router de Express
-import { validateSchema } from '../middleware/validateSchema.js'; // Importamos el validador
-import { 
-  createMerchantOwner, 
-  createMerchant, 
-  createTerminal, 
-  createPayment, 
+import { Router } from 'express';
+import { validateSchema } from '../middleware/validateSchema.js';
+import { requireRelayerKey, requireServiceKey } from '../middleware/requireApiKey.js';
+import {
+  createMerchantOwner,
+  createMerchant,
+  createTerminal,
+  createPayment,
   createDestination,
-  getMerchantById,       // <-- Importamos la función de consulta por ID
-  getPaymentsByMerchant  // <-- Importamos la función de historial de pagos
-} from '../controllers/merchantController.js'; 
+  getMerchantById,
+  getPaymentsByMerchant,
+  updateMerchant,
+  updateTerminal,
+  updateDestination,
+  deactivateTerminal,
+  deactivateDestination,
+} from '../controllers/merchantController.js';
 
-import { 
-  createMerchantOwnerSchema, 
-  createMerchantSchema, 
-  createTerminalSchema, 
-  createPaymentSchema, 
-  createDestinationSchema 
-} from '../schemas/merchantSchema.js'; // Importamos todos los esquemas ordenados
+import {
+  createMerchantOwnerSchema,
+  createMerchantSchema,
+  createTerminalSchema,
+  createPaymentSchema,
+  createDestinationSchema,
+  updateMerchantSchema,
+  updateTerminalSchema,
+  updateDestinationSchema,
+} from '../schemas/merchantSchema.js';
 
-const router = Router(); // Inicializamos el router
+const router = Router();
 
-// Rutas POST (Creación y registros)
+// Toda la API administra datos de comercios y su historial de cobros, así que
+// va detrás de credencial de servicio. El frontend la consume desde el lado
+// servidor; nunca se expone la clave al navegador.
+router.use(requireServiceKey);
+
+// --- Rutas POST (Creación y registros) ---
 router.post('/', validateSchema(createMerchantOwnerSchema), createMerchantOwner);
 router.post('/store', validateSchema(createMerchantSchema), createMerchant);
 router.post('/terminal', validateSchema(createTerminalSchema), createTerminal);
-router.post('/payment', validateSchema(createPaymentSchema), createPayment);
+// El historial de pagos solo lo escribe el relayer, que es quien firma y envía
+// las transacciones: así no se pueden inventar cobros.
+router.post('/payment', requireRelayerKey, validateSchema(createPaymentSchema), createPayment);
 router.post('/destination', validateSchema(createDestinationSchema), createDestination);
 
-// Rutas GET (Consultas del backend)
-router.get('/:merchantId', getMerchantById);                  // Consultar información de un comercio y sus terminales
-router.get('/:merchantId/payments', getPaymentsByMerchant);   // Consultar el historial de pagos de un comercio
+// --- Rutas GET (Consultas) ---
+router.get('/:merchantId', getMerchantById);
+router.get('/:merchantId/payments', getPaymentsByMerchant);
 
-export default router; // Exportamos el router para usarlo en index.ts
+// --- Rutas PATCH (Actualización y Soft Delete) ---
+router.patch('/:merchantId', validateSchema(updateMerchantSchema), updateMerchant);
+router.patch('/terminal/:terminalId', validateSchema(updateTerminalSchema), updateTerminal);
+router.patch(
+  '/destination/:destinationId',
+  validateSchema(updateDestinationSchema),
+  updateDestination
+);
+router.patch('/terminal/:terminalId/deactivate', deactivateTerminal);
+router.patch('/destination/:destinationId/deactivate', deactivateDestination);
+
+export default router;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { supabase } from "@/lib/supabase/client"
+import { getSupabase } from "@/lib/supabase/client"
 import { sendWaitlistConfirmation } from "@/lib/email"
 
 const schema = z.object({
@@ -12,6 +12,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { email, locale } = schema.parse(body)
+
+    const supabase = getSupabase()
 
     const { data: existing } = await supabase
       .from("waitlist")

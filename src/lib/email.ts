@@ -1,6 +1,16 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+// Igual que con Supabase: instanciarlo al importar rompía el build cuando la
+// variable no está definida.
+let resendClient: Resend | null = null
+
+function getResend(): Resend {
+  if (resendClient) return resendClient
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error("Falta RESEND_API_KEY")
+  resendClient = new Resend(apiKey)
+  return resendClient
+}
 
 export async function sendWaitlistConfirmation(email: string, locale?: string) {
   const isEs = locale === "es"
@@ -28,7 +38,7 @@ export async function sendWaitlistConfirmation(email: string, locale?: string) {
     ? "LatamLink Pay — Infraestructura de pagos para comercios latinoamericanos"
     : "LatamLink Pay — Payment infrastructure for Latin American merchants"
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: "LatamLink Pay <hello@latamlinkpay.xyz>",
     to: email,
     subject,

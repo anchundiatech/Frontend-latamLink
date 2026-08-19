@@ -46,3 +46,6 @@ next-env.d.ts
 AGENTS.md
 CLAUDE.md
 .data/
+
+# El ejemplo de configuración sí se versiona
+!.env.example
