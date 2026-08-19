@@ -9,7 +9,11 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PAY_COMPUTE_UNIT_LIMIT } from "../solana/constants.js";
 import { fetchMerchant } from "../solana/merchant.js";
 import { buildPayInstruction } from "../solana/instructions.js";
-import { rollbackReservation, validateSignedTransaction } from "./validate.js";
+import {
+  reserveRelayerSpend,
+  rollbackReservation,
+  validateSignedTransaction,
+} from "./validate.js";
 
 export interface BuildPayResult {
   transaction: string; // base64, sin firmas
@@ -24,7 +28,12 @@ export interface BuildPayResult {
 export async function buildPayTransaction(
   connection: Connection,
   relayerPubkey: PublicKey,
-  params: { merchantAddress: string; payerPubkey: string; amount: bigint },
+  params: {
+    merchantAddress: string;
+    payerPubkey: string;
+    amount: bigint;
+    reference?: string;
+  },
 ): Promise<BuildPayResult> {
   const merchant = await fetchMerchant(
     connection,
@@ -63,6 +72,7 @@ export async function buildPayTransaction(
     merchant,
     posFeeDestination,
     amount: params.amount,
+    reference: params.reference ? new PublicKey(params.reference) : undefined,
   });
 
   const { blockhash, lastValidBlockHeight } =
@@ -82,6 +92,38 @@ export async function buildPayTransaction(
     lastValidBlockHeight,
     amount: params.amount.toString(),
     merchant: merchant.address.toBase58(),
+  };
+}
+
+// Cobro por QR (Solana Pay, modo "transaction request"): la billetera del
+// cliente recibe la transacción ya firmada por el relayer, le añade su firma y
+// la envía ella misma. Así el pago pasa por `pay()` —conserva el split— y el
+// cliente sigue sin necesitar SOL.
+//
+// Firmar antes que el usuario es seguro porque la transacción la arma el
+// backend de punta a punta: cualquier modificación posterior invalida la firma
+// del relayer y la red la rechaza.
+export async function buildRelayerSignedTransaction(
+  connection: Connection,
+  relayer: Keypair,
+  params: {
+    merchantAddress: string;
+    payerPubkey: string;
+    amount: bigint;
+    reference?: string;
+  },
+): Promise<BuildPayResult> {
+  const built = await buildPayTransaction(connection, relayer.publicKey, params);
+
+  const tx = Transaction.from(Buffer.from(built.transaction, "base64"));
+  reserveRelayerSpend(2); // firma del relayer + firma del pagador
+  tx.partialSign(relayer);
+
+  return {
+    ...built,
+    transaction: tx
+      .serialize({ requireAllSignatures: false, verifySignatures: false })
+      .toString("base64"),
   };
 }
 
