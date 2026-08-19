@@ -8,6 +8,7 @@ import { PublicKey } from "@solana/web3.js"
 import { WalletDestinationCard } from "./WalletDestinationCard"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useCreateMerchant } from "@/lib/services/useCreateMerchant"
+import { useWalletsVinculadas } from "@/lib/services/useWalletsVinculadas"
 import { useUpdateMerchantConfig } from "@/lib/services/useUpdateMerchantConfig"
 
 const cardColors = ["#a855f7", "#2dd4bf", "#adc6ff"]
@@ -20,6 +21,7 @@ export function SplitRoutingConfig() {
 
   const { update } = useUpdateMerchantConfig()
   const { create } = useCreateMerchant()
+  const { wallets } = useWalletsVinculadas()
   const [saving, setSaving] = useState(false)
 
   const totalPercentage = destinations.reduce(
@@ -160,6 +162,25 @@ export function SplitRoutingConfig() {
           <p className="text-xs font-heading text-on-surface-variant uppercase tracking-wider">
             Add Recipient
           </p>
+          <p className="text-xs text-on-surface-variant/70">
+            Pegá la dirección de una billetera de Solana. Nos encargamos de
+            prepararla para recibir cobros.
+          </p>
+
+          {wallets.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {wallets.map((w) => (
+                <button
+                  key={w.address}
+                  type="button"
+                  onClick={() => setNewAddress(w.address)}
+                  className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-mono text-on-surface-variant transition-colors"
+                >
+                  {w.esDeLaCuenta ? "Mi cuenta" : "Mi billetera"} · {w.address.slice(0, 4)}…{w.address.slice(-4)}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="grid sm:grid-cols-3 gap-2">
             <input
               value={newLabel}
@@ -170,7 +191,7 @@ export function SplitRoutingConfig() {
             <input
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
-              placeholder="Destination account"
+              placeholder="Dirección de billetera"
               className="sm:col-span-1 bg-surface-container-low border border-white/10 rounded-default px-3 py-2 text-xs text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-electric-purple/50 font-mono"
             />
             <button

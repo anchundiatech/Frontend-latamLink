@@ -18,6 +18,7 @@ import {
   buildInitializeMerchantInstruction,
   buildUpdateConfigInstruction,
 } from "../solana/instructions.js";
+import { resolverDestinos } from "../solana/destinations.js";
 
 const INIT_COMPUTE_UNIT_LIMIT = 400_000;
 const MAX_TERMINAL_ID_LEN = 32;
@@ -84,10 +85,7 @@ export async function createMerchant(
   if (minPaymentAmount <= 0n) throw new Error("minPaymentAmount debe ser mayor que 0");
 
   const mint = new PublicKey(params.paymentTokenMint);
-  const destinationKeys = destinations.map((d) => new PublicKey(d));
 
-  // Pre-validación off-chain: el contrato exige que cada destino sea una token
-  // account del mismo mint. Fallar aquí da un error claro en vez de un revert.
   // Aleatorio de 64 bits: con Date.now() dos altas en el mismo milisegundo
   // derivaban la misma PDA y la segunda revertía tras todo el trabajo de RPC.
   const merchantId = randomBytes(8).readBigUInt64LE(0);
@@ -95,22 +93,16 @@ export async function createMerchant(
   const vault = deriveVaultPda(merchantPda);
   const gasVault = deriveGasVaultPda(merchantPda);
 
-  for (const dest of destinationKeys) {
-    if (dest.equals(vault) || dest.equals(gasVault)) {
-      throw new Error(`El destino ${dest.toBase58()} no puede ser el vault ni el gas_vault`);
-    }
-    const info = await connection.getParsedAccountInfo(dest);
-    const parsed = info.value?.data;
-    if (!parsed || !("parsed" in parsed)) {
-      throw new Error(`El destino ${dest.toBase58()} no es una cuenta de token válida`);
-    }
-    const destMint = parsed.parsed?.info?.mint as string | undefined;
-    if (destMint !== mint.toBase58()) {
-      throw new Error(
-        `El destino ${dest.toBase58()} es del mint ${destMint ?? "desconocido"}, se esperaba ${mint.toBase58()}`,
-      );
-    }
-  }
+  // El comerciante puede indicar su wallet: aquí se traduce a la cuenta de
+  // token que exige el contrato, creándola si hace falta.
+  const { cuentas: destinationKeys } = await resolverDestinos({
+    connection,
+    pagadorDeRenta: platformOwner,
+    mint,
+    direcciones: destinations,
+    vault,
+    gasVault,
+  });
 
   if (await connection.getAccountInfo(merchantPda)) {
     throw new Error(`Ya existe un comercio con merchantId ${merchantId}`);
@@ -195,26 +187,16 @@ export async function updateMerchantConfig(
 
   const vault = deriveVaultPda(merchantPda);
   const gasVault = deriveGasVaultPda(merchantPda);
-  const destinationKeys = destinations.map((d) => new PublicKey(d));
 
-  // Mismas comprobaciones que en el alta: el contrato exige cuentas de token
-  // del mismo mint, y fallar aquí da un error claro en vez de un revert.
-  for (const dest of destinationKeys) {
-    if (dest.equals(vault) || dest.equals(gasVault)) {
-      throw new Error(`El destino ${dest.toBase58()} no puede ser el vault ni el gas_vault`);
-    }
-    const info = await connection.getParsedAccountInfo(dest);
-    const parsed = info.value?.data;
-    if (!parsed || !("parsed" in parsed)) {
-      throw new Error(`El destino ${dest.toBase58()} no es una cuenta de token válida`);
-    }
-    const destMint = parsed.parsed?.info?.mint as string | undefined;
-    if (destMint !== merchant.paymentTokenMint.toBase58()) {
-      throw new Error(
-        `El destino ${dest.toBase58()} es del mint ${destMint ?? "desconocido"}, se esperaba ${merchant.paymentTokenMint.toBase58()}`,
-      );
-    }
-  }
+  // Igual que en el alta: se aceptan wallets y se traducen a cuentas de token.
+  const { cuentas: destinationKeys } = await resolverDestinos({
+    connection,
+    pagadorDeRenta: platformOwner,
+    mint: merchant.paymentTokenMint,
+    direcciones: destinations,
+    vault,
+    gasVault,
+  });
 
   const ix = buildUpdateConfigInstruction({
     owner: platformOwner.publicKey,

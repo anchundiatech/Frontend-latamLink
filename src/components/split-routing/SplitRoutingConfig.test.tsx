@@ -19,6 +19,11 @@ vi.mock("@/lib/services/useCreateMerchant", () => ({
   useCreateMerchant: () => ({ create: createMock }),
 }))
 
+// Las billeteras vinculadas son opcionales; en los tests no hay ninguna.
+vi.mock("@/lib/services/useWalletsVinculadas", () => ({
+  useWalletsVinculadas: () => ({ wallets: [], vincular: vi.fn(), listo: true }),
+}))
+
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }))
@@ -29,7 +34,7 @@ const VALID_ADDRESS_2 = Keypair.generate().publicKey.toBase58()
 async function addRecipient(label: string, address: string) {
   const user = userEvent.setup()
   await user.type(screen.getByPlaceholderText("Label"), label)
-  await user.type(screen.getByPlaceholderText("Destination account"), address)
+  await user.type(screen.getByPlaceholderText("Dirección de billetera"), address)
   await user.click(screen.getByRole("button", { name: /add/i }))
 }
 
