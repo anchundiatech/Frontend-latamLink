@@ -9,6 +9,7 @@ import {
   MAX_DESTINATIONS,
   PAY_DISCRIMINATOR,
   PROGRAM_ID,
+  UPDATE_CONFIG_DISCRIMINATOR,
   WITHDRAW_GAS_FEES_DISCRIMINATOR,
 } from "./constants.js";
 import type { MerchantState } from "./merchant.js";
@@ -92,6 +93,54 @@ export function buildWithdrawGasFeesInstruction(params: {
       { pubkey: gasVault, isSigner: false, isWritable: true },
       { pubkey: destination, isSigner: false, isWritable: true },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ],
+    data,
+  });
+}
+
+// Actualiza la configuración de un comercio ya creado.
+//
+// Solo la firma el `owner`, que en nuestro modelo es la plataforma: el comercio
+// no firma nada on-chain ni necesita SOL. Antes esto lo intentaba el navegador
+// con la wallet del comerciante y el contrato lo rechazaba (`has_one = owner`),
+// así que editar el reparto fallaba siempre.
+export function buildUpdateConfigInstruction(params: {
+  owner: PublicKey;
+  merchant: PublicKey;
+  destinations: PublicKey[];
+  percentages: number[];
+  feeBps: number;
+  posFeeBps: number;
+  minPaymentAmount: bigint;
+}): TransactionInstruction {
+  const { owner, merchant, destinations, percentages } = params;
+  const padded = padDestinations(destinations);
+
+  const pctArray = Buffer.alloc(MAX_DESTINATIONS);
+  percentages.forEach((p, i) => pctArray.writeUInt8(p, i));
+
+  // Args: fee_bps u16 | pos_fee_bps u16 | min u64 | destinations_count u8
+  //       | percentages [u8;10]
+  const data = Buffer.alloc(8 + 2 + 2 + 8 + 1 + 10);
+  let o = 0;
+  UPDATE_CONFIG_DISCRIMINATOR.copy(data, o);
+  o += 8;
+  data.writeUInt16LE(params.feeBps, o);
+  o += 2;
+  data.writeUInt16LE(params.posFeeBps, o);
+  o += 2;
+  data.writeBigUInt64LE(params.minPaymentAmount, o);
+  o += 8;
+  data.writeUInt8(destinations.length, o);
+  o += 1;
+  pctArray.copy(data, o);
+
+  return new TransactionInstruction({
+    programId: PROGRAM_ID,
+    keys: [
+      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: merchant, isSigner: false, isWritable: true },
+      ...padded.map((d) => ({ pubkey: d, isSigner: false, isWritable: true })),
     ],
     data,
   });

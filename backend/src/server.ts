@@ -21,7 +21,7 @@ import {
   buildRelayerSignedTransaction,
   submitSignedTransaction,
 } from "./relayer/service.js";
-import { createMerchant } from "./merchants/service.js";
+import { createMerchant, updateMerchantConfig } from "./merchants/service.js";
 import { listPayments, recordPayment } from "./storage/payments.js";
 import { PROGRAM_ID } from "./solana/constants.js";
 import { createX402Router } from "./x402/routes.js";
@@ -123,6 +123,46 @@ export function createApp(): Express {
         minPaymentAmount: String(minPaymentAmount),
       });
       res.status(201).json(result);
+    } catch (err) {
+      res.status(422).json({ error: (err as Error).message });
+    }
+  });
+
+  // Actualiza la configuración de un comercio existente (reparto, comisiones,
+  // monto mínimo). Firma la plataforma, que es el owner on-chain: el comerciante
+  // nunca firma ni necesita SOL.
+  app.patch("/merchants/:address/config", operatorOnly, async (req, res) => {
+    try {
+      const address = req.params.address;
+      if (!address) {
+        res.status(400).json({ error: "Falta la dirección del comercio" });
+        return;
+      }
+
+      const { destinations, percentages, feeBps, posFeeBps, minPaymentAmount } = req.body ?? {};
+      if (
+        !Array.isArray(destinations) ||
+        !destinations.every((d: unknown) => typeof d === "string") ||
+        !Array.isArray(percentages) ||
+        !percentages.every((p: unknown) => typeof p === "number") ||
+        typeof feeBps !== "number" ||
+        typeof posFeeBps !== "number" ||
+        (typeof minPaymentAmount !== "string" && typeof minPaymentAmount !== "number")
+      ) {
+        res.status(400).json({
+          error: "Requeridos: destinations[], percentages[], feeBps, posFeeBps, minPaymentAmount",
+        });
+        return;
+      }
+
+      const result = await updateMerchantConfig(connection, loadPlatformOwner(), address, {
+        destinations,
+        percentages,
+        feeBps,
+        posFeeBps,
+        minPaymentAmount: String(minPaymentAmount),
+      });
+      res.json(result);
     } catch (err) {
       res.status(422).json({ error: (err as Error).message });
     }

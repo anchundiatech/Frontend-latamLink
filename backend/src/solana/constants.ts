@@ -20,3 +20,4 @@ export const INITIALIZE_MERCHANT_DISCRIMINATOR =
   anchorDiscriminator("initialize_merchant");
 export const WITHDRAW_GAS_FEES_DISCRIMINATOR =
   anchorDiscriminator("withdraw_gas_fees");
+export const UPDATE_CONFIG_DISCRIMINATOR = anchorDiscriminator("update_config");

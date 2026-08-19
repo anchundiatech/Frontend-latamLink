@@ -10,12 +10,13 @@ vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ user: null }),
 }))
 
-const walletMock: { current: { publicKey: { toBase58: () => string } } | null } = {
-  current: { publicKey: { toBase58: () => WALLET_ADDRESS } },
-}
+// El hook devuelve directamente la dirección de la cuenta de pago (o null
+// mientras Privy todavía la está creando).
+const cuentaMock: { current: string | null } = { current: WALLET_ADDRESS }
 
-vi.mock("@/lib/services/usePrivyWallet", () => ({
-  usePrivyWallet: () => walletMock.current,
+// La cuenta de pago la crea Privy con el login: la app la lee de la sesión.
+vi.mock("@/lib/services/useCuentaDePago", () => ({
+  useCuentaDePago: () => cuentaMock.current,
 }))
 
 async function fillAndSubmit(name = "Mi Tienda", email = "merchant@test.com") {
@@ -27,7 +28,7 @@ async function fillAndSubmit(name = "Mi Tienda", email = "merchant@test.com") {
 
 describe("StepCreateBusiness", () => {
   beforeEach(() => {
-    walletMock.current = { publicKey: { toBase58: () => WALLET_ADDRESS } }
+    cuentaMock.current = WALLET_ADDRESS
     useMerchantStore.setState({ isActive: false, name: "", email: "", walletAddress: "" })
   })
 
@@ -72,7 +73,7 @@ describe("StepCreateBusiness", () => {
   })
 
   it("holds the submit button until the payment account is ready", () => {
-    walletMock.current = null
+    cuentaMock.current = null
     render(<StepCreateBusiness onNext={vi.fn()} />)
 
     const button = screen.getByRole("button", { name: /preparing your account/i })

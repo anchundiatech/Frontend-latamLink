@@ -7,8 +7,8 @@ import { toast } from "sonner"
 import { PublicKey } from "@solana/web3.js"
 import { WalletDestinationCard } from "./WalletDestinationCard"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useUpdateConfig } from "@/lib/anchor/useAnchorProgram"
 import { useCreateMerchant } from "@/lib/services/useCreateMerchant"
+import { useUpdateMerchantConfig } from "@/lib/services/useUpdateMerchantConfig"
 
 const cardColors = ["#a855f7", "#2dd4bf", "#adc6ff"]
 
@@ -18,7 +18,7 @@ export function SplitRoutingConfig() {
   const [newLabel, setNewLabel] = useState("")
   const [newAddress, setNewAddress] = useState("")
 
-  const { update } = useUpdateConfig()
+  const { update } = useUpdateMerchantConfig()
   const { create } = useCreateMerchant()
   const [saving, setSaving] = useState(false)
 
@@ -106,10 +106,9 @@ export function SplitRoutingConfig() {
 
     setSaving(true)
     try {
-      // El alta on-chain la hace el backend con la wallet de la plataforma
-      // como owner: el comercio no firma ni necesita SOL, y las comisiones
-      // quedan del lado de la plataforma. Las ediciones posteriores siguen
-      // yendo por el programa, firmadas por quien sea el owner.
+      // Tanto el alta como las ediciones las hace el backend firmando con la
+      // wallet de la plataforma, que es el owner on-chain. El comerciante no
+      // firma nada ni necesita SOL en ningún momento.
       if (!merchantPda) {
         await create()
       } else {
