@@ -3,6 +3,7 @@
 import { useCallback } from "react"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
+import { usePrivyWallet } from "./usePrivyWallet"
 
 export interface CreatedMerchant {
   merchant: string
@@ -12,6 +13,10 @@ export interface CreatedMerchant {
   gasVault: string
   signature: string
   name: string
+  merchantDbId?: string
+  terminalDbId?: string
+  /** Presente si el alta on-chain salió bien pero la base falló. */
+  warning?: string
 }
 
 /**
@@ -25,8 +30,14 @@ export interface CreatedMerchant {
  */
 export function useCreateMerchant() {
   const store = useMerchantStore()
+  const wallet = usePrivyWallet()
 
   const create = useCallback(async (): Promise<CreatedMerchant> => {
+    const walletAddress = wallet?.publicKey.toBase58() ?? store.walletAddress
+    if (!walletAddress) {
+      throw new Error("Conectá tu wallet antes de crear el comercio")
+    }
+
     const config = await fetchBackendConfig()
     if (!config.paymentTokenMint) {
       throw new Error(
@@ -52,6 +63,11 @@ export function useCreateMerchant() {
         posFeeBps: store.posFeeBps ?? 0,
         // El comercio escribe "1" pensando en 1 USDC; on-chain son millonésimas.
         minPaymentAmount: toMinimalUnits(store.minPaymentAmount || 0, config.tokenDecimals),
+        // Identidad del comerciante: con esta wallet recupera su comercio
+        // desde cualquier dispositivo.
+        ownerPubkey: walletAddress,
+        email: store.email || undefined,
+        labels: active.map((d) => d.label),
       }),
     })
 
@@ -64,10 +80,16 @@ export function useCreateMerchant() {
     store.setMerchantPda(created.merchant)
     store.setVaultPda(created.vault)
     store.setGasVaultPda(created.gasVault)
-    store.setMerchant({ isActive: true, merchantId: Number(created.merchantId) })
+    store.setMerchant({
+      isActive: true,
+      merchantId: Number(created.merchantId),
+      merchantDbId: created.merchantDbId ?? null,
+      terminalDbId: created.terminalDbId ?? null,
+      walletAddress,
+    })
 
     return created
-  }, [store])
+  }, [store, wallet])
 
   return { create }
 }

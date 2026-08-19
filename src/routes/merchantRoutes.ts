@@ -8,6 +8,8 @@ import {
   createPayment,
   createDestination,
   getMerchantById,
+  getMerchantsByOwnerPubkey,
+  getMerchantByPda,
   getPaymentsByMerchant,
   updateMerchant,
   updateTerminal,
@@ -44,6 +46,9 @@ router.post('/payment', requireRelayerKey, validateSchema(createPaymentSchema), 
 router.post('/destination', validateSchema(createDestinationSchema), createDestination);
 
 // --- Rutas GET (Consultas) ---
+// Va antes que '/:merchantId' para que "owner" no se interprete como un id.
+router.get('/owner/:pubkey', getMerchantsByOwnerPubkey);
+router.get('/pda/:pdaAddress', getMerchantByPda);
 router.get('/:merchantId', getMerchantById);
 router.get('/:merchantId/payments', getPaymentsByMerchant);
 
