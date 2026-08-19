@@ -3,7 +3,7 @@
 import { useCallback } from "react"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
-import { usePrivyWallet } from "./usePrivyWallet"
+import { useCuentaDePago } from "./useCuentaDePago"
 
 export interface CreatedMerchant {
   merchant: string
@@ -30,12 +30,15 @@ export interface CreatedMerchant {
  */
 export function useCreateMerchant() {
   const store = useMerchantStore()
-  const wallet = usePrivyWallet()
+  // La cuenta de pago sale de la sesión: Privy la crea al entrar con Google y
+  // el comerciante no conecta nada.
+  const cuentaDePago = useCuentaDePago()
 
   const create = useCallback(async (): Promise<CreatedMerchant> => {
-    const walletAddress = wallet?.publicKey.toBase58() ?? store.walletAddress
-    if (!walletAddress) {
-      throw new Error("Conectá tu wallet antes de crear el comercio")
+    if (!cuentaDePago) {
+      throw new Error(
+        "Todavía estamos preparando tu cuenta de pago. Probá de nuevo en unos segundos."
+      )
     }
 
     const config = await fetchBackendConfig()
@@ -65,7 +68,7 @@ export function useCreateMerchant() {
         minPaymentAmount: toMinimalUnits(store.minPaymentAmount || 0, config.tokenDecimals),
         // Identidad del comerciante: con esta wallet recupera su comercio
         // desde cualquier dispositivo.
-        ownerPubkey: walletAddress,
+        ownerPubkey: cuentaDePago,
         email: store.email || undefined,
         labels: active.map((d) => d.label),
       }),
@@ -85,11 +88,11 @@ export function useCreateMerchant() {
       merchantId: Number(created.merchantId),
       merchantDbId: created.merchantDbId ?? null,
       terminalDbId: created.terminalDbId ?? null,
-      walletAddress,
+      walletAddress: cuentaDePago,
     })
 
     return created
-  }, [store, wallet])
+  }, [store, cuentaDePago])
 
   return { create }
 }

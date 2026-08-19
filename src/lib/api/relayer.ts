@@ -18,7 +18,7 @@ export class RelayerError extends Error {
 
 interface RelayerRequest {
   path: string
-  method?: "GET" | "POST"
+  method?: "GET" | "POST" | "PATCH"
   body?: unknown
   /** Añade la credencial de operador (alta de comercios, conciliación). */
   operator?: boolean

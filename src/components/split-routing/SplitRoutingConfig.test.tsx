@@ -6,12 +6,13 @@ import { Keypair } from "@solana/web3.js"
 import { SplitRoutingConfig } from "./SplitRoutingConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
-const updateMock = vi.fn().mockResolvedValue({ success: true })
-// El alta on-chain la hace el backend (owner = plataforma), no el navegador.
+// Alta y edición on-chain las hace el backend firmando con la wallet de la
+// plataforma (owner del comercio); el navegador nunca firma.
+const updateMock = vi.fn().mockResolvedValue({ signature: "FirmaDePrueba" })
 const createMock = vi.fn().mockResolvedValue({ merchant: "MerchantPdaDePrueba" })
 
-vi.mock("@/lib/anchor/useAnchorProgram", () => ({
-  useUpdateConfig: () => ({ update: updateMock }),
+vi.mock("@/lib/services/useUpdateMerchantConfig", () => ({
+  useUpdateMerchantConfig: () => ({ update: updateMock }),
 }))
 
 vi.mock("@/lib/services/useCreateMerchant", () => ({

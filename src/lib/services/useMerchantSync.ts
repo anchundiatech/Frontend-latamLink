@@ -1,8 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { usePrivy } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { useCuentaDePago } from "./useCuentaDePago"
 
 interface ApiDestination {
   id: string
@@ -40,12 +40,6 @@ interface ApiOwner {
 
 const TOKEN_DECIMALS = 6
 
-interface CuentaVinculada {
-  type?: string
-  chainType?: string
-  address?: string
-}
-
 /**
  * Carga el comercio desde PostgreSQL y llena el estado local.
  *
@@ -54,20 +48,11 @@ interface CuentaVinculada {
  * comercio. Ahora el navegador es una copia: la fuente de verdad es la base.
  */
 export function useMerchantSync() {
-  // Se toma la dirección de la sesión de Privy y no del hook de wallets: ese
-  // exige el proveedor montado, y el portal se prerenderiza durante el build.
-  const { user } = usePrivy()
+  const walletAddress = useCuentaDePago()
   const setMerchant = useMerchantStore((s) => s.setMerchant)
-  const guardada = useMerchantStore((s) => s.walletAddress)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [found, setFound] = useState<boolean | null>(null)
-
-  const cuentas = (user?.linkedAccounts ?? []) as CuentaVinculada[]
-  const walletAddress =
-    cuentas.find((c) => c.type === "wallet" && c.chainType === "solana")?.address ??
-    guardada ??
-    null
 
   const sync = useCallback(async () => {
     if (!walletAddress) return
