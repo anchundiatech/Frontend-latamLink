@@ -18,6 +18,7 @@ import {
   buildInitializeMerchantInstruction,
   buildUpdateConfigInstruction,
 } from "../solana/instructions.js";
+import { resolverDestinos } from "../solana/destinations.js";
 
 const INIT_COMPUTE_UNIT_LIMIT = 400_000;
 const MAX_TERMINAL_ID_LEN = 32;
