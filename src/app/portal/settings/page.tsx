@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Save } from "lucide-react"
 import { toast } from "sonner"
 import { WalletSettings } from "@/components/settings/WalletSettings"
+import { RetiroSettings } from "@/components/settings/RetiroSettings"
 import { TokenSettings } from "@/components/settings/TokenSettings"
 import { FeeSettings } from "@/components/settings/FeeSettings"
 import { TreasurySettings } from "@/components/settings/TreasurySettings"
@@ -36,6 +37,7 @@ export default function SettingsPage() {
           className="space-y-4"
         >
           <WalletSettings />
+          <RetiroSettings />
           <TokenSettings />
           <FeeSettings />
         </motion.div>
