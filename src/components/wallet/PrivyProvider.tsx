@@ -18,6 +18,19 @@ const solanaRpcs = {
 }
 
 export function PrivyProvider({ children }: { children: React.ReactNode }) {
+  // Sin app ID, Privy lanza al construirse y tumba el prerenderizado de las
+  // páginas que lo usan: el build entero fallaba cuando la variable no estaba
+  // definida (por ejemplo, en un despliegue de vista previa sin configurar).
+  // La app se renderiza igual; lo que no habrá es sesión, y se avisa en consola.
+  if (!config.privyAppId) {
+    if (typeof window !== "undefined") {
+      console.warn(
+        "NEXT_PUBLIC_PRIVY_APP_ID no está configurado: el inicio de sesión está deshabilitado."
+      )
+    }
+    return <>{children}</>
+  }
+
   return (
     <Privy
       appId={config.privyAppId}

@@ -59,7 +59,7 @@ export function StepStartAccepting() {
       >
         <div className="flex items-center justify-center gap-2 mb-2">
           <h2 className="text-headline-xl font-heading text-on-surface">
-            You're All Set!
+            You&apos;re All Set!
           </h2>
           <PartyPopper className="w-6 h-6 text-warning" />
         </div>

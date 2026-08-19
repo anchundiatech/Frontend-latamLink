@@ -12,6 +12,12 @@ const fail = (res: Response, status: number, message: string, error?: unknown) =
   return res.status(status).json({ status: 'error', message });
 };
 
+/** Código de error de Prisma (P2002 duplicado, P2003 relación, P2025 no existe). */
+const prismaErrorCode = (error: unknown): string | undefined =>
+  typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code: unknown }).code)
+    : undefined;
+
 // ==========================================
 // MÓDULO DE CREACIÓN (CREATE)
 // ==========================================
@@ -23,8 +29,8 @@ export const createMerchantOwner = async (req: Request, res: Response) => {
       data: { pubkey, email, name, embeddedWalletPda },
     });
     res.status(201).json({ status: 'success', data: newOwner });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
       return fail(res, 409, 'Ya existe un dueño con esa pubkey o wallet');
     }
     return fail(res, 400, 'No se pudo crear el dueño', error);
@@ -64,11 +70,11 @@ export const createMerchant = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newMerchant) });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
       return fail(res, 409, 'Conflicto: este comercio o PDA ya existe');
     }
-    if (error?.code === 'P2003') {
+    if (prismaErrorCode(error) === 'P2003') {
       return fail(res, 404, 'El dueño indicado no existe');
     }
     return fail(res, 400, 'No se pudo crear el comercio', error);
@@ -84,11 +90,11 @@ export const createTerminal = async (req: Request, res: Response) => {
       data: { merchantId, posTerminalId, isActive },
     });
     res.status(201).json({ status: 'success', data: newTerminal });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
       return fail(res, 409, 'Ese comercio ya tiene una terminal con ese identificador');
     }
-    if (error?.code === 'P2003') {
+    if (prismaErrorCode(error) === 'P2003') {
       return fail(res, 404, 'El comercio indicado no existe');
     }
     return fail(res, 400, 'No se pudo crear la terminal', error);
@@ -156,11 +162,11 @@ export const createPayment = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newPayment) });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
       return fail(res, 409, 'Ese pago ya está registrado');
     }
-    if (error?.code === 'P2003') {
+    if (prismaErrorCode(error) === 'P2003') {
       return fail(res, 404, 'El comercio o la terminal indicados no existen');
     }
     return fail(res, 400, 'No se pudo registrar el pago', error);
@@ -184,11 +190,11 @@ export const createDestination = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ status: 'success', data: serializeBigInt(newDestination) });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2002') {
       return fail(res, 409, 'Ese destino ya está registrado en el comercio');
     }
-    if (error?.code === 'P2003') {
+    if (prismaErrorCode(error) === 'P2003') {
       return fail(res, 404, 'El comercio indicado no existe');
     }
     return fail(res, 400, 'No se pudo crear el destino', error);
@@ -276,8 +282,8 @@ export const updateMerchant = async (req: Request, res: Response) => {
       data: req.body,
     });
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedMerchant) });
-  } catch (error: any) {
-    if (error?.code === 'P2025') return fail(res, 404, 'Comercio no encontrado');
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Comercio no encontrado');
     return fail(res, 400, 'Error al actualizar el comercio', error);
   }
 };
@@ -290,8 +296,8 @@ export const updateTerminal = async (req: Request, res: Response) => {
       data: req.body,
     });
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedTerminal) });
-  } catch (error: any) {
-    if (error?.code === 'P2025') return fail(res, 404, 'Terminal no encontrada');
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Terminal no encontrada');
     return fail(res, 400, 'Error al actualizar la terminal', error);
   }
 };
@@ -304,8 +310,8 @@ export const updateDestination = async (req: Request, res: Response) => {
       data: req.body,
     });
     res.status(200).json({ status: 'success', data: serializeBigInt(updatedDestination) });
-  } catch (error: any) {
-    if (error?.code === 'P2025') return fail(res, 404, 'Destino no encontrado');
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Destino no encontrado');
     return fail(res, 400, 'Error al actualizar el destino', error);
   }
 };
@@ -326,8 +332,8 @@ export const deactivateTerminal = async (req: Request, res: Response) => {
       message: 'Terminal desactivada correctamente',
       data: serializeBigInt(updatedTerminal),
     });
-  } catch (error: any) {
-    if (error?.code === 'P2025') return fail(res, 404, 'Terminal no encontrada');
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Terminal no encontrada');
     return fail(res, 400, 'Error al desactivar la terminal', error);
   }
 };
@@ -344,8 +350,8 @@ export const deactivateDestination = async (req: Request, res: Response) => {
       message: 'Destino desactivado correctamente',
       data: serializeBigInt(updatedDestination),
     });
-  } catch (error: any) {
-    if (error?.code === 'P2025') return fail(res, 404, 'Destino no encontrado');
+  } catch (error) {
+    if (prismaErrorCode(error) === 'P2025') return fail(res, 404, 'Destino no encontrado');
     return fail(res, 400, 'Error al desactivar el destino', error);
   }
 };
