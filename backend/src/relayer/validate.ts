@@ -65,6 +65,16 @@ export function reserveRelayerSpend(signatures: number): number {
   return lamports;
 }
 
+/** Reserva un gasto concreto (fees más renta, por ejemplo en un retiro). */
+export function reserveLamports(lamports: number): void {
+  reserveDailySpend(lamports);
+}
+
+/** Devuelve al presupuesto un gasto reservado que finalmente no ocurrió. */
+export function releaseLamports(lamports: number): void {
+  spentLamportsToday = Math.max(0, spentLamportsToday - lamports);
+}
+
 // Si la transacción no llega a enviarse, ni el presupuesto ni el anti-replay
 // deben quedar consumidos: si no, cualquiera apaga el relayer por el día
 // mandando transacciones que fallan a propósito.

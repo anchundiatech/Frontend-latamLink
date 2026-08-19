@@ -22,6 +22,7 @@ import {
   submitSignedTransaction,
 } from "./relayer/service.js";
 import { createMerchant, updateMerchantConfig } from "./merchants/service.js";
+import { buildPayoutTransaction, submitPayoutTransaction } from "./payouts/service.js";
 import { listPayments, recordPayment } from "./storage/payments.js";
 import { PROGRAM_ID } from "./solana/constants.js";
 import { createX402Router } from "./x402/routes.js";
@@ -272,6 +273,50 @@ export function createApp(): Express {
         });
         return;
       }
+      res.status(422).json({ error: (err as Error).message });
+    }
+  });
+
+  // Retiro desde la cuenta de pago del comerciante. El relayer paga la red
+  // (esa cuenta no tiene SOL) y el comerciante firma, porque es su dinero.
+  app.post("/payouts/build", operatorOnly, async (req, res) => {
+    try {
+      const { ownerPubkey, mint, destination, amount, decimals } = req.body ?? {};
+      if (
+        typeof ownerPubkey !== "string" ||
+        typeof mint !== "string" ||
+        typeof destination !== "string" ||
+        (typeof amount !== "string" && typeof amount !== "number") ||
+        typeof decimals !== "number"
+      ) {
+        res.status(400).json({
+          error: "Requeridos: ownerPubkey, mint, destination, amount, decimals",
+        });
+        return;
+      }
+      const result = await buildPayoutTransaction(connection, relayer.publicKey, {
+        ownerPubkey,
+        mint,
+        destination,
+        amount: BigInt(amount),
+        decimals,
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(422).json({ error: (err as Error).message });
+    }
+  });
+
+  app.post("/payouts/submit", operatorOnly, async (req, res) => {
+    try {
+      const { transaction } = req.body ?? {};
+      if (typeof transaction !== "string") {
+        res.status(400).json({ error: "transaction (base64) es requerida" });
+        return;
+      }
+      const result = await submitPayoutTransaction(connection, relayer, transaction);
+      res.json(result);
+    } catch (err) {
       res.status(422).json({ error: (err as Error).message });
     }
   });

@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/server.ts",
+    "conciliador": "tsx scripts/conciliador.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "setup:devnet": "tsx scripts/setup-devnet.ts",

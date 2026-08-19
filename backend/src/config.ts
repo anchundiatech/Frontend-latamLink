@@ -49,6 +49,11 @@ export const TRUSTED_PROXY_HOPS = numberFromEnv("TRUSTED_PROXY_HOPS", 0);
 // la plataforma y escribe estado on-chain permanente.
 export const ADMIN_API_KEY = process.env.ADMIN_API_KEY ?? "";
 
+// API de catálogo, para que el conciliador pueda registrar los cobros que se
+// hacen por QR (esos los envía la billetera del cliente, no nosotros).
+export const CATALOG_API_URL = process.env.CATALOG_API_URL ?? "";
+export const CATALOG_RELAYER_KEY = process.env.CATALOG_RELAYER_KEY ?? "";
+
 // URL pública del backend (para los QR de Solana Pay y el campo `resource`).
 export const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL ?? `http://localhost:${PORT}`;
 
