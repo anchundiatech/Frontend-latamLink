@@ -34,8 +34,14 @@ export default function POSPage() {
       setConverting(true)
       const result = await generateUrl(parseFloat(amount), token)
       setConverting(false)
-      if (result.error === "price_unavailable") {
-        toast.error("Couldn't get the current exchange rate. Please try again.")
+      if (result.error === "merchant_not_created") {
+        toast.error(
+          "Configurá primero el reparto de tu comercio: el cobro se ejecuta contra el contrato."
+        )
+        return
+      }
+      if (result.error === "config_unavailable") {
+        toast.error("No se pudo contactar con el servicio de pagos. Probá de nuevo.")
         return
       }
       if (!result.solanaPayUrl) return

@@ -7,11 +7,8 @@ import { toast } from "sonner"
 import { PublicKey } from "@solana/web3.js"
 import { WalletDestinationCard } from "./WalletDestinationCard"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import {
-  useUpdateConfig,
-  useInitializeMerchant,
-  InsufficientFundsError,
-} from "@/lib/anchor/useAnchorProgram"
+import { useUpdateConfig } from "@/lib/anchor/useAnchorProgram"
+import { useCreateMerchant } from "@/lib/services/useCreateMerchant"
 
 const cardColors = ["#a855f7", "#2dd4bf", "#adc6ff"]
 
@@ -22,7 +19,7 @@ export function SplitRoutingConfig() {
   const [newAddress, setNewAddress] = useState("")
 
   const { update } = useUpdateConfig()
-  const { initialize } = useInitializeMerchant()
+  const { create } = useCreateMerchant()
   const [saving, setSaving] = useState(false)
 
   const totalPercentage = destinations.reduce(
@@ -109,22 +106,22 @@ export function SplitRoutingConfig() {
 
     setSaving(true)
     try {
-      // Signup is blockchain-free, so the on-chain merchant account may not
-      // exist yet. First save creates it (network cost sponsored by the
-      // platform — the merchant never funds anything); later saves update it.
+      // El alta on-chain la hace el backend con la wallet de la plataforma
+      // como owner: el comercio no firma ni necesita SOL, y las comisiones
+      // quedan del lado de la plataforma. Las ediciones posteriores siguen
+      // yendo por el programa, firmadas por quien sea el owner.
       if (!merchantPda) {
-        await initialize()
+        await create()
       } else {
         await update()
       }
       toast.success("Split routing configuration saved!")
     } catch (err) {
       console.error("Failed to save split routing config", err)
-      if (err instanceof InsufficientFundsError) {
-        toast.error("We couldn't cover the network setup cost right now. Please try again in a few minutes.")
-      } else {
-        toast.error("Couldn't save your configuration. Please try again.")
-      }
+      // El backend explica por qué falló (destino que no es cuenta de token,
+      // porcentajes que no suman 100, comercio duplicado): mostrarlo evita que
+      // el comercio quede adivinando.
+      toast.error((err as Error).message || "Couldn't save your configuration. Please try again.")
     } finally {
       setSaving(false)
     }

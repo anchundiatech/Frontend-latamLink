@@ -7,16 +7,15 @@ import { SplitRoutingConfig } from "./SplitRoutingConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
 const updateMock = vi.fn().mockResolvedValue({ success: true })
-const initializeMock = vi.fn().mockResolvedValue({ success: true })
+// El alta on-chain la hace el backend (owner = plataforma), no el navegador.
+const createMock = vi.fn().mockResolvedValue({ merchant: "MerchantPdaDePrueba" })
 
 vi.mock("@/lib/anchor/useAnchorProgram", () => ({
   useUpdateConfig: () => ({ update: updateMock }),
-  useInitializeMerchant: () => ({ initialize: initializeMock }),
-  InsufficientFundsError: class InsufficientFundsError extends Error {
-    constructor(public walletAddress: string) {
-      super("Wallet has no funds to cover the network fee")
-    }
-  },
+}))
+
+vi.mock("@/lib/services/useCreateMerchant", () => ({
+  useCreateMerchant: () => ({ create: createMock }),
 }))
 
 vi.mock("sonner", () => ({
@@ -36,7 +35,7 @@ async function addRecipient(label: string, address: string) {
 describe("SplitRoutingConfig", () => {
   beforeEach(() => {
     updateMock.mockClear()
-    initializeMock.mockClear()
+    createMock.mockClear()
     vi.mocked(toast.success).mockClear()
     vi.mocked(toast.error).mockClear()
     useMerchantStore.setState({
@@ -108,7 +107,7 @@ describe("SplitRoutingConfig", () => {
     const user = userEvent.setup()
     await user.click(screen.getByRole("button", { name: /save configuration/i }))
 
-    expect(initializeMock).toHaveBeenCalledTimes(1)
+    expect(createMock).toHaveBeenCalledTimes(1)
     expect(updateMock).not.toHaveBeenCalled()
   })
 
@@ -125,7 +124,7 @@ describe("SplitRoutingConfig", () => {
     await user.click(screen.getByRole("button", { name: /save configuration/i }))
 
     expect(updateMock).toHaveBeenCalledTimes(1)
-    expect(initializeMock).not.toHaveBeenCalled()
+    expect(createMock).not.toHaveBeenCalled()
   })
 
   it("rebalances the other destinations so the total always stays at 100%", async () => {

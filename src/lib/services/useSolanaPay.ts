@@ -2,23 +2,16 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { PublicKey, Connection } from "@solana/web3.js"
-import {
-  buildSolanaPayUrl,
-  generateReferenceKey,
-  watchForPayment,
-  getTokenMint,
-} from "./solanaPay"
-import { getSolUsdPrice, convertUsdToToken } from "./priceFeed"
+import { generateReferenceKey, watchForPayment } from "./solanaPay"
+import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
-import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
 import { config } from "@/lib/config"
 
 const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function useSolanaPay() {
-  const wallet = usePrivyWallet()
-  const { walletAddress, name, terminalId } = useMerchantStore()
+  const { name, merchantPda } = useMerchantStore()
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "confirmed" | "failed">("idle")
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
   const [referenceKey, setReferenceKey] = useState<string | null>(null)
@@ -36,48 +29,61 @@ export function useSolanaPay() {
   }, [stopWatching])
 
   const generateUrl = useCallback(
-    async (usdAmount: number, token: "usdc" | "sol") => {
+    async (usdAmount: number, _token: "usdc" | "sol") => {
       currentAmountRef.current = usdAmount
       stopWatching()
       setPaymentStatus("idle")
       setCryptoAmount(null)
 
-      const recipient = walletAddress || wallet?.publicKey.toBase58() || ""
-      if (!recipient) {
-        return { referenceKey: null as unknown as PublicKey, solanaPayUrl: null, cryptoAmount: null, error: null }
+      // El cobro se arma contra el comercio on-chain: sin él no hay reparto
+      // posible, así que no se genera un QR que cobraría de más y repartiría
+      // de menos.
+      if (!merchantPda) {
+        return {
+          referenceKey: null as unknown as PublicKey,
+          solanaPayUrl: null,
+          cryptoAmount: null,
+          error: "merchant_not_created" as const,
+        }
       }
 
-      // USDC is a stablecoin, 1 USDC ≈ 1 USD — the amount the merchant typed
-      // can be used directly. SOL is a volatile asset, so it must be converted
-      // to its real-time equivalent before the customer's wallet ever sees it.
-      let tokenAmount = usdAmount
-      if (token === "sol") {
-        try {
-          const solPrice = await getSolUsdPrice()
-          tokenAmount = convertUsdToToken(usdAmount, solPrice)
-        } catch {
-          return { referenceKey: null as unknown as PublicKey, solanaPayUrl: null, cryptoAmount: null, error: "price_unavailable" as const }
+      let config
+      try {
+        config = await fetchBackendConfig()
+      } catch {
+        return {
+          referenceKey: null as unknown as PublicKey,
+          solanaPayUrl: null,
+          cryptoAmount: null,
+          error: "config_unavailable" as const,
         }
       }
 
       const ref = generateReferenceKey()
-      const splToken = token === "usdc" ? config.usdcMint : undefined
 
-      const url = buildSolanaPayUrl({
-        recipient,
-        amount: tokenAmount,
-        splToken,
-        reference: ref.publicKey.toBase58(),
-        label: name,
-        message: `${name} — ${terminalId}`,
-      })
+      // El QR apunta a nuestro endpoint (Solana Pay, "transaction request") en
+      // vez de codificar una transferencia suelta: así el pago ejecuta `pay()`
+      // y conserva el split y las comisiones. La billetera recibe la
+      // transacción ya firmada por el relayer, que paga el fee de red.
+      const requestUrl = new URL("/api/pay", window.location.origin)
+      requestUrl.searchParams.set("merchant", merchantPda)
+      requestUrl.searchParams.set("amount", toMinimalUnits(usdAmount, config.tokenDecimals))
+      requestUrl.searchParams.set("reference", ref.publicKey.toBase58())
+      requestUrl.searchParams.set("label", name || "LatamLink Pay")
 
-      setSolanaPayUrl(url.toString())
+      const url = `solana:${encodeURIComponent(requestUrl.toString())}`
+
+      setSolanaPayUrl(url)
       setReferenceKey(ref.publicKey.toBase58())
-      setCryptoAmount(tokenAmount)
-      return { referenceKey: ref.publicKey, solanaPayUrl: url.toString(), cryptoAmount: tokenAmount, error: null }
+      setCryptoAmount(usdAmount)
+      return {
+        referenceKey: ref.publicKey,
+        solanaPayUrl: url,
+        cryptoAmount: usdAmount,
+        error: null,
+      }
     },
-    [walletAddress, wallet, name, terminalId, stopWatching]
+    [merchantPda, name, stopWatching]
   )
 
   const startWatching = useCallback(

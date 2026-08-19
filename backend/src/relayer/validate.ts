@@ -56,6 +56,15 @@ function reserveDailySpend(lamports: number): void {
   spentLamportsToday += lamports;
 }
 
+// Reserva de presupuesto para transacciones que arma y firma el propio
+// relayer (cobros por QR): ahí no hay tx del cliente que validar, pero el gasto
+// se contabiliza igual.
+export function reserveRelayerSpend(signatures: number): number {
+  const lamports = LAMPORTS_PER_SIGNATURE * signatures;
+  reserveDailySpend(lamports);
+  return lamports;
+}
+
 // Si la transacción no llega a enviarse, ni el presupuesto ni el anti-replay
 // deben quedar consumidos: si no, cualquiera apaga el relayer por el día
 // mandando transacciones que fallan a propósito.

@@ -11,6 +11,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "setup:devnet": "tsx scripts/setup-devnet.ts",
     "e2e": "tsx scripts/e2e-pago.ts",
+    "e2e:qr": "tsx scripts/e2e-qr.ts",
     "bench": "tsx scripts/bench-pago.ts",
     "tesoreria:gas": "tsx scripts/tesoreria-gas.ts"
   },

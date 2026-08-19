@@ -18,6 +18,7 @@ import { rateLimit } from "./http/rateLimit.js";
 import {
   ConfirmationTimeoutError,
   buildPayTransaction,
+  buildRelayerSignedTransaction,
   submitSignedTransaction,
 } from "./relayer/service.js";
 import { createMerchant } from "./merchants/service.js";
@@ -144,6 +145,37 @@ export function createApp(): Express {
         merchantAddress,
         payerPubkey,
         amount: BigInt(amount),
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(422).json({ error: (err as Error).message });
+    }
+  });
+
+  // Cobro por QR (Solana Pay, modo "transaction request"): devuelve la
+  // transacción ya firmada por el relayer para que la billetera del cliente
+  // solo añada su firma y la envíe. El pago pasa por `pay()`, así que conserva
+  // el split y las comisiones, y el cliente no necesita SOL.
+  app.post("/payments/solana-pay", async (req, res) => {
+    try {
+      const { merchantAddress, payerPubkey, amount, reference } = req.body ?? {};
+      if (
+        typeof merchantAddress !== "string" ||
+        typeof payerPubkey !== "string" ||
+        (typeof amount !== "string" && typeof amount !== "number")
+      ) {
+        res.status(400).json({ error: "merchantAddress, payerPubkey y amount son requeridos" });
+        return;
+      }
+      if (reference !== undefined && typeof reference !== "string") {
+        res.status(400).json({ error: "reference debe ser string" });
+        return;
+      }
+      const result = await buildRelayerSignedTransaction(connection, relayer, {
+        merchantAddress,
+        payerPubkey,
+        amount: BigInt(amount),
+        reference,
       });
       res.json(result);
     } catch (err) {

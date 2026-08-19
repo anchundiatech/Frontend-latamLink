@@ -31,8 +31,15 @@ export function buildPayInstruction(params: {
   merchant: MerchantState;
   posFeeDestination: PublicKey;
   amount: bigint;
+  /**
+   * Clave de referencia de Solana Pay. Se añade como cuenta extra de solo
+   * lectura: Anchor la deja en `remaining_accounts` y el contrato la ignora,
+   * pero queda indexada en la transacción, que es como los comercios
+   * reconocen su cobro sin conocer la firma de antemano.
+   */
+  reference?: PublicKey;
 }): TransactionInstruction {
-  const { payer, payerTokenAccount, merchant, posFeeDestination, amount } = params;
+  const { payer, payerTokenAccount, merchant, posFeeDestination, amount, reference } = params;
   const vault = deriveVaultPda(merchant.address);
   const gasVault = deriveGasVaultPda(merchant.address);
   const destinations = padDestinations(merchant.destinations);
@@ -54,6 +61,7 @@ export function buildPayInstruction(params: {
       ...destinations.map((d) => ({ pubkey: d, isSigner: false, isWritable: true })),
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ...(reference ? [{ pubkey: reference, isSigner: false, isWritable: false }] : []),
     ],
     data,
   });
