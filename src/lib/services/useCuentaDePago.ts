@@ -7,6 +7,26 @@ interface CuentaVinculada {
   type?: string
   chainType?: string
   address?: string
+  walletClientType?: string
+}
+
+// Privy marca así las wallets que crea él mismo (las embebidas).
+const CLIENTES_EMBEBIDOS = new Set(["privy", "privy-v2"])
+
+/**
+ * Elige la cuenta de pago del comerciante entre sus cuentas vinculadas.
+ *
+ * Se prefiere explícitamente la wallet **embebida**: es la que Privy crea al
+ * entrar con Google (`createOnLogin: "all-users"`) y la que identifica al
+ * comercio. Si el comerciante alguna vez vinculara una wallet externa, tomar la
+ * primera Solana que aparezca podría cambiarle la identidad y dejarlo sin su
+ * comercio, así que la externa solo se usa como último recurso.
+ */
+export function elegirCuentaDePago(cuentas: CuentaVinculada[]): string | null {
+  const solana = cuentas.filter((c) => c.type === "wallet" && c.chainType === "solana")
+
+  const embebida = solana.find((c) => CLIENTES_EMBEBIDOS.has(c.walletClientType ?? ""))
+  return embebida?.address ?? solana[0]?.address ?? null
 }
 
 /**
@@ -25,10 +45,7 @@ export function useCuentaDePago(): string | null {
   const { user } = usePrivy()
   const guardada = useMerchantStore((s) => s.walletAddress)
 
-  const cuentas = (user?.linkedAccounts ?? []) as CuentaVinculada[]
-  const deLaSesion = cuentas.find(
-    (c) => c.type === "wallet" && c.chainType === "solana"
-  )?.address
+  const deLaSesion = elegirCuentaDePago((user?.linkedAccounts ?? []) as CuentaVinculada[])
 
   return deLaSesion ?? guardada ?? null
 }
