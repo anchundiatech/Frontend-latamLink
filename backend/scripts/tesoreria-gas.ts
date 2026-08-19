@@ -7,7 +7,10 @@
 // la operación de tesorería del informe (Parte 2.3.F): el USDC retirado se
 // convierte a SOL off-chain para refondear el relayer.
 import { ComputeBudgetProgram, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import { readFileSync } from "node:fs";
 import { getConnection, loadKeypair } from "../src/config.js";
 import { fetchMerchant, deriveGasVaultPda } from "../src/solana/merchant.js";
@@ -37,8 +40,26 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Destino: ATA de la plataforma (el contrato exige destination.owner == owner).
+  // Destino: cuenta de token de la plataforma (el contrato exige
+  // destination.owner == owner). Si todavía no existe hay que crearla, o el
+  // retiro falla con un error del contrato difícil de interpretar.
   const platformAta = getAssociatedTokenAddressSync(merchant.paymentTokenMint, owner.publicKey);
+  if (!(await connection.getAccountInfo(platformAta))) {
+    console.log("La cuenta de cobro de la plataforma no existe todavía; se crea.");
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          owner.publicKey,
+          platformAta,
+          owner.publicKey,
+          merchant.paymentTokenMint,
+        ),
+      ),
+      [owner],
+    );
+  }
+
   const ix = buildWithdrawGasFeesInstruction({
     owner: owner.publicKey,
     merchant,
