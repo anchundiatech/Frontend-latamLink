@@ -7,6 +7,7 @@ import { Menu, LogOut } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { usePrivy } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { useMerchantSync } from "@/lib/services/useMerchantSync"
 
 export default function PortalLayout({
   children,
@@ -18,28 +19,45 @@ export default function PortalLayout({
   const { name } = useMerchantStore()
   const { authenticated, user, logout: privyLogout } = usePrivy()
   const router = useRouter()
+  // Carga el comercio desde la base: es lo que permite entrar desde otro
+  // dispositivo sin volver a darse de alta.
+  const { loading: sincronizando, found: comercioEnLaBase } = useMerchantSync()
 
   useEffect(() => {
     if (!authenticated) {
       router.replace("/login")
-    } else {
-      const { userId: storedUserId, isActive, walletAddress } = useMerchantStore.getState()
-      const currentUserId = user?.id ?? ""
+      return
+    }
 
-      if (storedUserId && storedUserId !== currentUserId) {
-        useMerchantStore.getState().reset()
-        router.replace("/onboarding")
-        return
-      }
+    const { userId: storedUserId } = useMerchantStore.getState()
+    const currentUserId = user?.id ?? ""
 
+    if (storedUserId && storedUserId !== currentUserId) {
+      useMerchantStore.getState().reset()
+      router.replace("/onboarding")
+      return
+    }
+
+    // No se decide nada hasta saber qué dice la base.
+    if (sincronizando) return
+
+    if (comercioEnLaBase === false) {
+      router.replace("/onboarding")
+      return
+    }
+
+    if (comercioEnLaBase === null) {
+      // Sin respuesta de la base (wallet aún no lista o servicio caído):
+      // se cae con gracia a lo que haya guardado el navegador.
+      const { isActive, walletAddress } = useMerchantStore.getState()
       if (!isActive || !walletAddress) {
         router.replace("/onboarding")
         return
       }
-
-      setChecking(false)
     }
-  }, [authenticated, router, user])
+
+    setChecking(false)
+  }, [authenticated, router, user, sincronizando, comercioEnLaBase])
 
   if (checking) {
     return (

@@ -227,6 +227,68 @@ export const getMerchantById = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Busca los comercios de un dueño por su pubkey.
+ *
+ * Es lo que permite que la app recupere la configuración del comercio al
+ * iniciar sesión desde cualquier dispositivo, en vez de depender de lo que haya
+ * quedado guardado en ese navegador.
+ */
+export const getMerchantsByOwnerPubkey = async (req: Request, res: Response) => {
+  try {
+    const { pubkey } = req.params;
+
+    const owner = await prisma.merchantOwner.findUnique({
+      where: { pubkey },
+      include: {
+        merchants: {
+          include: {
+            terminals: { where: { isActive: true } },
+            destinations: { where: { isActive: true }, orderBy: { positionIndex: 'asc' } },
+          },
+        },
+      },
+    });
+
+    if (!owner) {
+      return fail(res, 404, 'No hay ningún comercio registrado para esa wallet');
+    }
+
+    res.status(200).json({ status: 'success', data: serializeBigInt(owner) });
+  } catch (error) {
+    return fail(res, 400, 'Error al consultar los comercios del dueño', error);
+  }
+};
+
+/**
+ * Busca un comercio por su dirección on-chain (PDA).
+ *
+ * Lo usa el registro de pagos: el relayer solo conoce la dirección de la
+ * cadena, y resolver el comercio en el servidor evita que un cliente pueda
+ * atribuir un cobro al historial de otro comercio.
+ */
+export const getMerchantByPda = async (req: Request, res: Response) => {
+  try {
+    const { pdaAddress } = req.params;
+
+    const merchant = await prisma.merchant.findUnique({
+      where: { pdaAddress },
+      include: {
+        terminals: { where: { isActive: true } },
+        destinations: { where: { isActive: true }, orderBy: { positionIndex: 'asc' } },
+      },
+    });
+
+    if (!merchant) {
+      return fail(res, 404, 'No hay ningún comercio registrado con esa dirección');
+    }
+
+    res.status(200).json({ status: 'success', data: serializeBigInt(merchant) });
+  } catch (error) {
+    return fail(res, 400, 'Error al consultar el comercio', error);
+  }
+};
+
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 
