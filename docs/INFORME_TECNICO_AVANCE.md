@@ -1,9 +1,8 @@
 # Informe técnico de avance — LatamLink Pay
 
-**Fecha:** 18 de agosto de 2026
+**Fecha:** 19 de agosto de 2026
 **Alcance:** smart contract y backend (relayer gasless, modelo de comisiones y capa x402)
-**Repositorio:** `XxHugheadxX/LATAMLINKPAY`, rama `feat/backend-relayer-x402`
-(fusiona en `main` sin conflictos)
+**Repositorio:** `anchundiatech/Frontend-latamLink`, rama `feat/relayer-gasless-x402`
 
 ---
 
@@ -17,7 +16,7 @@ la capa x402 que monetiza la plataforma como API.
 | Componente | Antes | Ahora |
 |---|---|---|
 | Smart contract `latamlink_pay` | Desplegado en devnet | Desplegado y auditado (documentado) |
-| Relayer gasless (Fase 1) | No existía | Implementado, endurecido y con tests |
+| Relayer gasless (Fase 1) | No existía | Implementado, auditado y **verificado en devnet** |
 | Modelo de comisiones | Sin resolver | Resuelto e implementado de punta a punta |
 | Capa x402 (Fase 2) | No existía | Implementada con tests; falta elegir facilitador |
 | Liquidación híbrida (Fase 3) | Diseño | Comprobantes ya registrados; falta el job de reparto |
@@ -26,9 +25,9 @@ la capa x402 que monetiza la plataforma como API.
 una auditoría de seguridad con 3 hallazgos críticos, 5 altos y 6 medios —
 **todos corregidos** y con tests de regresión.
 
-**Único bloqueo:** el faucet de devnet tiene limitada la IP de desarrollo, así
-que falta ejecutar la prueba de punta a punta contra la red real. Se resuelve
-fondeando dos wallets a mano (2 minutos).
+**Verificado en devnet (19/08):** pago gasless completo, con el usuario en 0 SOL
+y el reparto coincidiendo exactamente con la matemática del contrato. 5/5
+corridas exitosas, latencia p50 de 1748 ms y 10 000 lamports por transacción.
 
 ---
 
@@ -163,17 +162,12 @@ contrato desplegado. No hay secretos versionados ni logueados.
 
 ## 5. Estado y qué falta
 
-### Bloqueo activo
+### Ya verificado
 
-El faucet de devnet tiene limitada la IP de desarrollo. Para cerrar la prueba de
-punta a punta hay que fondear a mano en `faucet.solana.com` (~1 SOL cada una):
-
-- Relayer: `DDM73ECt8ASCkgSvpAjtTwa9vix5x15dGz5mP9mfiKKz`
-- Plataforma: `68tvdDT395Ai1hRquw2JoPZigQHHrRQSYtyxPqw5R5Qg`
-
-Con saldo: `pnpm run setup:devnet && pnpm run e2e && pnpm run bench` deja
-verificado el pago gasless completo con el split comprobado y una línea base de
-latencia y costo.
+El camino crítico está probado contra devnet: comercio creado on-chain con la
+plataforma como owner, pago gasless repartido con el usuario en 0 SOL y las seis
+comprobaciones de reparto coincidiendo con la matemática del contrato. 5/5
+corridas, p50 de 1748 ms y 10 000 lamports por transacción.
 
 ### Decisiones pendientes
 

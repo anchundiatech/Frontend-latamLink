@@ -19,7 +19,7 @@ maquillar: si el objetivo no se alcanza, el reporte final lo dice tal cual.
 ## Loops implementados
 | Comando | Qué optimiza | Guarda | Evidencia que usa |
 |---|---|---|---|
-| `/loop-pago-devnet` | Latencia p50 y tasa de éxito del pago gasless E2E | Costo SOL/tx del relayer (+20% máx.) | `backend/scripts/bench-pago.ts` (no existe aún) |
+| `/loop-pago-devnet` | Latencia p50 y tasa de éxito del pago gasless E2E | Costo SOL/tx del relayer (+20% máx.) | `backend/scripts/bench-pago.ts` |
 
 ## Loops planificados (crear cuando su fase arranque)
 - `/loop-x402-devnet` (Fase 2): latencia del ciclo 402 → pago → 200 y tasa de
@@ -28,12 +28,32 @@ maquillar: si el objetivo no se alcanza, el reporte final lo dice tal cual.
   ciclo de tesorería USDC→SOL. Guarda: tasa de éxito de pagos.
 
 ## Requisito común: assets de prueba
-Material que solo el humano puede proveer (sin esto los loops se detienen en la
-preparación — a propósito):
-- Merchant de prueba inicializado en devnet (owner keypair de prueba, merchant_id).
-- Wallet relayer de devnet fondeada con SOL de faucet.
-- Wallet "usuario" de devnet con USDC-dev (mint de devnet) para pagar.
-- `backend/scripts/bench-pago.ts` validado una vez a mano.
+Todo listo desde el 2026-08-19 (`pnpm run setup:devnet` los regenera):
+- [x] Comercio de prueba inicializado en devnet.
+- [x] Wallet relayer fondeada con SOL.
+- [x] Wallet "usuario" con saldo del token de prueba (y 0 SOL, a propósito).
+- [x] `backend/scripts/bench-pago.ts` validado contra devnet.
 
 ## Historial
 <!-- Cada iteración de cualquier loop se anota aquí: fecha, loop, cambio, números, decisión -->
+
+### 2026-08-19 — `/loop-pago-devnet`: línea base medida
+
+Primera medición real contra devnet, sin optimizar nada todavía.
+
+| Métrica | Valor | Objetivo |
+|---|---|---|
+| Tasa de éxito | 5/5 | ≥ 4/5 |
+| Latencia p50 | **1748 ms** | < 3000 ms |
+| Latencias por corrida | 1748, 1701, 1710, 1755, 6497 ms | — |
+| Costo del relayer | **10 000 lamports/tx** (~0,00001 SOL) | guarda: +20% máx. |
+
+**El objetivo ya se cumple sin optimizar**, así que el loop no se abre por
+ahora: optimizar algo que sobra el margen sería gasto sin retorno.
+
+Dos observaciones para cuando haga falta:
+- La quinta corrida (6497 ms) fue por respuestas 429 del RPC público con
+  reintentos. La primera palanca no es el código sino el endpoint RPC.
+- El costo por transacción es exactamente el fee de dos firmas, sin fee de
+  prioridad. Si se agrega prioridad para ganar latencia, hay que vigilar la
+  guarda de costo.

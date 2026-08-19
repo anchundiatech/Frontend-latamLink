@@ -8,6 +8,9 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
+    // El relayer (backend/) es un servicio aparte y usa el runner nativo de
+    // Node, no vitest: se corre con `pnpm --dir backend test`.
+    exclude: ["**/node_modules/**", "**/dist/**", "backend/**"],
   },
   resolve: {
     alias: {

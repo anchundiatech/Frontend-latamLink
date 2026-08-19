@@ -1,6 +1,6 @@
 # Estado del proyecto — LatamLink Pay
 
-Última actualización: 2026-08-18.
+Última actualización: 2026-08-19.
 
 ## Resumen ejecutivo
 
@@ -12,7 +12,7 @@ x402.
 | Componente | Estado |
 |---|---|
 | Smart contract `latamlink_pay` | ✅ Desplegado en devnet y auditado |
-| Backend — relayer gasless (Fase 1) | ✅ Implementado y testeado; falta corrida E2E en devnet |
+| Backend — relayer gasless (Fase 1) | ✅ **Verificado end-to-end en devnet** |
 | Backend — alta de comercios | ✅ Implementado (`POST /merchants`, owner = plataforma) |
 | Backend — tesorería de comisiones | ✅ Implementado (`pnpm run tesoreria:gas`) |
 | Backend — capa x402 (Fase 2) | ✅ Implementada; falta elegir y configurar facilitador |
@@ -36,17 +36,24 @@ al owner y hacia una cuenta del owner:
 Ese USDC recaudado financia el SOL que gasta el relayer (conversión off-chain,
 operación de tesorería periódica).
 
-## Bloqueo activo
+## Verificación end-to-end (2026-08-19)
 
-**Fondeo de devnet.** El faucet RPC tiene limitada esta IP (429). Para cerrar la
-verificación end-to-end hay que fondear a mano en https://faucet.solana.com
-(~1 SOL cada una):
+El camino crítico está probado contra devnet, no solo escrito:
 
-- Relayer (fee payer): `DDM73ECt8ASCkgSvpAjtTwa9vix5x15dGz5mP9mfiKKz`
-- Plataforma (owner): `68tvdDT395Ai1hRquw2JoPZigQHHrRQSYtyxPqw5R5Qg`
+- Comercio de prueba creado on-chain con la plataforma como owner.
+- Pago gasless de 10 USDC-test repartido correctamente: el usuario firmó con
+  **0 SOL** en su wallet y el relayer pagó el fee de red.
+- Las seis comprobaciones de reparto (comisión POS, split 60/40, comisión de
+  gas, bóveda en cero) coincidieron **exactamente** con la matemática del
+  contrato.
+- Firma:
+  `mrfBZomjjL2ZbDHFLhQLmHjW5B7ivmwGUntvAAjqs9fku7NgKtkiwGS9TuPrbhQBjqEBBHVZeRsziohe6kvBKcB`
 
-Con saldo disponible:
-`pnpm run setup:devnet && pnpm run e2e && pnpm run bench`
+Rendimiento medido (5 corridas): **5/5 éxitos, p50 1748 ms, 10 000 lamports por
+transacción**. El objetivo de latencia (<3 s) se cumple sin optimizar. Detalle
+en `docs/LOOPS.md`.
+
+Para regenerar el entorno: `pnpm run setup:devnet && pnpm run e2e && pnpm run bench`.
 
 ## Decisiones tomadas
 
@@ -75,12 +82,10 @@ Con saldo disponible:
 
 ## Próximos pasos
 
-1. Fondear devnet y correr `setup:devnet` → `e2e` → `bench` (cierra la demo
-   funcional end-to-end).
-2. Elegir facilitador x402 y probar un cobro real contra `POST /x402/qr`.
-3. Job de liquidación híbrida: repartir los comprobantes x402 vía `pay()`.
-4. Listener de `PaymentProcessed` + webhook al POS.
-5. Endurecer para producción: almacenamiento real, KMS, monitoreo del saldo del
+1. Elegir facilitador x402 y probar un cobro real contra `POST /x402/qr`.
+2. Job de liquidación híbrida: repartir los comprobantes x402 vía `pay()`.
+3. Listener de `PaymentProcessed` + webhook al POS.
+4. Endurecer para producción: almacenamiento real, KMS, monitoreo del saldo del
    relayer y auditoría externa antes de mainnet.
 
 ## Documentación
