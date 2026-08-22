@@ -8,6 +8,7 @@ import {
   RATE_LIMIT_WINDOW_MS,
   TRUSTED_PROXY_HOPS,
   getConnection,
+  getFallbackConnections,
   isX402Configured,
   loadPlatformOwner,
   loadRelayer,
@@ -223,8 +224,12 @@ export function createApp(): Express {
     try {
       // Se registra en cuanto la transacción entra a la red: si después falla
       // la confirmación, el pago igual queda trazado y no se cobra dos veces.
-      const result = await submitSignedTransaction(connection, relayer, transaction, (info) =>
-        persist(info, "pending", null),
+      const result = await submitSignedTransaction(
+        connection,
+        relayer,
+        transaction,
+        (info) => persist(info, "pending", null),
+        getFallbackConnections(),
       );
       persist(result, "confirmed", result.slot);
       res.json(result);
