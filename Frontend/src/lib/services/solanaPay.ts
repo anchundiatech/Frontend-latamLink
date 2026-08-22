@@ -90,7 +90,9 @@ export function watchForPayment(
   const check = async () => {
     if (stopped || attempts >= maxAttempts) {
       if (attempts >= maxAttempts && !stopped) {
-        onStatusChange("failed")
+        // Agotar los intentos no significa que el pago falló on-chain: solo
+        // que no llegó a tiempo. Puede confirmarse después igual.
+        onStatusChange("expired")
       }
       return
     }
