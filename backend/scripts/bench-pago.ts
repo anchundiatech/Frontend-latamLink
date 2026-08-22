@@ -1,7 +1,7 @@
 // Benchmark del pago gasless E2E (línea base del /loop-pago-devnet):
 // N pagos completos contra devnet; reporta latencia por corrida, p50,
 // éxitos/fallos y lamports gastados por el relayer.
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
 import { readFileSync } from "node:fs";
 import { getConnection, loadKeypair, loadRelayer } from "../src/config.js";
 import { buildPayTransaction, submitSignedTransaction } from "../src/relayer/service.js";
