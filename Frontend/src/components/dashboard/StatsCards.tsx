@@ -1,59 +1,66 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { DollarSign, Wallet, CreditCard, Activity, Loader } from "lucide-react"
-import { formatCurrency, formatSOL, formatUSDC } from "@/lib/utils"
-import { cn } from "@/lib/utils"
-import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { useTransactions } from "@/lib/services/useTransactions"
-import { Connection, PublicKey } from "@solana/web3.js"
-import { getAssociatedTokenAddress } from "@solana/spl-token"
-import { config } from "@/lib/config"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { DollarSign, Wallet, CreditCard, Activity, Loader } from "lucide-react";
+import { formatCurrency, formatSOL, formatUSDC } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useMerchantStore } from "@/lib/store/useMerchantStore";
+import { useTransactions } from "@/lib/services/useTransactions";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { config } from "@/lib/config";
 
-const connection = new Connection(config.rpcEndpoint, "confirmed")
+const connection = new Connection(config.rpcEndpoint, "confirmed");
 
 export function StatsCards() {
-  const { totalPaymentsReceived, totalVolume, walletAddress, isActive, paymentToken } = useMerchantStore()
-  const { transactions } = useTransactions()
-  const [balance, setBalance] = useState<number | null>(null)
-  const [balanceLoading, setBalanceLoading] = useState(false)
+  const {
+    totalPaymentsReceived,
+    totalVolume,
+    walletAddress,
+    isActive,
+    paymentToken,
+  } = useMerchantStore();
+  const { transactions } = useTransactions();
+  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   useEffect(() => {
     if (!walletAddress) {
-      setBalance(null)
-      return
+      setBalance(null);
+      return;
     }
 
-    setBalanceLoading(true)
+    setBalanceLoading(true);
 
     const fetchBalance = async () => {
       try {
-        const pubkey = new PublicKey(walletAddress)
+        const pubkey = new PublicKey(walletAddress);
         if (paymentToken === "sol") {
-          const lamports = await connection.getBalance(pubkey)
-          setBalance(lamports / 1_000_000_000)
+          const lamports = await connection.getBalance(pubkey);
+          setBalance(lamports / 1_000_000_000);
         } else {
-          const mint = new PublicKey(config.usdcMint)
-          const ata = await getAssociatedTokenAddress(mint, pubkey)
-          const accountInfo = await connection.getTokenAccountBalance(ata)
-          setBalance(accountInfo.value.uiAmount)
+          const mint = new PublicKey(config.usdcMint);
+          const ata = await getAssociatedTokenAddress(mint, pubkey);
+          const accountInfo = await connection.getTokenAccountBalance(ata);
+          setBalance(accountInfo.value.uiAmount);
         }
       } catch {
-        setBalance(null)
+        setBalance(null);
       } finally {
-        setBalanceLoading(false)
+        setBalanceLoading(false);
       }
-    }
+    };
 
-    fetchBalance()
-  }, [walletAddress, paymentToken])
+    fetchBalance();
+  }, [walletAddress, paymentToken]);
 
-  const totalRevenue = totalVolume || transactions.reduce((sum, tx) => sum + tx.amount, 0)
-  const paymentCount = totalPaymentsReceived || transactions.length
+  const totalRevenue =
+    totalVolume || transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const paymentCount = totalPaymentsReceived || transactions.length;
 
-  const walletConnected = !!walletAddress
+  const walletConnected = !!walletAddress;
   const balanceDisplay = walletConnected
     ? balance !== null
       ? paymentToken === "sol"
@@ -62,7 +69,7 @@ export function StatsCards() {
       : balanceLoading
         ? "—"
         : "0.00"
-    : "0.00"
+    : "0.00";
 
   const balanceChange = walletConnected
     ? balanceLoading
@@ -70,7 +77,7 @@ export function StatsCards() {
       : balance !== null
         ? "Available"
         : "Balance unavailable"
-    : "Complete setup to view your balance"
+    : "Complete setup to view your balance";
 
   const stats = [
     {
@@ -101,7 +108,7 @@ export function StatsCards() {
       icon: Activity,
       positive: isActive,
     },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -127,7 +134,7 @@ export function StatsCards() {
           <span
             className={cn(
               "text-xs font-heading",
-              stat.positive ? "text-success" : "text-error"
+              stat.positive ? "text-success" : "text-error",
             )}
           >
             {stat.change}
@@ -135,5 +142,5 @@ export function StatsCards() {
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
