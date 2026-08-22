@@ -7,3 +7,7 @@ CLAUDE.md
 
 # El ejemplo de configuración sí se versiona
 !.env.example
+
+/node_modules
+.vscode
+node_modules/
