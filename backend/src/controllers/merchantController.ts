@@ -110,7 +110,7 @@ export const createTerminal = async (req: Request, res: Response) => {
  * en cuanto envía la transacción, cuando todavía no es consultable.
  */
 const signatureExistsOnChain = async (signature: string): Promise<boolean> => {
-  const rpcUrl = process.env.RPC_URL ?? process.env.NEXT_PUBLIC_RPC_URL;
+  const rpcUrl = process.env.RPC_URL;
   if (!rpcUrl) return true; // sin RPC configurado no se puede verificar
 
   const connection = new Connection(rpcUrl, 'confirmed');
