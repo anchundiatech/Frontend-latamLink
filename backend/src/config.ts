@@ -19,7 +19,15 @@ function numberFromEnv(name: string, fallback: number): number {
   return value;
 }
 
-export const RPC_URL = process.env.RPC_URL ?? "https://api.devnet.solana.com";
+// RPC_URL acepta una lista separada por comas para failover de lectura (ver
+// getFallbackConnections). El primero de la lista sigue siendo el endpoint
+// principal, así que un solo RPC_URL sin comas se comporta exactamente igual
+// que antes.
+export const RPC_URLS = (process.env.RPC_URL ?? "https://api.devnet.solana.com")
+  .split(",")
+  .map((u) => u.trim())
+  .filter(Boolean);
+export const RPC_URL = RPC_URLS[0];
 export const PORT = numberFromEnv("PORT", 3000);
 // Puerto de la API de catálogo (Prisma/Postgres), servicio aparte del relayer.
 export const API_PORT = numberFromEnv("API_PORT", 3002);
@@ -74,6 +82,21 @@ export function isX402Configured(): boolean {
 
 export function getConnection(): Connection {
   return new Connection(RPC_URL, "confirmed");
+}
+
+// Conexiones a TODOS los RPC configurados, en orden. Pensadas solo para
+// lecturas reintentables (por ejemplo, sondear el estado de una firma): un
+// endpoint lento o caído durante la confirmación no debe traducirse en un
+// falso "no se confirmó a tiempo" si otro RPC sí puede responder. Nunca se
+// usan para reintentar un envío (sendRawTransaction): reintentar una
+// escritura contra un RPC distinto es lo que puede terminar en un cobro
+// duplicado, no lo que lo evita.
+let cachedFallbackConnections: Connection[] | null = null;
+export function getFallbackConnections(): Connection[] {
+  if (!cachedFallbackConnections) {
+    cachedFallbackConnections = RPC_URLS.map((url) => new Connection(url, "confirmed"));
+  }
+  return cachedFallbackConnections;
 }
 
 export function loadKeypair(name: string): Keypair {
