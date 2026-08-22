@@ -163,6 +163,9 @@ export async function submitSignedTransaction(
   relayer: Keypair,
   transactionBase64: string,
   onSubmitted?: (info: SubmittedInfo) => void,
+  // Solo para sondear confirmación (lectura reintentable). Nunca se usan
+  // para reenviar la transacción: eso queda fijo en `connection`.
+  fallbackConnections: Connection[] = [connection],
 ): Promise<SubmitResult> {
   const tx = Transaction.from(Buffer.from(transactionBase64, "base64"));
 
@@ -194,7 +197,7 @@ export async function submitSignedTransaction(
 
   let confirmed: number;
   try {
-    confirmed = await pollConfirmation(connection, signature, 60_000);
+    confirmed = await pollConfirmation(fallbackConnections, signature, 60_000);
   } catch (err) {
     if (err instanceof TimeoutError) throw new ConfirmationTimeoutError(submitted);
     throw err;
@@ -203,24 +206,40 @@ export async function submitSignedTransaction(
   return { ...submitted, slot: confirmed };
 }
 
-class TimeoutError extends Error {}
+export class TimeoutError extends Error {}
 
-async function pollConfirmation(
-  connection: Connection,
+// Rota entre los RPC configurados para sondear el estado de la firma: un
+// único endpoint lento o caído durante la ventana de confirmación no debe
+// traducirse en un falso "no se confirmó a tiempo" si otro RPC sí responde.
+// Es seguro reintentar acá porque getSignatureStatuses es de solo lectura —
+// nunca reenvía la transacción.
+export async function pollConfirmation(
+  connections: Connection[],
   signature: string,
   timeoutMs: number,
 ): Promise<number> {
   const start = Date.now();
+  let attempt = 0;
   while (Date.now() - start < timeoutMs) {
-    const status = (await connection.getSignatureStatuses([signature])).value[0];
-    if (status?.err) {
-      throw new Error(`Transacción falló on-chain: ${JSON.stringify(status.err)}`);
-    }
-    if (
-      status?.confirmationStatus === "confirmed" ||
-      status?.confirmationStatus === "finalized"
-    ) {
-      return status.slot;
+    const connection = connections[attempt % connections.length];
+    attempt++;
+    try {
+      const status = (await connection.getSignatureStatuses([signature])).value[0];
+      if (status?.err) {
+        throw new Error(`Transacción falló on-chain: ${JSON.stringify(status.err)}`);
+      }
+      if (
+        status?.confirmationStatus === "confirmed" ||
+        status?.confirmationStatus === "finalized"
+      ) {
+        return status.slot;
+      }
+    } catch (err) {
+      // Un RPC caído no es lo mismo que la tx habiendo fallado: seguimos
+      // sondeando con el próximo endpoint en vez de abortar.
+      if (err instanceof Error && err.message.startsWith("Transacción falló on-chain")) {
+        throw err;
+      }
     }
     await new Promise((r) => setTimeout(r, 500));
   }
