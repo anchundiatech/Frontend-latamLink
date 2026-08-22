@@ -63,7 +63,7 @@ export function POSKioskLayout({ controller, onExitKiosk }: POSKioskLayoutProps)
           <POSKeypad amount={c.amount} onAmountChange={c.setAmount} size="large" />
           <POSActionButton
             onClick={c.handleGenerateQR}
-            disabled={!c.amount || parseFloat(c.amount) <= 0 || c.converting}
+            disabled={!c.amount || parseFloat(c.amount) <= 0 || c.converting || !c.online}
             loading={c.converting}
             loadingLabel="Getting exchange rate..."
             label="Generate Payment QR"
