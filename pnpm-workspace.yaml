@@ -4,8 +4,11 @@
 #
 # `backend/` queda deliberadamente fuera del workspace: es un servicio aparte,
 # con su propio lockfile y su propio ciclo de despliegue.
+#
+# El package.json principal vive en `Frontend/` (el refactor dividió el monorepo
+# en Frontend/ y backend/), por eso el workspace apunta ahí y no a la raíz.
 packages:
-  - '.'
+  - 'Frontend'
 
 allowBuilds:
   '@reown/appkit': false

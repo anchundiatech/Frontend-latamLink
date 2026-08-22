@@ -1,17 +1,3 @@
-# Reglas propias del backend del relayer. El .gitignore de la raíz ya cubre
-# node_modules y .env*; aquí se re-incluye el ejemplo y se protegen los
-# artefactos locales que este servicio genera.
-!.env.example
-
-# Keypairs: NUNCA se versionan
-.keys/
-
-# Registros locales (pagos y comprobantes x402) y estado de devnet
-data/
-devnet-state.json
-
-dist/
-*.tsbuildinfo
 node_modules/
 .env
 dist/
