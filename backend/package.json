@@ -1,62 +1,42 @@
 {
-  "name": "latamlink-pay-backend",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts",
-    "start": "tsx src/index.ts",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
-  },
-  "dependencies": {
-    "@prisma/client": "5.22.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.12.7",
-    "nodemon": "^3.1.0",
-    "prisma": "5.22.0",
-    "tsx": "^4.23.1",
-    "typescript": "^5.4.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "esbuild"]
-  }
-}
-
-{
   "name": "latamlink-backend",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.9",
   "description": "Backend LatamLink Pay: relayer gasless (fee payer) + capa x402 sobre el programa latamlink_pay",
   "type": "module",
   "scripts": {
     "dev": "tsx src/server.ts",
+    "dev:catalog": "tsx src/catalogServer.ts",
     "conciliador": "tsx scripts/conciliador.ts",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "test": "node --import tsx --test tests/*.test.ts",
     "setup:devnet": "tsx scripts/setup-devnet.ts",
     "e2e": "tsx scripts/e2e-pago.ts",
     "e2e:qr": "tsx scripts/e2e-qr.ts",
     "e2e:db": "tsx scripts/e2e-persistencia.ts",
     "bench": "tsx scripts/bench-pago.ts",
-    "tesoreria:gas": "tsx scripts/tesoreria-gas.ts"
+    "tesoreria:gas": "tsx scripts/tesoreria-gas.ts",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.8",
     "dotenv": "^16.4.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
     "@types/express": "^4.17.21",
     "@types/node": "^20.17.9",
+    "eslint": "^9.17.0",
+    "prisma": "^5.22.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1"
   }
 }
