@@ -62,7 +62,11 @@ export default function RootLayout({
                   if (theme === "dark") {
                     document.documentElement.classList.add("dark");
                   }
-                } catch(e) {}
+                } catch {
+                  // localStorage puede lanzar en navegación privada o con
+                  // almacenamiento deshabilitado; esto es solo prevención de
+                  // flash de tema, así que degrada a claro/oscuro por defecto.
+                }
               })();
             `,
           }}
