@@ -6,9 +6,12 @@ on:
   pull_request:
 
 jobs:
-  app:
-    name: App y API de catálogo
+  backend:
+    name: Backend y API de catálogo
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
@@ -41,6 +45,7 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +56,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
@@ -60,5 +67,34 @@ jobs:
 
       # No tocan la red: usan una conexión simulada y transacciones armadas
       # en memoria, así que corren en CI sin credenciales ni devnet.
+      - name: Tests
+        run: pnpm run test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
       - name: Tests
         run: pnpm run test
