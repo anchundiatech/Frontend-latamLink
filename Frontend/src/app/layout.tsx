@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Fraunces, DM_Sans } from "next/font/google"
 
 import { PrivyProvider } from "@/components/wallet/PrivyProvider"
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider"
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration"
 
 import { Toaster } from "sonner"
 
@@ -26,6 +27,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#0F111A",
 }
 
 export default function RootLayout({
@@ -73,6 +78,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full bg-background text-text-primary font-body">
+
+        <ServiceWorkerRegistration />
 
         <PrivyProvider>
 
