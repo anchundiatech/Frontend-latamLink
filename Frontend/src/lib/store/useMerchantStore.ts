@@ -26,6 +26,10 @@ export interface MerchantState {
   merchantPda: string | null
   vaultPda: string | null
   gasVaultPda: string | null
+  // Identificadores en PostgreSQL. La base es la fuente de verdad: esto es
+  // solo una copia local para no consultarla en cada render.
+  merchantDbId: string | null
+  terminalDbId: string | null
 
   setMerchant: (merchant: Partial<MerchantState>) => void
   addDestination: (dest: Destination) => void
@@ -61,6 +65,8 @@ const initialState = {
   merchantPda: null,
   vaultPda: null,
   gasVaultPda: null,
+  merchantDbId: null,
+  terminalDbId: null,
 }
 
 export const useMerchantStore = create<MerchantState>()(

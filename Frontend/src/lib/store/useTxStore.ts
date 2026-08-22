@@ -1,6 +1,4 @@
 import { create } from "zustand"
-import { type Connection, PublicKey } from "@solana/web3.js"
-import { config } from "@/lib/config"
 
 export interface PaymentTx {
   id: string
@@ -13,23 +11,50 @@ export interface PaymentTx {
   signature: string
 }
 
+interface ApiPayment {
+  id: string
+  txSignature: string
+  payerPubkey: string
+  amountGross: string
+  timestamp: string
+  status: "PENDING" | "CONFIRMED" | "FAILED"
+  terminal?: { posTerminalId: string }
+}
+
 interface TxStore {
   transactions: PaymentTx[]
   loading: boolean
   lastFetched: number
-  fetch: (connection: Connection, walletAddress: string, terminalId: string) => Promise<void>
+  fetch: (merchantDbId: string, terminalId: string) => Promise<void>
 }
+
+const TOKEN_DECIMALS = 6
+const CACHE_MS = 30_000
 
 let inFlight: Promise<void> | null = null
 
+const estadoLegible = {
+  CONFIRMED: "confirmed",
+  PENDING: "pending",
+  FAILED: "failed",
+} as const
+
+/**
+ * Historial de cobros leído de PostgreSQL.
+ *
+ * Antes se reconstruía escaneando la wallet del comercio en la cadena, algo que
+ * dejó de funcionar cuando los cobros pasaron a repartirse entre cuentas de
+ * token: esa wallet ya no recibe nada. La base guarda el importe, las
+ * comisiones y la terminal exactos de cada cobro.
+ */
 export const useTxStore = create<TxStore>((set) => ({
   transactions: [],
   loading: false,
   lastFetched: 0,
-  fetch: async (connection, walletAddress, terminalId) => {
+  fetch: async (merchantDbId, terminalId) => {
     const now = Date.now()
     const state = useTxStore.getState()
-    if (state.lastFetched > now - 30000 || inFlight) {
+    if (state.lastFetched > now - CACHE_MS || inFlight) {
       await inFlight
       return
     }
@@ -38,97 +63,26 @@ export const useTxStore = create<TxStore>((set) => ({
 
     inFlight = (async () => {
       try {
-        const pubkey = new PublicKey(walletAddress)
-        const sigs = await connection.getSignaturesForAddress(
-          pubkey,
-          { limit: 10 },
-          "confirmed"
-        )
+        const res = await fetch(`/api/payments?merchantId=${merchantDbId}&limit=50`)
+        if (!res.ok) return
 
-        const txs: PaymentTx[] = []
+        const { payments } = (await res.json()) as { payments: ApiPayment[] }
 
-        for (const sig of sigs) {
-          const tx = await connection.getTransaction(sig.signature, {
-            commitment: "confirmed",
-            maxSupportedTransactionVersion: 0,
-          })
-
-          if (!tx) {
-            txs.push({
-              id: sig.signature.slice(0, 16),
-              amount: 0,
-              token: "SOL" as const,
-              status:
-                sig.confirmationStatus === "confirmed" || sig.confirmationStatus === "finalized"
-                  ? ("confirmed" as const)
-                  : ("failed" as const),
-              date: new Date((sig.blockTime ?? Math.floor(now / 1000)) * 1000),
-              terminal: terminalId,
-              payer: sig.signature.slice(0, 8),
-              signature: `${sig.signature.slice(0, 4)}...${sig.signature.slice(-4)}`,
-            })
-            continue
-          }
-
-          let amount = 0
-          let token: "USDC" | "SOL" = "SOL"
-          let payer = ""
-
-          const accountKeys = tx.transaction.message.staticAccountKeys
-          const feePayer = accountKeys[0]?.toBase58()
-          if (feePayer && feePayer !== walletAddress) {
-            payer = feePayer
-          }
-
-          if (tx.meta?.postTokenBalances) {
-            const merchantUsdcPost = tx.meta.postTokenBalances.find(
-              (b) => b.mint === config.usdcMint && b.owner === walletAddress
-            )
-            const merchantUsdcPre = tx.meta.preTokenBalances?.find(
-              (b) => b.mint === config.usdcMint && b.owner === walletAddress
-            )
-
-            if (merchantUsdcPost) {
-              const postAmt = parseFloat(merchantUsdcPost.uiTokenAmount.uiAmountString || "0")
-              const preAmt = parseFloat(merchantUsdcPre?.uiTokenAmount.uiAmountString || "0")
-              const diff = postAmt - preAmt
-              if (diff > 0) {
-                amount = diff
-                token = "USDC"
-              }
-            }
-          }
-
-          if (amount === 0 && tx.meta) {
-            const merchantIndex = accountKeys.findIndex(
-              (key) => key.toBase58() === walletAddress
-            )
-            if (merchantIndex >= 0) {
-              const postBal = tx.meta.postBalances[merchantIndex] ?? 0
-              const preBal = tx.meta.preBalances[merchantIndex] ?? 0
-              const diff = postBal - preBal
-              if (diff > 0) {
-                amount = diff / 1_000_000_000
-                token = "SOL"
-              }
-            }
-          }
-
-          txs.push({
-            id: sig.signature.slice(0, 16),
-            amount: Math.max(0, amount),
-            token,
-            status: "confirmed" as const,
-            date: new Date((sig.blockTime ?? Math.floor(now / 1000)) * 1000),
-            terminal: terminalId,
-            payer: payer || sig.signature.slice(0, 8),
-            signature: `${sig.signature.slice(0, 4)}...${sig.signature.slice(-4)}`,
-          })
-        }
-
-        set({ transactions: txs, lastFetched: now })
+        set({
+          transactions: payments.map((p) => ({
+            id: p.id,
+            amount: Number(p.amountGross) / 10 ** TOKEN_DECIMALS,
+            token: "USDC" as const,
+            status: estadoLegible[p.status],
+            date: new Date(p.timestamp),
+            terminal: p.terminal?.posTerminalId ?? terminalId,
+            payer: p.payerPubkey,
+            signature: `${p.txSignature.slice(0, 4)}...${p.txSignature.slice(-4)}`,
+          })),
+          lastFetched: now,
+        })
       } catch {
-        // silent
+        // Un fallo de red no debe romper el panel: se conserva lo último leído.
       } finally {
         set({ loading: false })
         inFlight = null

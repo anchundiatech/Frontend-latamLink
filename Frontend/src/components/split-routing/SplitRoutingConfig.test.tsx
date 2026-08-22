@@ -6,17 +6,22 @@ import { Keypair } from "@solana/web3.js"
 import { SplitRoutingConfig } from "./SplitRoutingConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
-const updateMock = vi.fn().mockResolvedValue({ success: true })
-const initializeMock = vi.fn().mockResolvedValue({ success: true })
+// Alta y edición on-chain las hace el backend firmando con la wallet de la
+// plataforma (owner del comercio); el navegador nunca firma.
+const updateMock = vi.fn().mockResolvedValue({ signature: "FirmaDePrueba" })
+const createMock = vi.fn().mockResolvedValue({ merchant: "MerchantPdaDePrueba" })
 
-vi.mock("@/lib/anchor/useAnchorProgram", () => ({
-  useUpdateConfig: () => ({ update: updateMock }),
-  useInitializeMerchant: () => ({ initialize: initializeMock }),
-  InsufficientFundsError: class InsufficientFundsError extends Error {
-    constructor(public walletAddress: string) {
-      super("Wallet has no funds to cover the network fee")
-    }
-  },
+vi.mock("@/lib/services/useUpdateMerchantConfig", () => ({
+  useUpdateMerchantConfig: () => ({ update: updateMock }),
+}))
+
+vi.mock("@/lib/services/useCreateMerchant", () => ({
+  useCreateMerchant: () => ({ create: createMock }),
+}))
+
+// Las billeteras vinculadas son opcionales; en los tests no hay ninguna.
+vi.mock("@/lib/services/useWalletsVinculadas", () => ({
+  useWalletsVinculadas: () => ({ wallets: [], vincular: vi.fn(), listo: true }),
 }))
 
 vi.mock("sonner", () => ({
@@ -29,14 +34,14 @@ const VALID_ADDRESS_2 = Keypair.generate().publicKey.toBase58()
 async function addRecipient(label: string, address: string) {
   const user = userEvent.setup()
   await user.type(screen.getByPlaceholderText("Label"), label)
-  await user.type(screen.getByPlaceholderText("Destination account"), address)
+  await user.type(screen.getByPlaceholderText("Dirección de billetera"), address)
   await user.click(screen.getByRole("button", { name: /add/i }))
 }
 
 describe("SplitRoutingConfig", () => {
   beforeEach(() => {
     updateMock.mockClear()
-    initializeMock.mockClear()
+    createMock.mockClear()
     vi.mocked(toast.success).mockClear()
     vi.mocked(toast.error).mockClear()
     useMerchantStore.setState({
@@ -108,7 +113,7 @@ describe("SplitRoutingConfig", () => {
     const user = userEvent.setup()
     await user.click(screen.getByRole("button", { name: /save configuration/i }))
 
-    expect(initializeMock).toHaveBeenCalledTimes(1)
+    expect(createMock).toHaveBeenCalledTimes(1)
     expect(updateMock).not.toHaveBeenCalled()
   })
 
@@ -125,7 +130,7 @@ describe("SplitRoutingConfig", () => {
     await user.click(screen.getByRole("button", { name: /save configuration/i }))
 
     expect(updateMock).toHaveBeenCalledTimes(1)
-    expect(initializeMock).not.toHaveBeenCalled()
+    expect(createMock).not.toHaveBeenCalled()
   })
 
   it("rebalances the other destinations so the total always stays at 100%", async () => {

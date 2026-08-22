@@ -1,0 +1,17 @@
+# Sin la clave `packages` pnpm 9 aborta con "packages field missing or empty"
+# en CUALQUIER comando (incluido `pnpm --version`), así que el proyecto no se
+# podía instalar ni ejecutar con pnpm. Se declara la raíz como único paquete.
+#
+# `backend/` queda deliberadamente fuera del workspace: es un servicio aparte,
+# con su propio lockfile y su propio ciclo de despliegue.
+packages:
+  - '.'
+
+allowBuilds:
+  '@reown/appkit': false
+  bigint-buffer: false
+  bufferutil: false
+  keccak: false
+  sharp: false
+  unrs-resolver: false
+  utf-8-validate: false

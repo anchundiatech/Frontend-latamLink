@@ -16,17 +16,19 @@ export const createMerchantSchema = z.object({
   pdaPaymentVault: z.string().min(32, "La PDA del vault de pago es inválida"),
   pdaGasVault: z.string().min(32, "La PDA del vault de gas es inválida"),
   name: z.string().min(3, "El nombre del comercio es muy corto"),
-  feeBps: z.number().int().default(0),
-  posFeeBps: z.number().int().default(0),
+  feeBps: z.number().int().min(0).max(10_000).default(0),
+  posFeeBps: z.number().int().min(0).max(10_000).default(0),
   minPaymentAmount: z.string().transform((val) => BigInt(val)),
   isActive: z.boolean().default(true),
-  totalVolume: z.string().transform((val) => BigInt(val)),
+  // Opcional: un comercio recién creado arranca en 0 (lo resuelve el controlador).
+  totalVolume: z.string().transform((val) => BigInt(val)).optional(),
 });
 
-// Esquema para PosTerminal
+// Esquema para PosTerminal. `accessToken` NO se acepta desde fuera: lo genera
+// la base de datos, y poder fijarlo equivaldría a elegir la credencial.
 export const createTerminalSchema = z.object({
   merchantId: z.string().uuid("El merchantId debe ser un UUID válido"),
-  posTerminalId: z.string().max(32, "El ID de la terminal debe tener máx 32 caracteres"),
+  posTerminalId: z.string().min(1).max(32, "El ID de la terminal debe tener máx 32 caracteres"),
   isActive: z.boolean().default(true),
 });
 
@@ -53,3 +55,46 @@ export const createDestinationSchema = z.object({
   isActive: z.boolean().optional().default(true),
   description: z.string().optional(),
 });
+
+// ==========================================
+// ESQUEMAS DE ACTUALIZACIÓN (PATCH)
+// ==========================================
+// Los PATCH recibían `req.body` entero sin validar y lo pasaban a Prisma, así
+// que se podían sobrescribir campos que reflejan el estado on-chain
+// (merchantIdOnchain, las PDAs) o las estadísticas (totalVolume). Aquí solo se
+// permite lo que un operador puede cambiar de verdad.
+
+export const updateMerchantSchema = z
+  .object({
+    name: z.string().min(3, "El nombre del comercio es muy corto"),
+    feeBps: z.number().int().min(0).max(10_000),
+    posFeeBps: z.number().int().min(0).max(10_000),
+    minPaymentAmount: z.string().transform((val) => BigInt(val)),
+    isActive: z.boolean(),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'No hay ningún campo para actualizar',
+  });
+
+export const updateTerminalSchema = z
+  .object({
+    posTerminalId: z.string().min(1).max(32),
+    isActive: z.boolean(),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'No hay ningún campo para actualizar',
+  });
+
+export const updateDestinationSchema = z
+  .object({
+    percentage: z.number().int().min(1).max(100),
+    positionIndex: z.number().int().nonnegative(),
+    isActive: z.boolean(),
+    description: z.string(),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'No hay ningún campo para actualizar',
+  });

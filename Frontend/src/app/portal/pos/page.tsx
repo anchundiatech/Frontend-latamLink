@@ -10,7 +10,7 @@ import { PaymentStatus } from "@/components/pos/PaymentStatus"
 import { PaymentSuccessAnimation } from "@/components/pos/PaymentSuccessAnimation"
 import { ArrowLeft, Clock, X } from "lucide-react"
 import { toast } from "sonner"
-import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
+import { useCuentaDePago } from "@/lib/services/useCuentaDePago"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { Logo } from "@/components/Logo"
 import { useSolanaPay } from "@/lib/services/useSolanaPay"
@@ -22,28 +22,34 @@ export default function POSPage() {
   const [converting, setConverting] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const { walletAddress, setWalletAddress, name, minPaymentAmount } = useMerchantStore()
-  const wallet = usePrivyWallet()
+  const cuentaDePago = useCuentaDePago()
   const { solanaPayUrl, cryptoAmount, paymentStatus, generateUrl, startWatching, reset } = useSolanaPay()
-  const walletConnected = !!(walletAddress || wallet?.publicKey)
+  const walletConnected = !!(walletAddress || cuentaDePago)
   const noWallet = !walletConnected
 
   const handleGenerateQR = useCallback(async () => {
     if (amount && parseFloat(amount) > 0) {
-      if (wallet?.publicKey && !walletAddress) {
-        setWalletAddress(wallet.publicKey.toBase58())
+      if (cuentaDePago && !walletAddress) {
+        setWalletAddress(cuentaDePago)
       }
       setConverting(true)
       const result = await generateUrl(parseFloat(amount), token)
       setConverting(false)
-      if (result.error === "price_unavailable") {
-        toast.error("Couldn't get the current exchange rate. Please try again.")
+      if (result.error === "merchant_not_created") {
+        toast.error(
+          "Configurá primero el reparto de tu comercio: el cobro se ejecuta contra el contrato."
+        )
+        return
+      }
+      if (result.error === "config_unavailable") {
+        toast.error("No se pudo contactar con el servicio de pagos. Probá de nuevo.")
         return
       }
       if (!result.solanaPayUrl) return
       setStep("qr")
       startWatching(result.referenceKey)
     }
-  }, [amount, token, wallet, walletAddress, setWalletAddress, generateUrl, startWatching])
+  }, [amount, token, cuentaDePago, walletAddress, setWalletAddress, generateUrl, startWatching])
 
   const handleSuccessDone = useCallback(() => {
     setStep("input")
@@ -70,7 +76,7 @@ export default function POSPage() {
     return () => clearInterval(interval)
   }, [step, paymentStatus])
 
-  const recipientAddress = walletAddress || wallet?.publicKey.toBase58() || ""
+  const recipientAddress = walletAddress || cuentaDePago || ""
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -107,7 +113,7 @@ export default function POSPage() {
         {noWallet && (
           <div className="mb-6 p-3 glass rounded-lg border border-warning/20 text-center">
             <p className="text-xs text-warning font-heading">
-              No payment account detected. Go to Settings to configure one.
+              Estamos preparando tu cuenta de pago. Esperá unos segundos.
             </p>
           </div>
         )}

@@ -6,7 +6,7 @@ import { Building2, ArrowRight, Globe, Mail, CheckCircle, Loader2 } from "lucide
 import { usePrivy } from "@privy-io/react-auth"
 import { z } from "zod"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
-import { usePrivyWallet } from "@/lib/services/usePrivyWallet"
+import { useCuentaDePago } from "@/lib/services/useCuentaDePago"
 
 const businessSchema = z.object({
   name: z
@@ -19,7 +19,7 @@ const businessSchema = z.object({
 
 export function StepCreateBusiness({ onNext }: { onNext: () => void }) {
   const { setMerchant, setWalletAddress } = useMerchantStore()
-  const wallet = usePrivyWallet()
+  const cuentaDePago = useCuentaDePago()
   const { user } = usePrivy()
   const [form, setForm] = useState({
     name: "",
@@ -29,9 +29,9 @@ export function StepCreateBusiness({ onNext }: { onNext: () => void }) {
   const [status, setStatus] = useState<"idle" | "done">("idle")
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({})
 
-  // The embedded payment account is created by Privy right after login;
-  // until it exists we don't know where payments should arrive.
-  const walletReady = !!wallet
+  // Privy crea la cuenta de pago apenas el comerciante entra con Google; hasta
+  // que exista no sabemos dónde asociar el comercio. No hay nada que conectar.
+  const walletReady = !!cuentaDePago
 
   // Signup never touches the blockchain: QR payments go straight to the
   // merchant's account, so the terminal is usable the moment we know the
@@ -39,7 +39,7 @@ export function StepCreateBusiness({ onNext }: { onNext: () => void }) {
   // the platform — the merchant only ever receives money, never funds it.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (status !== "idle" || !wallet) return
+    if (status !== "idle" || !cuentaDePago) return
 
     const result = businessSchema.safeParse(form)
     if (!result.success) {
@@ -50,7 +50,7 @@ export function StepCreateBusiness({ onNext }: { onNext: () => void }) {
 
     setErrors({})
     setMerchant({ name: result.data.name, email: result.data.email, isActive: true })
-    setWalletAddress(wallet.publicKey.toBase58())
+    setWalletAddress(cuentaDePago)
     setStatus("done")
     setTimeout(() => onNext(), 1500)
   }

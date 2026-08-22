@@ -2,7 +2,8 @@
 
 import { Connection, Keypair } from "@solana/web3.js"
 
-const SPONSOR_LAMPORTS = 10_000_000 // keep in sync with sponsorMerchantSetup
+// Coste aproximado de un alta on-chain (renta de las tres cuentas).
+const ONBOARDING_LAMPORTS = 10_000_000
 
 export type TreasuryStatus = {
   address: string
@@ -10,8 +11,9 @@ export type TreasuryStatus = {
   onboardingsLeft: number
 } | null
 
-// The secret key never leaves the server — only the derived public address
-// and balance are returned.
+// La clave nunca sale del servidor: solo se devuelven la dirección derivada y
+// el saldo. Desde que el alta la hace el relayer con la wallet de la
+// plataforma, esto sirve como panel de control del saldo que la financia.
 export async function getTreasuryStatus(): Promise<TreasuryStatus> {
   const secret = process.env.TREASURY_SECRET_KEY
   if (!secret) return null
@@ -26,7 +28,7 @@ export async function getTreasuryStatus(): Promise<TreasuryStatus> {
     return {
       address: treasury.publicKey.toBase58(),
       sol: lamports / 1_000_000_000,
-      onboardingsLeft: Math.floor(lamports / SPONSOR_LAMPORTS),
+      onboardingsLeft: Math.floor(lamports / ONBOARDING_LAMPORTS),
     }
   } catch (err) {
     console.error("Failed to read treasury status", err)
