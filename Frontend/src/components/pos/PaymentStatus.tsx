@@ -2,11 +2,10 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { XCircle } from "lucide-react"
-
-type PaymentStatusType = "idle" | "pending" | "confirmed" | "failed"
+import type { PaymentStatus as PaymentStatusValue } from "@/lib/payments/paymentStatus"
 
 interface PaymentStatusProps {
-  status: PaymentStatusType
+  status: PaymentStatusValue
   onRetry?: () => void
 }
 

@@ -1,10 +1,11 @@
 import { create } from "zustand"
+import type { WatcherStatus } from "@/lib/payments/paymentStatus"
 
 export interface PaymentTx {
   id: string
   amount: number
   token: "USDC" | "SOL"
-  status: "confirmed" | "pending" | "failed"
+  status: WatcherStatus
   date: Date
   terminal: string
   payer: string
@@ -81,8 +82,9 @@ export const useTxStore = create<TxStore>((set) => ({
           })),
           lastFetched: now,
         })
-      } catch {
+      } catch (err) {
         // Un fallo de red no debe romper el panel: se conserva lo último leído.
+        console.error("No se pudo actualizar el historial de pagos:", err)
       } finally {
         set({ loading: false })
         inFlight = null

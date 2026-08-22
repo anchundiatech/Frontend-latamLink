@@ -1,6 +1,11 @@
 import { PublicKey, Keypair, Connection, VersionedTransactionResponse } from "@solana/web3.js"
 import { config } from "@/lib/config"
 import { withRetry } from "./retry"
+import {
+  PAYMENT_WATCH_INTERVAL_MS,
+  PAYMENT_WATCH_MAX_ATTEMPTS,
+  type WatcherStatus,
+} from "@/lib/payments/paymentStatus"
 
 export interface SolanaPayParams {
   recipient: string
@@ -73,10 +78,10 @@ export async function findTransactionByReference(
 export function watchForPayment(
   connection: Connection,
   reference: PublicKey,
-  onStatusChange: (status: "pending" | "confirmed" | "failed") => void,
+  onStatusChange: (status: WatcherStatus) => void,
   commitment: "confirmed" | "finalized" = "confirmed",
-  maxAttempts = 20,
-  intervalMs = 5000
+  maxAttempts = PAYMENT_WATCH_MAX_ATTEMPTS,
+  intervalMs = PAYMENT_WATCH_INTERVAL_MS
 ): { stop: () => void } {
   let attempts = 0
   let stopped = false

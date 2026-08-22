@@ -86,7 +86,10 @@ export async function fetchMerchantAccount(
     const program = getProgram(provider) as any;
     const account = await program.account.merchant.fetch(merchantPda);
     return account as MerchantAccount;
-  } catch {
+  } catch (err) {
+    // Anchor no distingue "la cuenta no existe" de un error de RPC en el tipo
+    // de la excepción: se loguea para no confundir ambos casos en silencio.
+    console.error(`No se pudo leer el merchant ${merchantPda.toBase58()}:`, err);
     return null;
   }
 }
