@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    // ES2020 habilita los literales BigInt, necesarios para trabajar con
-    // importes on-chain sin perder precisión (los montos son u64).
     "target": "ES2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -30,8 +28,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts",
-    "../backend/index.ts"
+    "**/*.mts"
   ],
   // `backend/` es un servicio Node aparte, con su propio tsconfig (ES2022) y su
   // propia comprobación de tipos en CI. Sin excluirlo, el build de Next lo
