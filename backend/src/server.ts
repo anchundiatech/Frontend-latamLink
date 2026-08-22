@@ -15,6 +15,17 @@ import {
 import { requireOperator } from "./http/auth.js";
 import { cors } from "./http/cors.js";
 import { rateLimit } from "./http/rateLimit.js";
+import { validateBody, validateQuery } from "./http/validateRequest.js";
+import {
+  buildPaymentSchema,
+  createMerchantSchema,
+  listPaymentsQuerySchema,
+  payoutBuildSchema,
+  payoutSubmitSchema,
+  solanaPaySchema,
+  submitPaymentSchema,
+  updateMerchantConfigSchema,
+} from "./schemas/relayerSchema.js";
 import {
   ConfirmationTimeoutError,
   buildPayTransaction,
@@ -82,9 +93,8 @@ export function createApp(): Express {
   // el comercio no necesite SOL ni firmar nada. Ver docs/MAPA_BACKEND.md.
   // Requiere credencial de operador: cada alta gasta renta en SOL de la
   // plataforma y no existe instrucción para cerrar las cuentas creadas.
-  app.post("/merchants", operatorOnly, async (req, res) => {
+  app.post("/merchants", operatorOnly, validateBody(createMerchantSchema), async (req, res) => {
     try {
-      const body = req.body ?? {};
       const {
         paymentTokenMint,
         destinations,
@@ -93,25 +103,7 @@ export function createApp(): Express {
         feeBps,
         posFeeBps,
         minPaymentAmount,
-      } = body;
-
-      if (
-        typeof paymentTokenMint !== "string" ||
-        !Array.isArray(destinations) ||
-        !destinations.every((d: unknown) => typeof d === "string") ||
-        !Array.isArray(percentages) ||
-        !percentages.every((p: unknown) => typeof p === "number") ||
-        typeof posTerminalId !== "string" ||
-        typeof feeBps !== "number" ||
-        typeof posFeeBps !== "number" ||
-        (typeof minPaymentAmount !== "string" && typeof minPaymentAmount !== "number")
-      ) {
-        res.status(400).json({
-          error:
-            "Requeridos: paymentTokenMint, destinations[], percentages[], posTerminalId, feeBps, posFeeBps, minPaymentAmount",
-        });
-        return;
-      }
+      } = req.body;
 
       // El merchantId lo decide el servidor: que lo eligiera el cliente
       // permitía ocupar direcciones a voluntad.
@@ -133,7 +125,11 @@ export function createApp(): Express {
   // Actualiza la configuración de un comercio existente (reparto, comisiones,
   // monto mínimo). Firma la plataforma, que es el owner on-chain: el comerciante
   // nunca firma ni necesita SOL.
-  app.patch("/merchants/:address/config", operatorOnly, async (req, res) => {
+  app.patch(
+    "/merchants/:address/config",
+    operatorOnly,
+    validateBody(updateMerchantConfigSchema),
+    async (req, res) => {
     try {
       const address = req.params.address;
       if (!address) {
@@ -141,21 +137,7 @@ export function createApp(): Express {
         return;
       }
 
-      const { destinations, percentages, feeBps, posFeeBps, minPaymentAmount } = req.body ?? {};
-      if (
-        !Array.isArray(destinations) ||
-        !destinations.every((d: unknown) => typeof d === "string") ||
-        !Array.isArray(percentages) ||
-        !percentages.every((p: unknown) => typeof p === "number") ||
-        typeof feeBps !== "number" ||
-        typeof posFeeBps !== "number" ||
-        (typeof minPaymentAmount !== "string" && typeof minPaymentAmount !== "number")
-      ) {
-        res.status(400).json({
-          error: "Requeridos: destinations[], percentages[], feeBps, posFeeBps, minPaymentAmount",
-        });
-        return;
-      }
+      const { destinations, percentages, feeBps, posFeeBps, minPaymentAmount } = req.body;
 
       const result = await updateMerchantConfig(connection, loadPlatformOwner(), address, {
         destinations,
@@ -172,26 +154,14 @@ export function createApp(): Express {
 
   // Paso 1 del flujo gasless: la app pide la tx armada para que el usuario
   // firme su parte con Privy (signTransaction, NO send).
-  app.post("/payments/build", async (req, res) => {
+  app.post("/payments/build", validateBody(buildPaymentSchema), async (req, res) => {
     try {
-      const { merchantAddress, payerPubkey, amount, idempotencyKey } = req.body ?? {};
-      if (
-        typeof merchantAddress !== "string" ||
-        typeof payerPubkey !== "string" ||
-        (typeof amount !== "string" && typeof amount !== "number")
-      ) {
-        res.status(400).json({ error: "merchantAddress, payerPubkey y amount son requeridos" });
-        return;
-      }
-      if (idempotencyKey !== undefined && typeof idempotencyKey !== "string") {
-        res.status(400).json({ error: "idempotencyKey debe ser string" });
-        return;
-      }
+      const { merchantAddress, payerPubkey, amount, idempotencyKey } = req.body;
       const build = () =>
         buildPayTransaction(connection, relayer.publicKey, {
           merchantAddress,
           payerPubkey,
-          amount: BigInt(amount),
+          amount,
         });
       // Sin idempotencyKey el caller no puede sufrir doble cobro por reintento
       // (cada llamada es independiente a propósito, comportamiento anterior).
@@ -208,26 +178,14 @@ export function createApp(): Express {
   // transacción ya firmada por el relayer para que la billetera del cliente
   // solo añada su firma y la envíe. El pago pasa por `pay()`, así que conserva
   // el split y las comisiones, y el cliente no necesita SOL.
-  app.post("/payments/solana-pay", async (req, res) => {
+  app.post("/payments/solana-pay", validateBody(solanaPaySchema), async (req, res) => {
     try {
-      const { merchantAddress, payerPubkey, amount, reference } = req.body ?? {};
-      if (
-        typeof merchantAddress !== "string" ||
-        typeof payerPubkey !== "string" ||
-        (typeof amount !== "string" && typeof amount !== "number")
-      ) {
-        res.status(400).json({ error: "merchantAddress, payerPubkey y amount son requeridos" });
-        return;
-      }
-      if (reference !== undefined && typeof reference !== "string") {
-        res.status(400).json({ error: "reference debe ser string" });
-        return;
-      }
+      const { merchantAddress, payerPubkey, amount, reference } = req.body;
       const build = () =>
         buildRelayerSignedTransaction(connection, relayer, {
           merchantAddress,
           payerPubkey,
-          amount: BigInt(amount),
+          amount,
           reference,
         });
       // El reference ya es único por QR (se genera una vez y se reutiliza
@@ -241,16 +199,8 @@ export function createApp(): Express {
   });
 
   // Paso 2: recibe la tx parcialmente firmada, valida, firma como fee_payer y envía.
-  app.post("/payments/submit", async (req, res) => {
-    const { transaction, reference } = req.body ?? {};
-    if (typeof transaction !== "string") {
-      res.status(400).json({ error: "transaction (base64) es requerida" });
-      return;
-    }
-    if (reference !== undefined && typeof reference !== "string") {
-      res.status(400).json({ error: "reference debe ser string" });
-      return;
-    }
+  app.post("/payments/submit", validateBody(submitPaymentSchema), async (req, res) => {
+    const { transaction, reference } = req.body;
 
     const persist = (
       info: { signature: string; merchant: string; payer: string; amount: string },
@@ -295,26 +245,14 @@ export function createApp(): Express {
 
   // Retiro desde la cuenta de pago del comerciante. El relayer paga la red
   // (esa cuenta no tiene SOL) y el comerciante firma, porque es su dinero.
-  app.post("/payouts/build", operatorOnly, async (req, res) => {
+  app.post("/payouts/build", operatorOnly, validateBody(payoutBuildSchema), async (req, res) => {
     try {
-      const { ownerPubkey, mint, destination, amount, decimals } = req.body ?? {};
-      if (
-        typeof ownerPubkey !== "string" ||
-        typeof mint !== "string" ||
-        typeof destination !== "string" ||
-        (typeof amount !== "string" && typeof amount !== "number") ||
-        typeof decimals !== "number"
-      ) {
-        res.status(400).json({
-          error: "Requeridos: ownerPubkey, mint, destination, amount, decimals",
-        });
-        return;
-      }
+      const { ownerPubkey, mint, destination, amount, decimals } = req.body;
       const result = await buildPayoutTransaction(connection, relayer.publicKey, {
         ownerPubkey,
         mint,
         destination,
-        amount: BigInt(amount),
+        amount,
         decimals,
       });
       res.json(result);
@@ -323,13 +261,9 @@ export function createApp(): Express {
     }
   });
 
-  app.post("/payouts/submit", operatorOnly, async (req, res) => {
+  app.post("/payouts/submit", operatorOnly, validateBody(payoutSubmitSchema), async (req, res) => {
     try {
-      const { transaction } = req.body ?? {};
-      if (typeof transaction !== "string") {
-        res.status(400).json({ error: "transaction (base64) es requerida" });
-        return;
-      }
+      const { transaction } = req.body;
       const result = await submitPayoutTransaction(connection, relayer, transaction);
       res.json(result);
     } catch (err) {
@@ -353,14 +287,12 @@ export function createApp(): Express {
 
   // Conciliación para el POS/dashboard. Expone wallets y montos de terceros,
   // así que va detrás de credencial de operador.
-  app.get("/payments", operatorOnly, (req, res) => {
-    const { merchant, reference, limit } = req.query;
+  app.get("/payments", operatorOnly, validateQuery(listPaymentsQuerySchema), (req, res) => {
+    const { merchant, reference, limit } = (req as typeof req & {
+      validatedQuery: { merchant?: string; reference?: string; limit?: number };
+    }).validatedQuery;
     res.json({
-      payments: listPayments({
-        merchant: typeof merchant === "string" ? merchant : undefined,
-        reference: typeof reference === "string" ? reference : undefined,
-        limit: typeof limit === "string" ? Number(limit) : undefined,
-      }),
+      payments: listPayments({ merchant, reference, limit }),
     });
   });
 
