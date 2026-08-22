@@ -7,12 +7,13 @@ import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
 import { config } from "@/lib/config"
+import type { PaymentStatus } from "@/lib/payments/paymentStatus"
 
 const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function useSolanaPay() {
   const { name, merchantPda } = useMerchantStore()
-  const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "confirmed" | "failed">("idle")
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle")
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
   const [referenceKey, setReferenceKey] = useState<string | null>(null)
   const [cryptoAmount, setCryptoAmount] = useState<number | null>(null)
