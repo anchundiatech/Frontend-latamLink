@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, PartyPopper, ArrowRight } from "lucide-react"
 
-export function PaymentSuccessAnimation({ onDone }: { onDone: () => void }) {
+export function PaymentSuccess({ onDone }: { onDone: () => void }) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {

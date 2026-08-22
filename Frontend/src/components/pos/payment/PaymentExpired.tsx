@@ -1,20 +1,21 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { XCircle } from "lucide-react"
-import type { PaymentStatus as PaymentStatusValue } from "@/lib/payments/paymentStatus"
+import { Clock } from "lucide-react"
+import type { PaymentStatus } from "@/lib/payments/paymentStatus"
 
-interface PaymentStatusProps {
-  status: PaymentStatusValue
+interface PaymentExpiredProps {
+  status: PaymentStatus
   onRetry?: () => void
 }
 
-// Failure overlay only — success is handled exclusively by
-// PaymentSuccessAnimation so the merchant never sees two stacked modals.
-export function PaymentStatus({ status, onRetry }: PaymentStatusProps) {
+// Distinto de PaymentStatus (falla real): agotar la ventana de espera no
+// significa que el pago falló on-chain, solo que no llegó a tiempo — puede
+// confirmarse igual más tarde. El mensaje no debe sonar a error irreversible.
+export function PaymentExpired({ status, onRetry }: PaymentExpiredProps) {
   return (
     <AnimatePresence mode="wait">
-      {status === "failed" && (
+      {status === "expired" && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -27,20 +28,20 @@ export function PaymentStatus({ status, onRetry }: PaymentStatusProps) {
               animate={{ scale: 1 }}
               className="space-y-4"
             >
-              <XCircle className="w-12 h-12 text-error mx-auto" />
+              <Clock className="w-12 h-12 text-warning mx-auto" />
               <div>
                 <h3 className="text-lg font-heading text-on-surface mb-1">
-                  Payment Failed
+                  QR Code Expired
                 </h3>
                 <p className="text-sm text-on-surface-variant">
-                  The transaction could not be processed. Please try again.
+                  The customer didn&apos;t complete the payment in time. Generate a new QR to try again.
                 </p>
               </div>
               <button
                 onClick={onRetry}
                 className="w-full bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium py-3 rounded-default transition-all duration-200 text-sm"
               >
-                Try Again
+                Generate New QR
               </button>
             </motion.div>
           </div>

@@ -98,14 +98,10 @@ export function useSolanaPay() {
           // modal and calls reset() when the merchant dismisses it. Resetting
           // state on a timer from inside this hook unmounted the modal
           // mid-animation.
-          setPaymentStatus("confirmed")
           useMerchantStore.getState().incrementPayments(currentAmountRef.current)
           useTxStore.setState({ lastFetched: 0 })
-        } else if (status === "failed") {
-          setPaymentStatus("failed")
-        } else {
-          setPaymentStatus("pending")
         }
+        setPaymentStatus(status)
       })
     },
     [connection, stopWatching]

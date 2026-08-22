@@ -1,11 +1,11 @@
 import { create } from "zustand"
-import type { WatcherStatus } from "@/lib/payments/paymentStatus"
+import type { PersistedPaymentStatus } from "@/lib/payments/paymentStatus"
 
 export interface PaymentTx {
   id: string
   amount: number
   token: "USDC" | "SOL"
-  status: WatcherStatus
+  status: PersistedPaymentStatus
   date: Date
   terminal: string
   payer: string

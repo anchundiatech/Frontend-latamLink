@@ -6,15 +6,23 @@ import { Copy, Check, ExternalLink } from "lucide-react"
 import { useState } from "react"
 import { shortenAddress } from "@/lib/utils"
 
-interface QRCodeDisplayProps {
+interface PaymentQRCodeProps {
   amount: string
   token: string
   cryptoAmount?: number | null
   solanaPayUrl: string | null
   recipientAddress: string
+  size?: number
 }
 
-export function QRCodeDisplay({ amount, token, cryptoAmount, solanaPayUrl, recipientAddress }: QRCodeDisplayProps) {
+export function PaymentQRCode({
+  amount,
+  token,
+  cryptoAmount,
+  solanaPayUrl,
+  recipientAddress,
+  size = 220,
+}: PaymentQRCodeProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -48,7 +56,7 @@ export function QRCodeDisplay({ amount, token, cryptoAmount, solanaPayUrl, recip
         {solanaPayUrl ? (
           <QRCodeSVG
             value={solanaPayUrl}
-            size={220}
+            size={size}
             bgColor="transparent"
             fgColor="#dae2fd"
             level="M"

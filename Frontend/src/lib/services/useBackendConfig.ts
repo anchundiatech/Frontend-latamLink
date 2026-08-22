@@ -56,7 +56,23 @@ export function useBackendConfig() {
   return { config, loading, error, reload: load }
 }
 
-/** Convierte un monto escrito por una persona (1.5) a unidades mínimas. */
+/**
+ * Convierte un monto escrito por una persona (1.5) a unidades mínimas.
+ *
+ * `amount * 10 ** decimals` opera en punto flotante y puede redondear mal
+ * montos exactos (1.005 * 100 da 100.49999999999999 en JS, no 100.5): acá se
+ * trabaja sobre la representación decimal en string, sin multiplicar floats.
+ */
 export function toMinimalUnits(amount: number, decimals: number): string {
-  return BigInt(Math.round(amount * 10 ** decimals)).toString()
+  const negative = amount < 0
+  const [wholePart = "0", fractionPart = ""] = Math.abs(amount).toString().split(".")
+
+  const fractionDigits = fractionPart.padEnd(decimals + 1, "0")
+  const kept = fractionDigits.slice(0, decimals)
+  const roundUp = fractionDigits.charAt(decimals) >= "5"
+
+  let value = BigInt(wholePart + kept)
+  if (roundUp) value += 1n
+
+  return (negative ? -value : value).toString()
 }
