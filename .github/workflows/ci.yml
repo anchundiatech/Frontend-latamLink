@@ -68,6 +68,12 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile --ignore-workspace
 
+      # Este job es un runner aparte del de "backend": sin este paso,
+      # @prisma/client no tiene tipos generados y tanto el typecheck como los
+      # tests que importan src/lib/prisma.ts fallan.
+      - name: Generar cliente de Prisma
+        run: pnpm exec prisma generate
+
       - name: Comprobación de tipos
         run: pnpm run typecheck
 
