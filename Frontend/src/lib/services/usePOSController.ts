@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { useCuentaDePago } from "@/lib/services/useCuentaDePago"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useSolanaPay } from "@/lib/services/useSolanaPay"
+import { useOnlineStatus } from "@/lib/hooks/useOnlineStatus"
 import { PAYMENT_WATCH_TIMEOUT_MS } from "@/lib/payments/paymentStatus"
 
 export type POSStep = "input" | "qr"
@@ -26,6 +27,7 @@ export function usePOSController() {
   const { walletAddress, setWalletAddress, name, isActive, minPaymentAmount } = useMerchantStore()
   const cuentaDePago = useCuentaDePago()
   const { solanaPayUrl, cryptoAmount, paymentStatus, generateUrl, startWatching, reset } = useSolanaPay()
+  const online = useOnlineStatus()
 
   const walletConnected = !!(walletAddress || cuentaDePago)
   const noWallet = !walletConnected
@@ -33,6 +35,13 @@ export function usePOSController() {
 
   const handleGenerateQR = useCallback(async () => {
     if (!amount || parseFloat(amount) <= 0) return
+
+    // Sin conexión no hay forma de verificar un pago en Solana: no tiene
+    // sentido generar un QR que el POS no podría confirmar igual.
+    if (!online) {
+      toast.error("Sin conexión a internet. Reconectate para generar el cobro.")
+      return
+    }
 
     if (cuentaDePago && !walletAddress) {
       setWalletAddress(cuentaDePago)
@@ -55,7 +64,7 @@ export function usePOSController() {
 
     setStep("qr")
     startWatching(result.referenceKey)
-  }, [amount, token, cuentaDePago, walletAddress, setWalletAddress, generateUrl, startWatching])
+  }, [amount, token, online, cuentaDePago, walletAddress, setWalletAddress, generateUrl, startWatching])
 
   const handleSuccessDone = useCallback(() => {
     setStep("input")
@@ -102,6 +111,7 @@ export function usePOSController() {
     handleGenerateQR,
     handleSuccessDone,
     handleCancel,
+    online,
     // terminal / wallet
     terminalName: name,
     terminalActive: isActive,
