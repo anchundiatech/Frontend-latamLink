@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import { PROGRAM_ID } from "../src/solana/constants.js";
 import { buildPayTx, encodeMerchant, fakeConnection } from "./helpers.js";
 

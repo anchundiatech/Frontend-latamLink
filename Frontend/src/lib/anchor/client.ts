@@ -1,4 +1,4 @@
-import { PublicKey, SystemProgram, type Connection } from "@solana/web3.js";
+import { PublicKey, type Connection } from "@solana/web3.js";
 import { type Provider, Program, type BN, type Idl } from "@coral-xyz/anchor";
 import { IDL } from "./idl";
 
@@ -36,7 +36,6 @@ type MerchantProgram = Program<Idl> & {
 };
 
 export function getProgram(provider: Provider): MerchantProgram {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Anchor IDL is untyped by nature
   return new Program(IDL as Idl, provider) as unknown as MerchantProgram;
 }
 
@@ -97,10 +96,11 @@ export async function fetchMerchantAccount(
 export async function fetchAllMerchantAccounts(
   connection: Connection,
 ): Promise<{ publicKey: PublicKey; account: MerchantAccount }[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Anchor IDL is untyped by nature
   const program = new Program(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Anchor IDL is untyped by nature
     IDL as any,
     { connection } as unknown as Provider,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Anchor program instance is loosely typed
   ) as any;
   return await program.account.merchant.all();
 }

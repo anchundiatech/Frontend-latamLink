@@ -11,3 +11,5 @@ CLAUDE.md
 /node_modules
 .vscode
 node_modules/
+.claude
+.next
