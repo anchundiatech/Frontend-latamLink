@@ -14,6 +14,7 @@ import { useCuentaDePago } from "@/lib/services/useCuentaDePago"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { Logo } from "@/components/Logo"
 import { useSolanaPay } from "@/lib/services/useSolanaPay"
+import { PAYMENT_WATCH_TIMEOUT_MS } from "@/lib/payments/paymentStatus"
 
 export default function POSPage() {
   const [amount, setAmount] = useState("")
@@ -62,14 +63,15 @@ export default function POSPage() {
     setStep("input")
   }, [reset])
 
-  // The payment watcher polls for ~100s (20 attempts x 5s) before giving up;
-  // this countdown mirrors that window so the merchant can see it.
+  // This countdown mirrors the payment watcher's timeout window so the
+  // merchant can see it (PAYMENT_WATCH_TIMEOUT_MS is the single source of
+  // truth shared with the watcher itself).
   useEffect(() => {
     if (step !== "qr" || paymentStatus !== "pending") {
       setSecondsLeft(null)
       return
     }
-    setSecondsLeft(100)
+    setSecondsLeft(PAYMENT_WATCH_TIMEOUT_MS / 1000)
     const interval = setInterval(() => {
       setSecondsLeft((s) => (s !== null && s > 0 ? s - 1 : 0))
     }, 1000)
