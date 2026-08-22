@@ -8,62 +8,58 @@ datasource db {
 }
 
 model MerchantOwner {
-  id                  String     @id @default(uuid())
-  pubkey              String     @unique
-  email               String?    
-  name                String?
-  embeddedWalletPda   String     @unique @map("embedded_wallet_pda")
-  createdAt           DateTime   @default(now())
-
-  merchants           Merchant[]
+  id                String     @id @default(uuid())
+  pubkey            String     @unique
+  email             String?
+  name              String?
+  embeddedWalletPda String     @unique
+  createdAt         DateTime   @default(now())
+  merchants         Merchant[]
 }
 
 model Merchant {
-  id                  String     @id @default(uuid())
-  merchantOwnerId     String
-  merchantIdOnchain   BigInt     @unique @map("merchant_id_onchain")
-  pdaAddress          String     @unique @map("pda_address")
-  pdaPaymentVault     String     @map("pda_payment_vault")
-  pdaGasVault         String     @map("pda_gas_vault")
-  name                String
-  feeBps              Int        @default(0) @map("fee_bps")
-  posFeeBps           Int        @default(0) @map("pos_fee_bps")
-  minPaymentAmount    BigInt     @default(0) @map("min_payment_amount")
-  isActive            Boolean    @default(true) @map("is_active")
-  totalVolume         BigInt     @default(0) @map("total_volume")
-  createdAt           DateTime   @default(now())
-
-  owner               MerchantOwner          @relation(fields: [merchantOwnerId], references: [id])
-  destinations        MerchantDestination[]
-  terminals           PosTerminal[]
-  payments            Payment[]
+  id                String                @id @default(uuid())
+  merchantOwnerId   String
+  merchantOwner     MerchantOwner         @relation(fields: [merchantOwnerId], references: [id])
+  merchantIdOnchain BigInt                @unique
+  pdaAddress        String                @unique
+  pdaPaymentVault   String
+  pdaGasVault       String
+  name              String
+  feeBps            Int                   @default(0)
+  posFeeBps         Int                   @default(0)
+  minPaymentAmount  BigInt
+  isActive          Boolean               @default(true)
+  totalVolume       BigInt                @default(0)
+  createdAt         DateTime              @default(now())
+  destinations      MerchantDestination[]
+  terminals         PosTerminal[]
+  payments          Payment[]
 }
 
 model MerchantDestination {
-  id                 String     @id @default(uuid())
-  merchantId         String
-  destinationPubkey  String     @map("destination_pubkey")
-  percentage         Int
-  positionIndex      Int        @map("position_index")
-  isActive           Boolean    @default(true) @map("is_active")
-  description        String?    @map("description")
-  createdAt          DateTime   @default(now())
-
-  merchant           Merchant   @relation(fields: [merchantId], references: [id])
+  id                String   @id @default(uuid())
+  merchantId        String
+  merchant          Merchant @relation(fields: [merchantId], references: [id])
+  destinationPubkey String
+  percentage        Int
+  positionIndex     Int
+  isActive          Boolean  @default(true)
+  description       String?
+  createdAt         DateTime @default(now())
 
   @@unique([merchantId, destinationPubkey])
 }
 
 model PosTerminal {
-  id                  String     @id @default(uuid())
-  merchantId          String
-  posTerminalId       String     @db.VarChar(32) @map("pos_terminal_id")
-  accessToken         String     @default(uuid()) @unique @map("access_token")
-  isActive            Boolean    @default(true) @map("is_active")
-  createdAt           DateTime   @default(now())
-
-  merchant            Merchant   @relation(fields: [merchantId], references: [id])
-  payments            Payment[]
+  id            String    @id @default(uuid())
+  merchantId    String
+  merchant      Merchant  @relation(fields: [merchantId], references: [id])
+  posTerminalId String
+  accessToken   String    @default(uuid())
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  payments      Payment[]
 
   @@unique([merchantId, posTerminalId])
 }
@@ -75,18 +71,18 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id                  String        @id @default(uuid())
-  txSignature         String        @unique @map("tx_signature")
-  merchantId          String
-  posTerminalId       String
-  payerPubkey         String        @map("payer_pubkey")
-  amountGross         BigInt        @map("amount_gross")
-  posFee              BigInt        @map("pos_fee")
-  gasFee              BigInt        @map("gas_fee")
-  dust                BigInt
-  timestamp           DateTime
-  status              PaymentStatus @default(PENDING)
-
-  merchant            Merchant      @relation(fields: [merchantId], references: [id])
-  terminal            PosTerminal   @relation(fields: [posTerminalId], references: [id])
+  id            String        @id @default(uuid())
+  txSignature   String        @unique
+  merchantId    String
+  merchant      Merchant      @relation(fields: [merchantId], references: [id])
+  posTerminalId String
+  terminal      PosTerminal   @relation(fields: [posTerminalId], references: [id])
+  payerPubkey   String
+  amountGross   BigInt
+  posFee        BigInt
+  gasFee        BigInt
+  dust          BigInt
+  timestamp     DateTime
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
 }
