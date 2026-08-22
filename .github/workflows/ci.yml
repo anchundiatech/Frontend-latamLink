@@ -6,9 +6,12 @@ on:
   pull_request:
 
 jobs:
-  app:
-    name: App y API de catálogo
+  backend:
+    name: Backend y API de catálogo
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -18,11 +21,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
 
+      # backend/ queda deliberadamente fuera del workspace raíz (tiene su
+      # propio lockfile): sin --ignore-workspace, pnpm lo trata como parte del
+      # workspace de Frontend/ y no instala ninguna de sus dependencias.
       - name: Instalar dependencias
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-workspace
 
       # El cliente de Prisma se genera en tiempo de build: sin esto no compila
       # nada que importe @prisma/client.
@@ -41,6 +48,7 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -50,15 +58,49 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
 
+      # backend/ queda deliberadamente fuera del workspace raíz (tiene su
+      # propio lockfile): sin --ignore-workspace, pnpm lo trata como parte del
+      # workspace de Frontend/ y no instala ninguna de sus dependencias.
       - name: Instalar dependencias
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-workspace
 
       - name: Comprobación de tipos
         run: pnpm run typecheck
 
       # No tocan la red: usan una conexión simulada y transacciones armadas
       # en memoria, así que corren en CI sin credenciales ni devnet.
+      - name: Tests
+        run: pnpm run test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
       - name: Tests
         run: pnpm run test
