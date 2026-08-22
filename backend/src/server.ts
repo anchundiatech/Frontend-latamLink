@@ -21,6 +21,7 @@ import {
   buildRelayerSignedTransaction,
   submitSignedTransaction,
 } from "./relayer/service.js";
+import { withIdempotency } from "./relayer/idempotency.js";
 import { createMerchant, updateMerchantConfig } from "./merchants/service.js";
 import { buildPayoutTransaction, submitPayoutTransaction } from "./payouts/service.js";
 import { listPayments, recordPayment } from "./storage/payments.js";
@@ -173,7 +174,7 @@ export function createApp(): Express {
   // firme su parte con Privy (signTransaction, NO send).
   app.post("/payments/build", async (req, res) => {
     try {
-      const { merchantAddress, payerPubkey, amount } = req.body ?? {};
+      const { merchantAddress, payerPubkey, amount, idempotencyKey } = req.body ?? {};
       if (
         typeof merchantAddress !== "string" ||
         typeof payerPubkey !== "string" ||
@@ -182,11 +183,21 @@ export function createApp(): Express {
         res.status(400).json({ error: "merchantAddress, payerPubkey y amount son requeridos" });
         return;
       }
-      const result = await buildPayTransaction(connection, relayer.publicKey, {
-        merchantAddress,
-        payerPubkey,
-        amount: BigInt(amount),
-      });
+      if (idempotencyKey !== undefined && typeof idempotencyKey !== "string") {
+        res.status(400).json({ error: "idempotencyKey debe ser string" });
+        return;
+      }
+      const build = () =>
+        buildPayTransaction(connection, relayer.publicKey, {
+          merchantAddress,
+          payerPubkey,
+          amount: BigInt(amount),
+        });
+      // Sin idempotencyKey el caller no puede sufrir doble cobro por reintento
+      // (cada llamada es independiente a propósito, comportamiento anterior).
+      const result = idempotencyKey
+        ? await withIdempotency(`build:${idempotencyKey}`, build)
+        : await build();
       res.json(result);
     } catch (err) {
       res.status(422).json({ error: (err as Error).message });
@@ -212,12 +223,17 @@ export function createApp(): Express {
         res.status(400).json({ error: "reference debe ser string" });
         return;
       }
-      const result = await buildRelayerSignedTransaction(connection, relayer, {
-        merchantAddress,
-        payerPubkey,
-        amount: BigInt(amount),
-        reference,
-      });
+      const build = () =>
+        buildRelayerSignedTransaction(connection, relayer, {
+          merchantAddress,
+          payerPubkey,
+          amount: BigInt(amount),
+          reference,
+        });
+      // El reference ya es único por QR (se genera una vez y se reutiliza
+      // mientras esa pantalla está viva): sirve como clave de idempotencia
+      // sin pedirle un campo nuevo al cliente.
+      const result = reference ? await withIdempotency(`solana-pay:${reference}`, build) : await build();
       res.json(result);
     } catch (err) {
       res.status(422).json({ error: (err as Error).message });
