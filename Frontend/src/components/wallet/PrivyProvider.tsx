@@ -37,7 +37,9 @@ export function PrivyProvider({ children }: { children: React.ReactNode }) {
     <Privy
       appId={config.privyAppId}
       config={{
-        loginMethods: ["email", "google"],
+        // Google queda oculto: la credencial de OAuth todavía no está
+        // configurada en el dashboard de Privy.
+        loginMethods: ["email"],
         appearance: { theme: "dark" },
         embeddedWallets: {
           solana: {
