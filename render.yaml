@@ -1,0 +1,136 @@
+# Blueprint de Render para el backend de LatamLink Pay.
+#
+# Despliega DOS servicios web independientes desde la misma carpeta backend/
+# (relayer gasless en src/server.ts y API de catálogo/Prisma en
+# src/catalogServer.ts) más la base de datos Postgres que comparten ambos: el
+# catálogo (comercios/destinos) y el propio log del relayer
+# (relayer_payment_log, x402_receipt_log — antes eran archivos locales en
+# DATA_DIR, ahora viven en Postgres para no perderse en cada deploy del plan
+# free, que no tiene disco persistente). No hay build step de compilación: se
+# corre con tsx igual que en local.
+#
+# Cómo usarlo: Render Dashboard → New → Blueprint → conectar este repo. Los
+# envVars marcados `sync: false` NO tienen valor acá (nunca se versionan
+# secretos) y Render te va a pedir que los cargues a mano al crear el
+# Blueprint o después en cada servicio → Environment.
+
+databases:
+  - name: latamlink-db
+    databaseName: latamlink
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  # Relayer gasless (fee payer) + capa x402. Firma con las keypairs en
+  # KEYS_DIR y guarda su log de pagos/comprobantes x402 en Postgres (mismo
+  # DATABASE_URL que la API de catálogo, tablas distintas — ver schema.prisma).
+  - type: web
+    name: latamlink-relayer
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate
+    startCommand: pnpm exec tsx src/server.ts
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "3001"
+      - key: RPC_URL
+        value: https://api.devnet.solana.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: latamlink-db
+          property: connectionString
+      # Secret Files (Environment → Secret Files): subir relayer.json y
+      # owner.json con el contenido de backend/.keys/*.json. Render los deja
+      # en /etc/secrets/<nombre> en cada deploy, de solo lectura.
+      - key: KEYS_DIR
+        value: /etc/secrets
+      - key: RELAYER_DAILY_LAMPORTS_CAP
+        value: "100000000"
+      - key: MAX_PRIORITY_MICROLAMPORTS
+        value: "0"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: RATE_LIMIT_MAX
+        value: "30"
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: ADMIN_API_KEY
+        sync: false
+      # URL pública de ESTE servicio (va en el QR de Solana Pay). Render la
+      # asigna recién después del primer deploy: dejar vacío, deployar,
+      # copiar la URL asignada y volver a guardar acá.
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: PLATFORM_OWNER_PUBKEY
+        sync: false
+      - key: X402_FACILITATOR_URL
+        sync: false
+      - key: X402_TREASURY
+        sync: false
+      - key: X402_NETWORK
+        value: solana-devnet
+      - key: X402_ASSET
+        sync: false
+      - key: X402_PRICE_QR
+        value: "1000"
+      - key: X402_PRICE_STATS
+        value: "5000"
+      # URL pública del servicio latamlink-catalog-api de abajo (para que el
+      # conciliador registre los cobros por QR). Completar después del
+      # primer deploy, igual que PUBLIC_BASE_URL.
+      - key: CATALOG_API_URL
+        sync: false
+      # Debe ser EXACTAMENTE el mismo valor que RELAYER_API_KEY en
+      # latamlink-catalog-api: es la credencial con la que este relayer se
+      # autentica contra la API de catálogo.
+      - key: CATALOG_RELAYER_KEY
+        sync: false
+
+  # API de catálogo (comercios, destinos, terminales) sobre Prisma/Postgres.
+  - type: web
+    name: latamlink-catalog-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate
+    preDeployCommand: pnpm exec prisma migrate deploy
+    startCommand: pnpm exec tsx src/catalogServer.ts
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Render enruta al puerto de PORT; la app escucha en API_PORT. Deben
+      # coincidir.
+      - key: PORT
+        value: "3002"
+      - key: API_PORT
+        value: "3002"
+      - key: RPC_URL
+        value: https://api.devnet.solana.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: latamlink-db
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: RATE_LIMIT_MAX
+        value: "30"
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: API_KEY
+        sync: false
+      # Debe ser EXACTAMENTE el mismo valor que CATALOG_RELAYER_KEY en
+      # latamlink-relayer.
+      - key: RELAYER_API_KEY
+        sync: false

@@ -32,7 +32,6 @@ export const PORT = numberFromEnv("PORT", 3000);
 // Puerto de la API de catálogo (Prisma/Postgres), servicio aparte del relayer.
 export const API_PORT = numberFromEnv("API_PORT", 3002);
 export const KEYS_DIR = process.env.KEYS_DIR ?? ".keys";
-export const DATA_DIR = process.env.DATA_DIR ?? "data";
 export const RELAYER_DAILY_LAMPORTS_CAP = numberFromEnv(
   "RELAYER_DAILY_LAMPORTS_CAP",
   100_000_000,
