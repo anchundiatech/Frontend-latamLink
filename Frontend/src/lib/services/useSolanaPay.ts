@@ -31,7 +31,7 @@ export function useSolanaPay() {
   }, [stopWatching])
 
   const generateUrl = useCallback(
-    async (usdAmount: number, token: "usdc" | "sol") => {
+    async (usdAmount: number, token: "usdc" | "sol", concept?: string) => {
       currentAmountRef.current = usdAmount
       stopWatching()
       setPaymentStatus("idle")
@@ -87,6 +87,9 @@ export function useSolanaPay() {
       requestUrl.searchParams.set("amount", toMinimalUnits(usdAmount, config.tokenDecimals))
       requestUrl.searchParams.set("reference", ref.publicKey.toBase58())
       requestUrl.searchParams.set("label", name || "LatamLink Pay")
+      if (concept) {
+        requestUrl.searchParams.set("product", concept)
+      }
 
       const url = `solana:${encodeURIComponent(requestUrl.toString())}`
 

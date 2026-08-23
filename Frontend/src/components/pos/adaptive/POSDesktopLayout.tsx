@@ -1,8 +1,10 @@
 "use client"
 
-import { Clock, X, Wifi, Maximize } from "lucide-react"
+import { Clock, X, Wifi, WifiOff, Maximize, Activity, CircleDashed, Globe, Coins } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { AmountDisplay } from "@/components/pos/amount/AmountDisplay"
 import { POSKeypad } from "@/components/pos/amount/POSKeypad"
+import { ConceptInput } from "@/components/pos/amount/ConceptInput"
 import { TokenSelector } from "@/components/pos/TokenSelector"
 import { POSActionButton } from "@/components/pos/shared/POSActionButton"
 import { PaymentQRCode } from "@/components/pos/payment/PaymentQRCode"
@@ -27,21 +29,21 @@ export function POSDesktopLayout({ controller, onBack, onEnterKiosk }: POSDeskto
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="flex items-start justify-between">
-        <TerminalHeader showBack={c.step === "qr"} onBack={onBack} />
-        <button
-          onClick={onEnterKiosk}
-          className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-1"
-        >
-          <Maximize className="w-3 h-3" />
-          Kiosk mode
-        </button>
-      </div>
+      <TerminalHeader showBack={c.step === "qr"} onBack={onBack} />
 
       <div className="glass-strong rounded-xl p-8">
         <div className="flex items-center justify-between mb-8">
           <TokenSelector selected={c.token} onSelect={c.setToken} />
-          <TerminalStatus isActive={c.terminalActive} />
+          <div className="flex items-center gap-4">
+            <TerminalStatus isActive={c.terminalActive} />
+            <button
+              onClick={onEnterKiosk}
+              className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
+            >
+              <Maximize className="w-3 h-3" />
+              Kiosk mode
+            </button>
+          </div>
         </div>
 
         {c.noWallet && (
@@ -53,8 +55,11 @@ export function POSDesktopLayout({ controller, onBack, onEnterKiosk }: POSDeskto
         )}
 
         <div className="grid grid-cols-3 gap-10">
-          <div className="flex flex-col items-center space-y-6">
+          <div className="flex flex-col items-center space-y-4">
             <AmountDisplay amount={c.amount} minAmount={c.minPaymentAmount} />
+            {c.step === "input" && (
+              <ConceptInput value={c.concept} onChange={c.setConcept} />
+            )}
             <POSKeypad amount={c.amount} onAmountChange={c.setAmount} />
             <POSActionButton
               onClick={c.handleGenerateQR}
@@ -83,64 +88,113 @@ export function POSDesktopLayout({ controller, onBack, onEnterKiosk }: POSDeskto
 
           <div className="space-y-4">
             <div className="glass rounded-xl p-4">
-              <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider mb-2">
-                Payment Status
-              </p>
-              {c.step === "qr" ? (
-                <div className="space-y-2">
-                  {c.paymentStatus === "pending" && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 border-2 border-electric-purple border-t-transparent rounded-full animate-spin" />
-                      <p className="text-xs text-on-surface-variant">
-                        Waiting for the customer&apos;s payment...
-                      </p>
-                    </div>
-                  )}
-                  {c.secondsLeft !== null && (
-                    <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        Expires in {Math.floor(c.secondsLeft / 60)}:{String(c.secondsLeft % 60).padStart(2, "0")}
-                      </span>
-                    </div>
-                  )}
-                  <button
-                    onClick={c.handleCancel}
-                    className="inline-flex items-center gap-1.5 text-xs font-heading text-on-surface-variant hover:text-error transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                    Cancel payment
-                  </button>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-electric-purple/10 flex items-center justify-center shrink-0">
+                  <Activity className="w-3.5 h-3.5 text-electric-purple" />
                 </div>
-              ) : (
-                <p className="text-xs text-on-surface-variant">No active payment.</p>
-              )}
-            </div>
-
-            <div className="glass rounded-xl p-4">
-              <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider mb-2">
-                Connection
-              </p>
-              <div className="flex items-center gap-2">
-                <Wifi className={`w-4 h-4 ${online ? "text-success" : "text-error"}`} />
-                <span className={`text-xs font-heading ${online ? "text-success" : "text-error"}`}>
-                  {online ? "Connected" : "Offline"}
-                </span>
+                <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider">
+                  Payment Status
+                </p>
               </div>
+
+              <AnimatePresence mode="wait">
+                {c.step === "qr" ? (
+                  <motion.div
+                    key="active"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
+                  >
+                    {c.paymentStatus === "pending" && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-heading text-warning bg-warning/10 px-2.5 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+                        Waiting for payment
+                      </span>
+                    )}
+                    {c.secondsLeft !== null && (
+                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          Expires in {Math.floor(c.secondsLeft / 60)}:{String(c.secondsLeft % 60).padStart(2, "0")}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={c.handleCancel}
+                      className="inline-flex items-center gap-1.5 text-xs font-heading text-error bg-error/10 hover:bg-error/20 transition-colors px-2.5 py-1.5 rounded-lg cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                      Cancel payment
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center gap-2 text-on-surface-variant"
+                  >
+                    <CircleDashed className="w-3.5 h-3.5" />
+                    <p className="text-xs">No active payment</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="glass rounded-xl p-4">
-              <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider mb-2">
-                Transaction Info
-              </p>
-              <dl className="text-xs text-on-surface-variant space-y-1">
-                <div className="flex justify-between">
-                  <dt>Network</dt>
-                  <dd className="text-on-surface capitalize">{config.cluster}</dd>
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    online ? "bg-success/10" : "bg-error/10"
+                  }`}
+                >
+                  {online ? (
+                    <Wifi className="w-3.5 h-3.5 text-success" />
+                  ) : (
+                    <WifiOff className="w-3.5 h-3.5 text-error" />
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <dt>Token</dt>
-                  <dd className="text-on-surface uppercase">{c.token}</dd>
+                <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider">
+                  Connection
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1.5 text-xs font-heading px-2.5 py-1 rounded-full ${
+                  online ? "text-success bg-success/10" : "text-error bg-error/10"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${online ? "bg-success animate-pulse" : "bg-error"}`} />
+                {online ? "Connected" : "Offline"}
+              </span>
+            </div>
+
+            <div className="glass rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-electric-teal/10 flex items-center justify-center shrink-0">
+                  <Globe className="w-3.5 h-3.5 text-electric-teal" />
+                </div>
+                <p className="text-xs text-on-surface-variant font-heading uppercase tracking-wider">
+                  Transaction Info
+                </p>
+              </div>
+              <dl className="text-xs space-y-2.5">
+                <div className="flex items-center justify-between py-1.5 border-b border-white/5">
+                  <dt className="flex items-center gap-1.5 text-on-surface-variant">
+                    <Globe className="w-3 h-3" />
+                    Network
+                  </dt>
+                  <dd className="text-on-surface font-heading capitalize">{config.cluster}</dd>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <dt className="flex items-center gap-1.5 text-on-surface-variant">
+                    <Coins className="w-3 h-3" />
+                    Token
+                  </dt>
+                  <dd className="text-on-surface font-heading uppercase">{c.token}</dd>
                 </div>
               </dl>
             </div>

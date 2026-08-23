@@ -3,6 +3,7 @@
 import { Clock, X } from "lucide-react"
 import { AmountDisplay } from "@/components/pos/amount/AmountDisplay"
 import { POSKeypad } from "@/components/pos/amount/POSKeypad"
+import { ConceptInput } from "@/components/pos/amount/ConceptInput"
 import { TokenSelector } from "@/components/pos/TokenSelector"
 import { POSActionButton } from "@/components/pos/shared/POSActionButton"
 import { PaymentQRCode } from "@/components/pos/payment/PaymentQRCode"
@@ -40,8 +41,11 @@ export function POSTabletLayout({ controller, onBack }: POSTabletLayoutProps) {
         )}
 
         <div className="grid grid-cols-2 gap-8">
-          <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="flex flex-col items-center justify-center space-y-4">
             <AmountDisplay amount={c.amount} minAmount={c.minPaymentAmount} />
+            {c.step === "input" && (
+              <ConceptInput value={c.concept} onChange={c.setConcept} />
+            )}
             <POSKeypad amount={c.amount} onAmountChange={c.setAmount} />
             {c.step === "input" && (
               <POSActionButton

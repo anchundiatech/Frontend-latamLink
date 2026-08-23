@@ -48,6 +48,8 @@ export function POSMobileLayout({ controller, onBack }: POSMobileLayoutProps) {
               <AmountInput
                 amount={c.amount}
                 onAmountChange={c.setAmount}
+                concept={c.concept}
+                onConceptChange={c.setConcept}
                 onSubmit={c.handleGenerateQR}
                 submitting={c.converting}
                 minAmount={c.minPaymentAmount}
