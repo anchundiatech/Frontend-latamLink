@@ -1,4 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+// Import desde el output custom del generator (ver prisma/schema.prisma), no
+// desde "@prisma/client": bajo pnpm ese paquete resuelve a un placeholder
+// empaquetado que revienta en runtime en vez del cliente generado de verdad.
+import { PrismaClient } from "../../generated/prisma/index.js";
 
 export const prisma = new PrismaClient();
 

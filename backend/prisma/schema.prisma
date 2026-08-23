@@ -1,5 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  // Con pnpm, la ubicación default (node_modules/.prisma/client) es ambigua:
+  // el paquete @prisma/client trae empaquetado un placeholder con el mismo
+  // nombre que revienta en runtime ("did not initialize yet") si Node
+  // resuelve ese en vez del generado. Generar a una carpeta propia evita
+  // la resolución ambigua por completo.
+  output = "../generated/prisma"
 }
 
 datasource db {
