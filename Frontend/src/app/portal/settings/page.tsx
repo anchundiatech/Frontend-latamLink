@@ -6,10 +6,9 @@ import { toast } from "sonner"
 import { WalletSettings } from "@/components/settings/WalletSettings"
 import { RetiroSettings } from "@/components/settings/RetiroSettings"
 import { TokenSettings } from "@/components/settings/TokenSettings"
-import { FeeSettings } from "@/components/settings/FeeSettings"
 import { TreasurySettings } from "@/components/settings/TreasurySettings"
 import { TerminalSettings } from "@/components/settings/TerminalSettings"
-import { Logo } from "@/components/Logo"
+import { ComingSoonOverlay } from "@/components/shared/ComingSoonOverlay"
 
 export default function SettingsPage() {
   const handleSave = () => {
@@ -18,18 +17,6 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-8">
-       
-        <div>
-          <h1 className="text-headline-lg font-heading text-on-surface">
-            Settings
-          </h1>
-          <p className="text-xs text-on-surface-variant">
-            Manage your merchant configuration
-          </p>
-        </div>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -37,9 +24,10 @@ export default function SettingsPage() {
           className="space-y-4"
         >
           <WalletSettings />
-          <RetiroSettings />
+          <ComingSoonOverlay>
+            <RetiroSettings />
+          </ComingSoonOverlay>
           <TokenSettings />
-          <FeeSettings />
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

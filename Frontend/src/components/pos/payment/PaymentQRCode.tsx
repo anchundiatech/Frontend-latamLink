@@ -54,13 +54,15 @@ export function PaymentQRCode({
 
       <div className="glass-strong rounded-xl p-6">
         {solanaPayUrl ? (
-          <QRCodeSVG
-            value={solanaPayUrl}
-            size={size}
-            bgColor="transparent"
-            fgColor="#dae2fd"
-            level="M"
-          />
+          <div className="bg-white p-3 rounded-lg">
+            <QRCodeSVG
+              value={solanaPayUrl}
+              size={size}
+              bgColor="#ffffff"
+              fgColor="#0f111a"
+              level="M"
+            />
+          </div>
         ) : (
           <div className="w-55 h-55 flex items-center justify-center">
             <p className="text-xs text-on-surface-variant">Generating QR...</p>

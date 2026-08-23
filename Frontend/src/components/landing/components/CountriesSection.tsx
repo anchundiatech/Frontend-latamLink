@@ -22,7 +22,7 @@ export default function CountriesSection() {
           <div className="text-primary uppercase tracking-[0.2em] text-xs font-semibold mb-4">
             {t.countries.badge}
           </div>
-          <h2 className="font-heading text-4xl sm:text-5xl tracking-tight leading-tight mb-5">
+          <h2 className="font-heading text-5xl sm:text-6xl tracking-tight leading-[0.95] mb-5 text-white">
             {t.countries.title}
           </h2>
           <p className="text-text-secondary text-base max-w-xl mx-auto mb-10 font-light opacity-90">

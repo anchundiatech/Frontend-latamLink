@@ -19,6 +19,7 @@ export type POSStep = "input" | "qr"
  */
 export function usePOSController() {
   const [amount, setAmount] = useState("")
+  const [concept, setConcept] = useState("")
   const [token, setToken] = useState<"usdc" | "sol">("usdc")
   const [step, setStep] = useState<POSStep>("input")
   const [converting, setConverting] = useState(false)
@@ -47,7 +48,7 @@ export function usePOSController() {
       setWalletAddress(cuentaDePago)
     }
     setConverting(true)
-    const result = await generateUrl(parseFloat(amount), token)
+    const result = await generateUrl(parseFloat(amount), token, concept.trim())
     setConverting(false)
 
     if (result.error === "merchant_not_created") {
@@ -64,11 +65,12 @@ export function usePOSController() {
 
     setStep("qr")
     startWatching(result.referenceKey)
-  }, [amount, token, online, cuentaDePago, walletAddress, setWalletAddress, generateUrl, startWatching])
+  }, [amount, concept, token, online, cuentaDePago, walletAddress, setWalletAddress, generateUrl, startWatching])
 
   const handleSuccessDone = useCallback(() => {
     setStep("input")
     setAmount("")
+    setConcept("")
     reset()
   }, [reset])
 
@@ -96,6 +98,8 @@ export function usePOSController() {
     // amount
     amount,
     setAmount,
+    concept,
+    setConcept,
     minPaymentAmount,
     // token
     token,

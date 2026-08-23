@@ -22,6 +22,9 @@ const querySchema = z.object({
   amount: z.string().min(1),
   label: z.string().optional(),
   reference: z.string().optional(),
+  // Lo que el comercio tipeó para este cobro puntual ("Café", "Galleta"),
+  // no el nombre del comercio — así el cliente ve en su wallet qué pagó.
+  product: z.string().max(60).optional(),
 })
 
 const bodySchema = z.object({
@@ -35,16 +38,22 @@ function parseQuery(request: Request) {
     amount: params.get("amount") ?? "",
     label: params.get("label") ?? undefined,
     reference: params.get("reference") ?? undefined,
+    product: params.get("product") ?? undefined,
   })
+}
+
+function withProduct(label: string, product?: string): string {
+  return product ? `${label} — ${product}` : label
 }
 
 // La billetera pide primero cómo presentar el cobro al usuario.
 export async function GET(request: Request) {
   const query = parseQuery(request)
   const label = query.success ? (query.data.label ?? "LatamLink Pay") : "LatamLink Pay"
+  const product = query.success ? query.data.product : undefined
 
   return NextResponse.json({
-    label,
+    label: withProduct(label, product),
     icon: new URL("/Logo.webp", request.url).toString(),
   })
 }
@@ -81,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       transaction: built.transaction,
-      message: `${query.data.label ?? "LatamLink Pay"} — pago sin comisión de red`,
+      message: `${withProduct(query.data.label ?? "LatamLink Pay", query.data.product)} — pago sin comisión de red`,
     })
   } catch (error) {
     const status = error instanceof RelayerError ? error.status : 500

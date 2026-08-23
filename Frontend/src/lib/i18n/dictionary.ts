@@ -106,11 +106,15 @@ const en = {
   },
   team: {
     badge: "The team",
-    title: "Three countries, one problem, one solution",
+    title: "7 builders, one mission",
     members: [
-      { name: "Alejandro Anchundia", role: "CEO & Product", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Previously built payment solutions processing +$2M in LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/" },
-      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, built blockchain-based payment rails.", linkedin: "#" },
-      { name: "Diego López", role: "Backend Developer ", location: "🇲🇽 Ciudad de México", initials: "DL", bio: ".", linkedin: "#" },
+      { name: "Alejandro Anchundia", role: "CEO & Product", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Previously built payment solutions processing +$2M in LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/", pending: false },
+      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, built blockchain-based payment rails.", linkedin: "#", pending: false },
+      { name: "Diego López", role: "Backend Developer", location: "🇲🇽 Ciudad de México", initials: "DL", bio: "", linkedin: "#", pending: false },
+      { name: "Team member 4", role: "Role to be added", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Team member 5", role: "Role to be added", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Team member 6", role: "Role to be added", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Team member 7", role: "Role to be added", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
     ]
   },
   cta: {
@@ -251,11 +255,15 @@ const es: typeof en = {
   },
   team: {
     badge: "El equipo",
-    title: "Tres países, un problema, una solución",
+    title: "7 builders, una misión",
     members: [
-      { name: "Alejandro Anchundia", role: "CEO & Producto", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Construyó soluciones de pago procesando +$2M en LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/" },
-      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, construyó sistemas de pago blockchain.", linkedin: "#" },
-      { name: "Diego López", role: "Backend Developer ", location: "🇲🇽 Ciudad de México", initials: "DL", bio: "", linkedin: "#" },
+      { name: "Alejandro Anchundia", role: "CEO & Producto", location: "🇪🇨 Orellana", initials: "CA", bio: "Fintech builder. Construyó soluciones de pago procesando +$2M en LatAm.", linkedin: "https://www.linkedin.com/in/carlos-anchundia-4a3a5a1b6/", pending: false },
+      { name: "Wilian Yucra", role: "Tech Lead", location: "🇧🇴 La Paz", initials: "WY", bio: "Full-stack & Solana developer, construyó sistemas de pago blockchain.", linkedin: "#", pending: false },
+      { name: "Diego López", role: "Backend Developer", location: "🇲🇽 Ciudad de México", initials: "DL", bio: "", linkedin: "#", pending: false },
+      { name: "Miembro del equipo 4", role: "Rol por definir", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Miembro del equipo 5", role: "Rol por definir", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Miembro del equipo 6", role: "Rol por definir", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
+      { name: "Miembro del equipo 7", role: "Rol por definir", location: "—", initials: "?", bio: "", linkedin: "#", pending: true },
     ]
   },
   cta: {

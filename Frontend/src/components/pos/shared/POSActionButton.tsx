@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2, DollarSign } from "lucide-react"
+import { Loader2, QrCode } from "lucide-react"
 
 interface POSActionButtonProps {
   onClick: () => void
@@ -26,7 +26,7 @@ export function POSActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full max-w-xs bg-electric-purple hover:bg-electric-purple/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-heading font-medium py-4 rounded-default transition-all duration-200 flex items-center justify-center gap-2 text-sm ${className}`}
+      className={`w-full max-w-xs bg-electric-purple hover:bg-electric-purple/90 hover:shadow-lg hover:shadow-electric-purple/20 disabled:bg-surface-container-high disabled:text-on-surface-variant disabled:shadow-none disabled:cursor-not-allowed text-white font-heading font-medium py-4 rounded-default transition-all duration-200 flex items-center justify-center gap-2 text-sm cursor-pointer ${className}`}
     >
       {loading ? (
         <>
@@ -35,7 +35,7 @@ export function POSActionButton({
         </>
       ) : (
         <>
-          <DollarSign className="w-4 h-4" />
+          <QrCode className="w-4 h-4" />
           {label}
         </>
       )}

@@ -1,48 +1,32 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { RoutingFlowDiagram } from "@/components/split-routing/RoutingFlowDiagram"
-import { SplitRoutingConfig } from "@/components/split-routing/SplitRoutingConfig"
-import { useMerchantStore } from "@/lib/store/useMerchantStore"
-
+import { GitBranch, Clock } from "lucide-react"
 
 export default function SplitRoutingPage() {
-  const { destinations } = useMerchantStore()
-
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-8">
-    
-        <div>
-          <h1 className="text-headline-lg font-heading text-on-surface">
-            Split Routing
-          </h1>
-          <p className="text-xs text-on-surface-variant">
-            Configure how payments are distributed across your accounts
-          </p>
+    <div className="max-w-2xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass rounded-xl p-8 sm:p-10 text-center"
+      >
+        <div className="w-14 h-14 rounded-2xl bg-electric-purple/10 flex items-center justify-center mx-auto mb-5">
+          <GitBranch className="w-6 h-6 text-electric-purple" />
         </div>
-      </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <SplitRoutingConfig />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <RoutingFlowDiagram
-            destinations={destinations.map((d) => ({
-              label: d.label,
-              percentage: d.percentage,
-            }))}
-          />
-        </motion.div>
-      </div>
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-heading font-medium text-accent-alert bg-accent-alert/10 px-2.5 py-1 rounded-full mb-4">
+          <Clock className="w-3 h-3" />
+          Próximamente
+        </span>
+
+        <h2 className="text-headline-lg font-heading text-on-surface mb-2">
+          Estamos trabajando aún en esta función
+        </h2>
+        <p className="text-sm text-on-surface-variant max-w-md mx-auto">
+          Te avisaremos cuando esté activa.
+        </p>
+      </motion.div>
     </div>
   )
 }

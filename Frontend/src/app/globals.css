@@ -10,30 +10,44 @@
   --surface-dim: #e8edf5;
   --surface-bright: #ffffff;
 
-  --primary: #2dd4bf;
-  --secondary: #a855f7;
-  --accent-blue: #4d8eff;
+  /* Paleta de marca — AGENTS.md §5.1 */
+  --primary: #9945ff; /* Primario Solana */
+  --secondary: #14f195; /* Secundario / Éxito */
+  --accent-blue: #00c2ff; /* Complementario */
+  --accent-alert: #ff9f43; /* Acento Alerta */
 
   --text-primary: #111827;
   --text-secondary: #6b7280;
 
   --border: rgba(0, 0, 0, 0.08);
+
+  /* Escala tonal de superficie (inputs, tracks, botones de teclado) */
+  --surface-container-low: #f4f7fb;
+  --surface-container: #e8edf5;
+  --surface-container-high: #dde3ee;
+  --surface-container-highest: #d2d9e8;
 }
 
 .dark {
-  --background: #0b1326;
-  --surface: #171f33;
-  --surface-dim: #131b2e;
-  --surface-bright: #222a3d;
+  --background: #0f111a; /* Base Dark — AGENTS.md §5.1 */
+  --surface: #161926; /* Neutral — AGENTS.md §5.1 */
+  --surface-dim: #12141e;
+  --surface-bright: #1d2030;
 
-  --primary: #2dd4bf;
-  --secondary: #a855f7;
-  --accent-blue: #4d8eff;
+  --primary: #9945ff;
+  --secondary: #14f195;
+  --accent-blue: #00c2ff;
+  --accent-alert: #ff9f43;
 
-  --text-primary: #dae2fd;
-  --text-secondary: #988d9f;
+  --text-primary: #f3f4f8;
+  --text-secondary: #9198b0;
 
   --border: rgba(255, 255, 255, 0.08);
+
+  --surface-container-low: #161926;
+  --surface-container: #1d2030;
+  --surface-container-high: #262b3d;
+  --surface-container-highest: #2f3548;
 }
 
 @theme inline {
@@ -50,17 +64,33 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-accent-blue: var(--accent-blue);
+  --color-accent-alert: var(--accent-alert);
+
+  /* Texto legible sobre fondos de color de marca (contraste fijo, no depende de light/dark) */
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #0f111a;
 
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
 
   --color-border: var(--border);
 
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
+  --color-success: #14f195;
+  --color-warning: #ff9f43;
   --color-error: #ef4444;
 
   --color-obsidian: #020617;
+
+  /* Alias usados en el portal (dashboard/POS/settings) — mismos tokens de marca */
+  --color-electric-purple: var(--primary);
+  --color-electric-teal: var(--accent-blue);
+  --color-on-surface: var(--text-primary);
+  --color-on-surface-variant: var(--text-secondary);
+
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
   /* ========= TYPOGRAPHY ========= */
 
   --font-heading: "Fraunces", serif;
@@ -151,11 +181,11 @@
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 10px rgba(45, 212, 191, 0.25);
+    box-shadow: 0 0 10px rgba(0, 194, 255, 0.25);
   }
 
   50% {
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 30px rgba(153, 69, 255, 0.5);
   }
 }
 
@@ -186,9 +216,8 @@
 @utility text-gradient {
   background: linear-gradient(
     135deg,
-    #2dd4bf 0%,
-    #4d8eff 50%,
-    #a855f7 100%
+    #00c2ff 0%,
+    #9945ff 100%
   );
 
   -webkit-background-clip: text;
@@ -196,11 +225,33 @@
   background-clip: text;
 }
 
+@utility card-interactive {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08))
+      border-box;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover,
+  &:focus-within {
+    background:
+      linear-gradient(var(--surface), var(--surface)) padding-box,
+      linear-gradient(135deg, #00c2ff, #9945ff) border-box;
+    box-shadow:
+      0 0 24px rgba(153, 69, 255, 0.18),
+      0 0 12px rgba(0, 194, 255, 0.12);
+  }
+}
+
 @utility neon-border {
-  border: 1px solid rgba(45, 212, 191, 0.3);
+  border: 1px solid rgba(0, 194, 255, 0.3);
   box-shadow:
-    0 0 10px rgba(45, 212, 191, 0.15),
-    0 0 30px rgba(168, 85, 247, 0.1);
+    0 0 10px rgba(0, 194, 255, 0.15),
+    0 0 30px rgba(153, 69, 255, 0.1);
 }
 
 /* ========= BASE ========= */

@@ -2,20 +2,30 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { usePrivy } from "@privy-io/react-auth"
+import { usePrivy, useLogin } from "@privy-io/react-auth"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { motion } from "framer-motion"
 import { Logo } from "@/components/Logo"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 
 export default function LoginPage() {
-  const { login, authenticated, ready, user, logout } = usePrivy()
+  const { authenticated, ready, user, logout } = usePrivy()
   const router = useRouter()
   const [loggingIn, setLoggingIn] = useState(false)
+  const [signOutOpen, setSignOutOpen] = useState(false)
   const { t } = useLanguage()
+
+  // Privy's modal has no "closed by the user" state of its own — without
+  // these callbacks, dismissing it (or it erroring out) left the button
+  // stuck on "Opening sign in window..." forever.
+  const { login } = useLogin({
+    onComplete: () => setLoggingIn(false),
+    onError: () => setLoggingIn(false),
+  })
 
 
   useEffect(() => {
@@ -49,19 +59,20 @@ export default function LoginPage() {
 
   if (authenticated && ready) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <header className="glass border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(153,69,255,0.12)_0%,transparent_60%)]" />
+        <header className="glass border-b border-white/5 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
             <Link href="/">
               <Logo size={36} />
             </Link>
           </div>
         </header>
-        <main className="flex-1 flex items-center justify-center px-6">
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-strong rounded-xl p-8 max-w-sm w-full text-center space-y-6"
+            className="glass-strong rounded-xl p-6 sm:p-8 max-w-sm w-full text-center space-y-6"
           >
             <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto">
               <svg className="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +81,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-headline-lg font-heading text-on-surface mb-1">Already Signed In</h1>
-              <p className="text-sm text-on-surface-variant">{user?.email?.address ?? user?.google?.email ?? "Connected"}</p>
+              <p className="text-sm text-on-surface-variant break-all">{user?.email?.address ?? user?.google?.email ?? "Connected"}</p>
             </div>
             <Link
               href="/portal/pos"
@@ -79,21 +90,36 @@ export default function LoginPage() {
               Go to POS Terminal
             </Link>
             <button
-              onClick={() => logout()}
-              className="text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+              onClick={() => setSignOutOpen(true)}
+              className="text-xs text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
             >
               Sign out
             </button>
           </motion.div>
         </main>
+
+        <ConfirmDialog
+          open={signOutOpen}
+          onOpenChange={setSignOutOpen}
+          title="Sign out?"
+          description="You'll need to sign in again to access your POS terminal."
+          confirmLabel="Sign out"
+          onConfirm={() => {
+            logout()
+            setSignOutOpen(false)
+          }}
+        />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(153,69,255,0.12)_0%,transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_20%_90%,rgba(0,194,255,0.06)_0%,transparent_60%)]" />
+
+      <header className="glass border-b border-white/5 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
           <Link href="/">
             <Logo size={36} />
           </Link>
@@ -101,7 +127,7 @@ export default function LoginPage() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,7 +152,7 @@ export default function LoginPage() {
                 setLoggingIn(true)
                 login()
               }}
-              className="w-full flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium py-3 rounded-default transition-all text-sm"
+              className="w-full flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium py-3 rounded-default transition-all text-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
