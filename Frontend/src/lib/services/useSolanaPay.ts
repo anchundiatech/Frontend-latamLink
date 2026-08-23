@@ -89,20 +89,22 @@ export function useSolanaPay() {
         }
       }
 
-      // El QR apunta a nuestro endpoint (Solana Pay, "transaction request") en
-      // vez de codificar una transferencia suelta: así el pago ejecuta `pay()`
-      // y conserva el split y las comisiones. La billetera recibe la
-      // transacción ya firmada por el relayer, que paga el fee de red.
-      const requestUrl = new URL("/api/pay", window.location.origin)
-      requestUrl.searchParams.set("merchant", merchantPda)
-      requestUrl.searchParams.set("amount", toMinimalUnits(usdAmount, config.tokenDecimals))
-      requestUrl.searchParams.set("reference", ref.publicKey.toBase58())
-      requestUrl.searchParams.set("label", name || "LatamLink Pay")
-      if (concept) {
-        requestUrl.searchParams.set("product", concept)
-      }
-
-      const url = `solana:${encodeURIComponent(requestUrl.toString())}`
+      // QR de transferencia directa (Solana Pay "transfer request"), armado
+      // con el SDK oficial: las wallets móviles no reconocen de forma
+      // confiable el patrón "transaction request" (el link a /api/pay) al
+      // escanear con la cámara, así que el cliente paga directo a la wallet
+      // del comercio. Esto sacrifica el reparto automático entre varios
+      // destinos — solo alcanza a la wallet del comercio, no a un split de
+      // varias cuentas — hasta que se arme una página de checkout con
+      // wallet-adapter que sí soporte ese flujo.
+      const url = encodeURL({
+        recipient: walletAddress as Address,
+        amount: cryptoEquivalent,
+        splToken: token === "usdc" ? (config.paymentTokenMint as Address) : undefined,
+        reference: ref.publicKey.toBase58() as Address,
+        label: name || "LatamLink Pay",
+        message: concept ? `${name || "LatamLink Pay"} — ${concept}` : `${name || "LatamLink Pay"} — cobro`,
+      }).toString()
 
       setSolanaPayUrl(url)
       setReferenceKey(ref.publicKey.toBase58())
