@@ -29,7 +29,6 @@ export interface CreatedMerchant {
  * de la plataforma y el comercio no firma ni paga nada.
  */
 export function useCreateMerchant() {
-  const store = useMerchantStore()
   // La cuenta de pago sale de la sesión: Privy la crea al entrar con Google y
   // el comerciante no conecta nada.
   const cuentaDePago = useCuentaDePago()
@@ -47,6 +46,12 @@ export function useCreateMerchant() {
         "El backend todavía no tiene un token de pago configurado. Ejecutá la preparación de devnet."
       )
     }
+
+    // Se lee el estado recién acá (no como valor ya desestructurado del hook)
+    // porque quien llama a create() suele actualizar el store y disparar la
+    // creación en el mismo evento, antes de que el componente vuelva a
+    // renderizar con los datos nuevos.
+    const store = useMerchantStore.getState()
 
     const active = store.destinations.filter((d) => d.percentage > 0 && d.address.trim())
     if (active.length === 0) {
@@ -92,7 +97,7 @@ export function useCreateMerchant() {
     })
 
     return created
-  }, [store, cuentaDePago])
+  }, [cuentaDePago])
 
   return { create }
 }
