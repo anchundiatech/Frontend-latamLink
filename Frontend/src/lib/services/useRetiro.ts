@@ -5,6 +5,7 @@ import { Transaction } from "@solana/web3.js"
 import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
 import { useCuentaDePago } from "./useCuentaDePago"
 import { usePrivyWallet } from "./usePrivyWallet"
+import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
 type Estado = "idle" | "firmando" | "enviando"
 
@@ -19,12 +20,14 @@ type Estado = "idle" | "firmando" | "enviando"
 export function useRetiro() {
   const cuentaDePago = useCuentaDePago()
   const wallet = usePrivyWallet()
+  const merchantPda = useMerchantStore((s) => s.merchantPda)
   const [estado, setEstado] = useState<Estado>("idle")
 
   const retirar = useCallback(
     async (params: { destino: string; monto: number }): Promise<{ signature: string }> => {
       if (!cuentaDePago) throw new Error("Todavía estamos preparando tu cuenta de pago")
       if (!wallet) throw new Error("No pudimos acceder a tu cuenta para firmar el retiro")
+      if (!merchantPda) throw new Error("Todavía no tenés un comercio creado")
       if (params.monto <= 0) throw new Error("Ingresá un monto mayor que cero")
 
       const config = await fetchBackendConfig()
@@ -35,6 +38,7 @@ export function useRetiro() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ownerPubkey: cuentaDePago,
+          merchantPda,
           mint: config.paymentTokenMint,
           destination: params.destino.trim(),
           amount: toMinimalUnits(params.monto, config.tokenDecimals),
@@ -71,7 +75,7 @@ export function useRetiro() {
         setEstado("idle")
       }
     },
-    [cuentaDePago, wallet]
+    [cuentaDePago, wallet, merchantPda]
   )
 
   return { retirar, estado }

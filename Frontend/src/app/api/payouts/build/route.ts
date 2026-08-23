@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"
 
 const bodySchema = z.object({
   ownerPubkey: z.string().min(32),
+  merchantPda: z.string().min(32),
   mint: z.string().min(32),
   destination: z.string().min(32),
   amount: z.union([z.string(), z.number()]),
