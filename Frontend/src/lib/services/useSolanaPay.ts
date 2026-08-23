@@ -2,8 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { PublicKey, Connection } from "@solana/web3.js"
+import { encodeURL } from "@solana/pay"
+import type { Address } from "@solana/kit"
 import { generateReferenceKey, watchForPayment } from "./solanaPay"
-import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
+import { fetchBackendConfig } from "./useBackendConfig"
 import { convertUsdToToken, getSolUsdPrice } from "./priceFeed"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
@@ -13,7 +15,7 @@ import type { PaymentStatus } from "@/lib/payments/paymentStatus"
 const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function useSolanaPay() {
-  const { name, merchantPda } = useMerchantStore()
+  const { name, merchantPda, walletAddress } = useMerchantStore()
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle")
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
   const [referenceKey, setReferenceKey] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export function useSolanaPay() {
       // El cobro se arma contra el comercio on-chain: sin él no hay reparto
       // posible, así que no se genera un QR que cobraría de más y repartiría
       // de menos.
-      if (!merchantPda) {
+      if (!merchantPda || !walletAddress) {
         return {
           referenceKey: null as unknown as PublicKey,
           solanaPayUrl: null,
@@ -53,6 +55,15 @@ export function useSolanaPay() {
       try {
         config = await fetchBackendConfig()
       } catch {
+        return {
+          referenceKey: null as unknown as PublicKey,
+          solanaPayUrl: null,
+          cryptoAmount: null,
+          error: "config_unavailable" as const,
+        }
+      }
+
+      if (token === "usdc" && !config.paymentTokenMint) {
         return {
           referenceKey: null as unknown as PublicKey,
           solanaPayUrl: null,
@@ -103,7 +114,7 @@ export function useSolanaPay() {
         error: null,
       }
     },
-    [merchantPda, name, stopWatching]
+    [merchantPda, walletAddress, name, stopWatching]
   )
 
   const startWatching = useCallback(
