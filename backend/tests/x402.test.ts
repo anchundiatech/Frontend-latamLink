@@ -45,7 +45,7 @@ async function callPaywall(
   facilitator: Facilitator,
   paymentHeader?: string,
   extra?: {
-    isRedeemed?: (transaction: string) => boolean;
+    isRedeemed?: (transaction: string) => Promise<boolean>;
     precondition?: () => Promise<{ ok: boolean; status?: number; error?: string }>;
   },
 ): Promise<Captured> {
@@ -188,7 +188,7 @@ describe("x402 — el recurso nunca se entrega sin pago verificado", () => {
 
   it("rechaza un pago ya canjeado (replay de la cabecera X-PAYMENT)", async () => {
     const result = await callPaywall(fakeFacilitator({}), VALID_PAYMENT, {
-      isRedeemed: (transaction) => transaction === "sig123",
+      isRedeemed: async (transaction) => transaction === "sig123",
     });
 
     assert.equal(result.statusCode, 402);

@@ -42,11 +42,11 @@ export function createX402Router(connection: Connection): Router {
       precondition,
       isRedeemed: isTransactionRedeemed,
       onSettled: (receipt) => {
-        try {
-          recordReceipt({ ...receipt, settledAt: new Date().toISOString(), distributed: false });
-        } catch (err) {
-          console.error("No se pudo registrar el comprobante x402:", err);
-        }
+        recordReceipt({ ...receipt, settledAt: new Date().toISOString(), distributed: false }).catch(
+          (err) => {
+            console.error("No se pudo registrar el comprobante x402:", err);
+          },
+        );
       },
     });
 
@@ -133,7 +133,7 @@ export function createX402Router(connection: Connection): Router {
     paywall(X402_PRICE_STATS, "Estadísticas de comercio LatamLink", (req) =>
       resolveMerchant(req, req.params.address),
     ),
-    (req, res) => {
+    async (req, res) => {
       const merchant = resolvedMerchants.get(req)!;
       const address = merchant.address.toBase58();
       res.json({
@@ -147,7 +147,7 @@ export function createX402Router(connection: Connection): Router {
         minPaymentAmount: merchant.minPaymentAmount.toString(),
         totalPaymentsReceived: merchant.totalPaymentsReceived.toString(),
         totalVolume: merchant.totalVolume.toString(),
-        recentPayments: listPayments({ merchant: address, limit: 10 }),
+        recentPayments: await listPayments({ merchant: address, limit: 10 }),
       });
     },
   );

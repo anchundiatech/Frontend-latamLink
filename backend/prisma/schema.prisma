@@ -90,3 +90,46 @@ model Payment {
   merchant            Merchant      @relation(fields: [merchantId], references: [id])
   terminal            PosTerminal   @relation(fields: [posTerminalId], references: [id])
 }
+
+enum RelayerPaymentStatus {
+  PENDING
+  CONFIRMED
+}
+
+// Espejo en Postgres de lo que antes era backend/data/payments.jsonl: log
+// append-only del relayer (identifica merchant/payer por pubkey, no por FK a
+// Merchant, porque el relayer no depende del catálogo). Nunca se actualiza
+// una fila; "pending" → "confirmed" se resuelve tomando el registro más
+// reciente por signature, igual que antes con el archivo.
+model RelayerPaymentLog {
+  id          String               @id @default(uuid())
+  signature   String               @map("signature")
+  slot        Int?
+  merchant    String
+  payer       String
+  amount      String
+  reference   String?
+  status      RelayerPaymentStatus
+  createdAt   DateTime             @default(now()) @map("created_at")
+
+  @@index([signature])
+  @@index([merchant])
+  @@index([reference])
+  @@map("relayer_payment_log")
+}
+
+// Espejo en Postgres de backend/data/x402-receipts.jsonl. `distributed` queda
+// en false al crearse: el job de liquidación de Fase 3 que lo marcaría en
+// true todavía no existe (ver x402/routes.ts).
+model X402ReceiptLog {
+  id          String   @id @default(uuid())
+  resource    String
+  amount      String
+  payer       String?
+  transaction String?
+  settledAt   DateTime @map("settled_at")
+  distributed Boolean  @default(false)
+
+  @@index([transaction])
+  @@map("x402_receipt_log")
+}

@@ -210,17 +210,15 @@ export function createApp(): Express {
       status: "pending" | "confirmed",
       slot: number | null,
     ): void => {
-      try {
-        recordPayment({
-          ...info,
-          slot,
-          reference: reference ?? null,
-          status,
-          createdAt: new Date().toISOString(),
-        });
-      } catch (err) {
+      recordPayment({
+        ...info,
+        slot,
+        reference: reference ?? null,
+        status,
+        createdAt: new Date().toISOString(),
+      }).catch((err) => {
         console.error("No se pudo registrar el pago:", err);
-      }
+      });
     };
 
     try {
@@ -317,12 +315,12 @@ export function createApp(): Express {
 
   // Conciliación para el POS/dashboard. Expone wallets y montos de terceros,
   // así que va detrás de credencial de operador.
-  app.get("/payments", operatorOnly, validateQuery(listPaymentsQuerySchema), (req, res) => {
+  app.get("/payments", operatorOnly, validateQuery(listPaymentsQuerySchema), async (req, res) => {
     const { merchant, reference, limit } = (req as typeof req & {
       validatedQuery: { merchant?: string; reference?: string; limit?: number };
     }).validatedQuery;
     res.json({
-      payments: listPayments({ merchant, reference, limit }),
+      payments: await listPayments({ merchant, reference, limit }),
     });
   });
 

@@ -26,7 +26,7 @@ export interface PaywallOptions {
   // Se ejecuta ANTES de cobrar: si el request no se va a poder servir, no se
   // le cobra al cliente por un error nuestro.
   precondition?: (req: Request) => Promise<PreconditionResult>;
-  isRedeemed?: (transaction: string) => boolean;
+  isRedeemed?: (transaction: string) => Promise<boolean>;
   onSettled?: (receipt: {
     resource: string;
     amount: string;
@@ -122,7 +122,7 @@ export function requirePayment(options: PaywallOptions): RequestHandler {
       // Un mismo pago no puede canjearse dos veces.
       const transaction = settlement.transaction ?? null;
       if (transaction) {
-        if (redeemedInFlight.has(transaction) || options.isRedeemed?.(transaction)) {
+        if (redeemedInFlight.has(transaction) || (await options.isRedeemed?.(transaction))) {
           paymentRequired("Este pago ya fue utilizado");
           return;
         }
