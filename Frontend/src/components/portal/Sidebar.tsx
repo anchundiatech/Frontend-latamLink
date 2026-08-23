@@ -20,7 +20,8 @@ const navItems = [
 
   { name: "Dashboard", href: "/portal/dashboard", icon: LayoutDashboard },
   { name: "POS Terminal", href: "/portal/pos", icon: CreditCard },
-  { name: "Split Routing", href: "/portal/split-routing", icon: GitBranch },
+  // Oculto por ahora: todavía no queda del todo bien.
+  // { name: "Split Routing", href: "/portal/split-routing", icon: GitBranch },
   { name: "Transactions", href: "/portal/transactions", icon: ArrowLeftRight },
   { name: "Settings", href: "/portal/settings", icon: Settings },
 ]
