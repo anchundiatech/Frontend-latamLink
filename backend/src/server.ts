@@ -19,6 +19,7 @@ import { rateLimit } from "./http/rateLimit.js";
 import { validateBody, validateQuery } from "./http/validateRequest.js";
 import {
   buildPaymentSchema,
+  confirmTransferSchema,
   createMerchantSchema,
   listPaymentsQuerySchema,
   payoutBuildSchema,
@@ -36,6 +37,7 @@ import {
 import { withIdempotency } from "./relayer/idempotency.js";
 import { createMerchant, updateMerchantConfig } from "./merchants/service.js";
 import { buildPayoutTransaction, submitPayoutTransaction } from "./payouts/service.js";
+import { conciliarTransferenciaDirecta } from "./events/transferenciaDirecta.js";
 import { listPayments, recordPayment } from "./storage/payments.js";
 import { PROGRAM_ID } from "./solana/constants.js";
 import { createX402Router } from "./x402/routes.js";
@@ -247,6 +249,28 @@ export function createApp(): Express {
       res.status(422).json({ error: (err as Error).message });
     }
   });
+
+  // Registra en el historial un cobro que llegó como transferencia directa
+  // (sin pasar por el contrato): el navegador solo avisa que se confirmó, acá
+  // se relee la transacción real antes de creerle nada.
+  app.post(
+    "/payments/confirm-transfer",
+    validateBody(confirmTransferSchema),
+    async (req, res) => {
+      try {
+        const { reference, merchantPda, ownerPubkey, mint } = req.body;
+        const resultado = await conciliarTransferenciaDirecta(connection, {
+          reference,
+          merchantPda,
+          ownerPubkey,
+          mint,
+        });
+        res.json({ resultado });
+      } catch (err) {
+        res.status(422).json({ error: (err as Error).message });
+      }
+    },
+  );
 
   // Retiro desde la cuenta de pago del comerciante. El relayer paga la red
   // (esa cuenta no tiene SOL) y el comerciante firma, porque es su dinero.

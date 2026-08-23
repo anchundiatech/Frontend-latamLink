@@ -56,6 +56,13 @@ export const submitPaymentSchema = z.object({
   reference: z.string().optional(),
 });
 
+export const confirmTransferSchema = z.object({
+  reference: pubkeyString,
+  merchantPda: pubkeyString,
+  ownerPubkey: pubkeyString,
+  mint: pubkeyString,
+});
+
 export const payoutBuildSchema = z.object({
   ownerPubkey: pubkeyString,
   merchantPda: pubkeyString,
