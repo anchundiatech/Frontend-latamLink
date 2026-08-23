@@ -1,4 +1,23 @@
+<div align="center">
+
+<img src="https://img.shields.io/badge/LATAMLINK-PAY-00D2BD?style=for-the-badge&labelColor=8B34FA" alt="LatamLink Pay"/>
+
 # LatamLink Pay
+
+**Tu plata, a la velocidad de Solana**
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-000000?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Solana](https://img.shields.io/badge/Solana-Devnet-9945FF?style=flat-square&logo=solana&logoColor=white)
+![Anchor](https://img.shields.io/badge/Anchor-Rust-121D33?style=flat-square&logo=rust&logoColor=white)
+![Postgres](https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Privy](https://img.shields.io/badge/Privy-Auth-1E1B4B?style=flat-square)
+![pnpm](https://img.shields.io/badge/pnpm-F69220?style=flat-square&logo=pnpm&logoColor=white)
+
+</div>
+
+---
 
 Plataforma de pagos para comercios sobre **Solana**: alta de comercio sin
 frase semilla (Privy), cobro por QR (Solana Pay) en USDC, y retiro con
@@ -105,3 +124,9 @@ en devnet) vive en un repositorio aparte, no en este monorepo:
 - [`AGENTS.md`](AGENTS.md) — reglas de arquitectura, invariantes financieras,
   líneas rojas de seguridad y lineamientos de UI/UX. Se aplican a cualquier
   cambio en el repo, humano o agente de IA.
+
+---
+
+<div align="center">
+<sub>LatamLink Pay · Payments / Fintech / Solana / Web3</sub>
+</div>
