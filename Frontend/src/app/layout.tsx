@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Fraunces, DM_Sans } from "next/font/google"
+import Script from "next/script"
 
 import { PrivyProvider } from "@/components/wallet/PrivyProvider"
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider"
@@ -47,7 +48,9 @@ export default function RootLayout({
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <head>
-        <script
+        <Script
+          id="theme-anti-flash"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {

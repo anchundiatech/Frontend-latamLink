@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 import { type Locale, defaultLocale, locales } from "./config"
 import { dictionaries } from "./dictionary"
 
@@ -13,14 +13,20 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") return defaultLocale
+  // Arranca siempre en el idioma por defecto para que el primer render del
+  // cliente coincida con el del servidor; el idioma real (guardado o del
+  // navegador) se aplica recién después de montar.
+  const [locale, setLocaleState] = useState<Locale>(defaultLocale)
+
+  useEffect(() => {
     const savedLocale = localStorage.getItem("locale") as Locale
-    if (savedLocale && locales.includes(savedLocale)) return savedLocale
+    if (savedLocale && locales.includes(savedLocale)) {
+      setLocaleState(savedLocale)
+      return
+    }
     const browserLang = navigator.language.slice(0, 2) as Locale
-    if (locales.includes(browserLang)) return browserLang
-    return defaultLocale
-  })
+    if (locales.includes(browserLang)) setLocaleState(browserLang)
+  }, [])
 
   const setLocale = useCallback((newLocale: Locale) => {
     if (locales.includes(newLocale)) {
