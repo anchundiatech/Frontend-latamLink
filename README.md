@@ -1,10 +1,12 @@
 <div align="center">
 
+<img src="Frontend/public/Logo.webp" alt="LatamLink Pay" width="120" height="120" />
+
 <img src="https://img.shields.io/badge/LATAMLINK-PAY-00D2BD?style=for-the-badge&labelColor=8B34FA" alt="LatamLink Pay"/>
 
 # LatamLink Pay
 
-**Tu plata, a la velocidad de Solana**
+**Tu dinero, a la velocidad de Solana**
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-000000?style=flat-square&logo=react&logoColor=61DAFB)

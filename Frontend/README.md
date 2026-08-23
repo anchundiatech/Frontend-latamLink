@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/LATAMLink.png" alt="LatamLink Pay" width="120" height="120" />
+  <img src="public/Logo.webp" alt="LatamLink Pay" width="120" height="120" />
 </p>
 
 <h1 align="center">LatamLink Pay — Frontend</h1>
