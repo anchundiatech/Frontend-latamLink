@@ -14,9 +14,7 @@ Dashboard y POS del comercio. No tiene lógica de Solana propia: arma
 transacciones/QRs con datos que le da el backend y nunca firma nada con una
 credencial de operador — eso vive del lado servidor de esta misma app
 (`src/app/api/**`), que es el único que le habla al relayer y a la API de
-catálogo. Ver [`AGENTS.md`](../AGENTS.md) en la raíz del repo para las reglas
-de arquitectura, invariantes financieras y líneas rojas de seguridad; este
-documento es solo el mapa de esta carpeta.
+catálogo.
 
 ## Cómo correrlo
 
@@ -118,8 +116,7 @@ src/
   sesión es de Privy directamente (`usePrivy()`), no hace falta un store
   propio.
 
-No se agregan stores nuevos sin justificar por qué Context/props no alcanza
-(regla de `AGENTS.md`).
+No se agregan stores nuevos sin justificar por qué Context/props no alcanza.
 
 ### POS device-adaptive
 
@@ -169,12 +166,11 @@ no borrar, solo no mostrarlas hasta que estén listas:
 (no en una carpeta `__tests__` separada). Cubre principalmente
 `lib/services/`, `lib/payments/split.ts` y componentes de POS con lógica de
 formato/validación (`AmountDisplay`, `POSKeypad`, `TokenSelector`,
-`PaymentStatus`, etc.). Si tu cambio toca montos, fees, split o el flujo del
-relayer, el PR debe incluir tests nuevos o actualizados — no es opcional
-(ver `AGENTS.md` §8).
+`PaymentStatus`, etc.). Si un cambio toca montos, fees, split o el flujo del
+relayer, el PR debe incluir tests nuevos o actualizados — no es opcional.
 
 ## Paleta y diseño
 
 La UI sigue un sistema de tokens fijo (fondo oscuro + acentos Solana/éxito/
-alerta) y reglas de cards/onboarding/modo guía documentadas en
-`AGENTS.md` §5. No se introducen colores ni degradados fuera de esa tabla.
+alerta) y reglas de cards, onboarding y modo guía consistentes en toda la
+aplicación. No se introducen colores ni degradados fuera de esa paleta.

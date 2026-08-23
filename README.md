@@ -23,9 +23,7 @@
 
 Plataforma de pagos para comercios sobre **Solana**: alta de comercio sin
 frase semilla (Privy), cobro por QR (Solana Pay) en USDC, y retiro con
-comisión de la plataforma descontada en ese momento. Ver [`AGENTS.md`](AGENTS.md)
-para las reglas de arquitectura, invariantes financieras y seguridad — es
-lectura obligatoria antes de tocar código de pagos.
+comisión de la plataforma descontada en ese momento.
 
 ## Estructura del repositorio
 
@@ -36,8 +34,7 @@ latamlink-pay/
 ├── Frontend/     Next.js 16 + React 19 + TypeScript — dashboard, POS, onboarding
 ├── backend/      Dos servicios Express (relayer gasless + API de catálogo/Prisma)
 ├── docs/         Notas técnicas internas (auditorías, mapas, informes de avance)
-├── render.yaml   Blueprint de despliegue del backend en Render
-└── AGENTS.md     Reglas de arquitectura, invariantes financieras y seguridad
+└── render.yaml   Blueprint de despliegue del backend en Render
 ```
 
 `Frontend/` es miembro del workspace de pnpm de la raíz (`pnpm-workspace.yaml`).
@@ -80,8 +77,7 @@ plataforma** no se pierde: se cobra en el momento del **retiro**
 (`backend/src/payouts/service.ts`), con una segunda transferencia SPL en la
 misma transacción de payout hacia la ATA de la plataforma.
 
-El contrato Anchor (`latamlink_pay`, ver `AGENTS.md` para el orden de cálculo
-del split) sigue existiendo y se usa para el alta de comercio
+El contrato Anchor (`latamlink_pay`) sigue existiendo y se usa para el alta de comercio
 (`initialize_merchant`) y la config on-chain — el camino `pay()` con reparto
 multi-destino queda disponible para cuando haya una página de checkout con
 wallet-adapter que sí soporte el patrón "transaction request".
@@ -106,9 +102,8 @@ cp .env.example .env            # completar RELAYER_URL/CATALOG_API_URL, Privy, 
 pnpm run dev                    # http://localhost:3000
 ```
 
-Antes de dar por terminada una tarea corré `lint` + `typecheck`/`build` +
-`test` en cada superficie que tocaste — ver checklist completo en
-[`AGENTS.md`](AGENTS.md#-9-checklist-antes-de-abrir-un-pr).
+Antes de dar por terminada una tarea, ejecuta `lint` + `typecheck`/`build` +
+`test` en cada superficie que hayas modificado.
 
 ## Repositorios relacionados
 
@@ -123,9 +118,6 @@ en devnet) vive en un repositorio aparte, no en este monorepo:
   dominio, stores, flujos de pago/onboarding, variables de entorno.
 - [`backend/README.md`](backend/README.md) — flujo gasless, endpoints,
   modelo de comisiones, comandos.
-- [`AGENTS.md`](AGENTS.md) — reglas de arquitectura, invariantes financieras,
-  líneas rojas de seguridad y lineamientos de UI/UX. Se aplican a cualquier
-  cambio en el repo, humano o agente de IA.
 
 ---
 
