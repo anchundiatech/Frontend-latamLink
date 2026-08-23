@@ -5,7 +5,20 @@
 <h1 align="center">LatamLink Pay — Frontend</h1>
 
 <p align="center">
-  Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Privy
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-000000?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand-433E38?style=flat-square)
+<br/>
+![Solana](https://img.shields.io/badge/Solana-web3.js-9945FF?style=flat-square&logo=solana&logoColor=white)
+![Solana Pay](https://img.shields.io/badge/Solana_Pay-9945FF?style=flat-square&logo=solana&logoColor=white)
+![Solana Kit](https://img.shields.io/badge/@solana/kit-9945FF?style=flat-square&logo=solana&logoColor=white)
+![SPL Token](https://img.shields.io/badge/SPL_Token-9945FF?style=flat-square&logo=solana&logoColor=white)
+![Anchor](https://img.shields.io/badge/Anchor-Rust-121D33?style=flat-square&logo=rust&logoColor=white)
+![Privy](https://img.shields.io/badge/Privy-Embedded_Wallets-1E1B4B?style=flat-square)
+
 </p>
 
 ---
