@@ -1,0 +1,21 @@
+# Ancla a backend/ como su propia raíz de pnpm: sin este archivo, pnpm busca
+# hacia arriba y encuentra el pnpm-workspace.yaml de la raíz del repo (que
+# solo declara 'Frontend'), y trata a backend/ como si no perteneciera a
+# ningún workspace — sus propios comandos pnpm quedan mal resueltos.
+packages:
+  - '.'
+
+# Antes vivía en package.json → pnpm.onlyBuiltDependencies; pnpm 10+ dejó de
+# leerlo ahí y ahora exige decidir explícitamente por paquete. Mismo criterio
+# que tenía ese campo (y que ya usa el pnpm-workspace.yaml de la raíz para
+# Frontend): solo Prisma y esbuild corren su script nativo; los bindings
+# nativos de Solana (bigint-buffer, bufferutil, utf-8-validate) se quedan con
+# su fallback en JS.
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  bigint-buffer: false
+  bufferutil: false
+  esbuild: true
+  prisma: true
+  utf-8-validate: false
