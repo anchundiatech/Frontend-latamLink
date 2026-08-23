@@ -22,6 +22,7 @@ export function useSolanaPay() {
   const [cryptoAmount, setCryptoAmount] = useState<number | null>(null)
   const watcherRef = useRef<{ stop: () => void } | null>(null)
   const currentAmountRef = useRef(0)
+  const currentMintRef = useRef<string | null>(null)
 
   const stopWatching = useCallback(() => {
     watcherRef.current?.stop()
@@ -97,6 +98,8 @@ export function useSolanaPay() {
       // destinos — solo alcanza a la wallet del comercio, no a un split de
       // varias cuentas — hasta que se arme una página de checkout con
       // wallet-adapter que sí soporte ese flujo.
+      currentMintRef.current = token === "usdc" ? config.paymentTokenMint : null
+
       const url = encodeURL({
         recipient: walletAddress as Address,
         amount: cryptoEquivalent,
@@ -132,6 +135,25 @@ export function useSolanaPay() {
           // mid-animation.
           useMerchantStore.getState().incrementPayments(currentAmountRef.current)
           useTxStore.setState({ lastFetched: 0 })
+
+          // Como el cobro llega por transferencia directa (sin pasar por el
+          // relayer), nadie más avisa que pasó: se lo contamos al backend para
+          // que quede en el historial. No bloquea la UI si falla — el pago ya
+          // se confirmó on-chain, esto es solo para que aparezca en la lista.
+          const { merchantPda: pda, walletAddress: owner } = useMerchantStore.getState()
+          const mint = currentMintRef.current
+          if (pda && owner && mint) {
+            fetch("/api/payments/confirm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                reference: reference.toBase58(),
+                merchantPda: pda,
+                ownerPubkey: owner,
+                mint,
+              }),
+            }).catch((err) => console.error("No se pudo registrar el cobro en el historial:", err))
+          }
         }
         setPaymentStatus(status)
       })
