@@ -20,7 +20,7 @@ export function formatSOL(lamports: number): string {
 }
 
 export function formatUSDC(amount: number): string {
-  return `$${amount.toFixed(2)}`
+  return `$${amount.toFixed(2)} USDC`
 }
 
 export function shortenAddress(address: string, chars: number = 4): string {
