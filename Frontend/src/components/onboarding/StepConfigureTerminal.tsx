@@ -2,8 +2,11 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Smartphone, ArrowRight, Check } from "lucide-react"
+import { Smartphone, ArrowRight, Check, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { useCreateMerchant } from "@/lib/services/useCreateMerchant"
+import { useCuentaDePago } from "@/lib/services/useCuentaDePago"
 
 const paymentMethods = [
   { id: "usdc" as const, label: "USD Coin", icon: "$", desc: "Stable digital dollar" },
@@ -11,18 +14,41 @@ const paymentMethods = [
 ]
 
 export function StepConfigureTerminal({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
-  const { terminalId, paymentToken, setMerchant, name } = useMerchantStore()
+  const { terminalId, paymentToken, merchantPda, setMerchant, name } = useMerchantStore()
+  const cuentaDePago = useCuentaDePago()
+  const { create } = useCreateMerchant()
   const [config, setConfig] = useState({
     terminalName: terminalId,
     token: paymentToken,
   })
   const [submitted, setSubmitted] = useState(false)
+  const [creating, setCreating] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setMerchant({ terminalId: config.terminalName, paymentToken: config.token, isActive: true })
-    setSubmitted(true)
-    setTimeout(() => onNext(), 1200)
+    if (creating || !cuentaDePago) return
+
+    // El onboarding no le pide al comerciante decisiones cripto: el comercio
+    // arranca cobrando a su propia wallet y el reparto entre varias cuentas
+    // se configura después, de forma opcional, en Split Routing.
+    setMerchant({
+      terminalId: config.terminalName,
+      paymentToken: config.token,
+      isActive: true,
+      destinations: [{ id: "1", address: cuentaDePago, label: "Mi wallet", percentage: 100 }],
+    })
+
+    setCreating(true)
+    try {
+      if (!merchantPda) await create()
+      setSubmitted(true)
+      setTimeout(() => onNext(), 1200)
+    } catch (err) {
+      console.error("No se pudo crear el comercio", err)
+      toast.error((err as Error).message || "No se pudo crear tu comercio. Probá de nuevo.")
+    } finally {
+      setCreating(false)
+    }
   }
 
   if (submitted) {
@@ -134,10 +160,20 @@ export function StepConfigureTerminal({ onNext, onPrev }: { onNext: () => void; 
           </button>
           <button
             type="submit"
-            className="flex-1 flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 text-white font-heading font-medium px-6 py-3 rounded-default transition-all duration-200 text-sm"
+            disabled={creating || !cuentaDePago}
+            className="flex-1 flex items-center justify-center gap-2 bg-electric-purple hover:bg-electric-purple/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-heading font-medium px-6 py-3 rounded-default transition-all duration-200 text-sm"
           >
-            Create Terminal
-            <ArrowRight className="w-4 h-4" />
+            {creating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Creating your terminal...
+              </>
+            ) : (
+              <>
+                Create Terminal
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </div>
       </form>
