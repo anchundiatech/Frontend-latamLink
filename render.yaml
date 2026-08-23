@@ -101,8 +101,9 @@ services:
     plan: free
     region: oregon
     rootDir: backend
-    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate
-    preDeployCommand: pnpm exec prisma migrate deploy
+    # Pre-Deploy Command no está disponible en el plan free, así que la
+    # migración corre acá: al final del build, antes de levantar el proceso.
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm exec prisma migrate deploy
     startCommand: pnpm exec tsx src/catalogServer.ts
     healthCheckPath: /health
     envVars:
