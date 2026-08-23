@@ -12,6 +12,7 @@ import {
   isX402Configured,
   loadPlatformOwner,
   loadRelayer,
+  platformOwnerPubkey,
 } from "./config.js";
 import { requireOperator } from "./http/auth.js";
 import { cors } from "./http/cors.js";
@@ -77,16 +78,19 @@ export function createApp(): Express {
   });
 
   // Config pública para el frontend: evita hardcodear direcciones en la app.
+  // devnet-state.json es un archivo local (no se versiona) que genera
+  // setup-devnet.ts; en un despliegue real (Render) no existe, así que estos
+  // datos también se pueden completar por variable de entorno.
   app.get("/config", (_req, res) => {
     const state = readDevnetState();
     res.json({
       programId: PROGRAM_ID.toBase58(),
       cluster: "devnet",
       relayer: relayer.publicKey.toBase58(),
-      paymentTokenMint: state.mint ?? null,
+      paymentTokenMint: state.mint ?? process.env.DEVNET_PAYMENT_TOKEN_MINT ?? null,
       tokenDecimals: 6,
-      demoMerchant: state.merchantAddress ?? null,
-      platformOwner: state.ownerPubkey ?? null,
+      demoMerchant: state.merchantAddress ?? process.env.DEVNET_DEMO_MERCHANT ?? null,
+      platformOwner: platformOwnerPubkey().toBase58(),
       maxDestinations: 10,
     });
   });

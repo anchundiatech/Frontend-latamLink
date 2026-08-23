@@ -71,6 +71,13 @@ services:
         sync: false
       - key: PLATFORM_OWNER_PUBKEY
         sync: false
+      # Mint y comercio de prueba para GET /config: en local salen de
+      # devnet-state.json (no se versiona), acá se completan a mano. Son
+      # direcciones públicas, no hace falta ocultarlas.
+      - key: DEVNET_PAYMENT_TOKEN_MINT
+        sync: false
+      - key: DEVNET_DEMO_MERCHANT
+        sync: false
       - key: X402_FACILITATOR_URL
         sync: false
       - key: X402_TREASURY
