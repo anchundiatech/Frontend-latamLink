@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { PublicKey, Connection } from "@solana/web3.js"
 import { generateReferenceKey, watchForPayment } from "./solanaPay"
 import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
+import { convertUsdToToken, getSolUsdPrice } from "./priceFeed"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
 import { config } from "@/lib/config"
@@ -30,7 +31,7 @@ export function useSolanaPay() {
   }, [stopWatching])
 
   const generateUrl = useCallback(
-    async (usdAmount: number, _token: "usdc" | "sol") => {
+    async (usdAmount: number, token: "usdc" | "sol") => {
       currentAmountRef.current = usdAmount
       stopWatching()
       setPaymentStatus("idle")
@@ -62,6 +63,21 @@ export function useSolanaPay() {
 
       const ref = generateReferenceKey()
 
+      // El cobro on-chain siempre se hace en el token configurado en el
+      // backend (hoy un stablecoin): elegir "Solana" acá no cambia qué token
+      // se mueve, solo le muestra al comercio a cuánto SOL equivale el monto
+      // en moneda local, a título informativo.
+      let cryptoEquivalent = usdAmount
+      if (token === "sol") {
+        try {
+          const solPrice = await getSolUsdPrice()
+          cryptoEquivalent = convertUsdToToken(usdAmount, solPrice)
+        } catch {
+          // Sin cotización no se bloquea el cobro: se sigue mostrando el
+          // monto en moneda local nada más.
+        }
+      }
+
       // El QR apunta a nuestro endpoint (Solana Pay, "transaction request") en
       // vez de codificar una transferencia suelta: así el pago ejecuta `pay()`
       // y conserva el split y las comisiones. La billetera recibe la
@@ -76,11 +92,11 @@ export function useSolanaPay() {
 
       setSolanaPayUrl(url)
       setReferenceKey(ref.publicKey.toBase58())
-      setCryptoAmount(usdAmount)
+      setCryptoAmount(cryptoEquivalent)
       return {
         referenceKey: ref.publicKey,
         solanaPayUrl: url,
-        cryptoAmount: usdAmount,
+        cryptoAmount: cryptoEquivalent,
         error: null,
       }
     },
