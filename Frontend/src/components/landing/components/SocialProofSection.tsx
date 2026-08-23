@@ -72,7 +72,7 @@ export default function SocialProofSection() {
                 alt="Solana"
                 className="w-8 h-8 object-contain"
               />
-              <span className="text-sm font-semibold text-[#9945FF]">Solana</span>
+              <span className="text-sm font-semibold text-primary">Solana</span>
             </div>
           </div>
         </motion.div>

@@ -18,7 +18,7 @@ export default function CompareSection() {
         <div className="text-primary uppercase tracking-[0.2em] text-xs font-medium mb-4">
           {t.compare.title}
         </div>
-        <h2 className="font-heading text-4xl sm:text-5xl tracking-tight text-text-primary leading-tight">
+        <h2 className="font-heading text-5xl sm:text-6xl tracking-tight text-text-primary leading-[0.95]">
           {t.compare.subtitle}
         </h2>
       </motion.div>
@@ -37,7 +37,7 @@ export default function CompareSection() {
               <th className="p-5 text-sm font-medium text-text-secondary bg-surface-dim/40 dark:bg-surface-dim/60 w-1/3 text-center">
                 {t.compare.headers[0]}
               </th>
-              <th className="p-5 text-sm font-semibold text-white bg-obsidian dark:bg-surface-bright w-1/3 text-center">
+              <th className="p-5 text-sm font-semibold text-white bg-primary w-1/3 text-center">
                 {t.compare.headers[1]}
               </th>
             </tr>

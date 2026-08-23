@@ -9,6 +9,7 @@ import SocialProofSection from './components/SocialProofSection'
 import ManifestoSection from './components/ManifestoSection'
 import CompareSection from './components/CompareSection'
 import CountriesSection from './components/CountriesSection'
+// import TeamSection from './components/TeamSection' — oculto hasta tener los 7 perfiles reales del equipo
 
 export default function LandingPage() {
   return (
@@ -19,6 +20,7 @@ export default function LandingPage() {
       <SocialProofSection />
       <HowItWorksSection />
       <Features />
+      {/* <TeamSection /> */}
       <ManifestoSection />
       <CompareSection />
       <CountriesSection />

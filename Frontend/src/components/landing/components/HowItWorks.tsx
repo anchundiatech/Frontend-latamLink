@@ -2,7 +2,7 @@
 
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
-import { Check, Smartphone, Store } from "lucide-react"
+import { Check, Smartphone, Store, ArrowRight } from "lucide-react"
 
 
 const stepIcons = [
@@ -24,7 +24,7 @@ export default function HowItWorksSection() {
         {t.howItWorks.title}
       </div>
 
-      <h2 className="font-heading text-5xl tracking-tight mb-5">
+      <h2 className="font-heading text-4xl sm:text-5xl tracking-tight mb-5">
         {t.howItWorks.subtitle}
       </h2>
 
@@ -37,28 +37,34 @@ export default function HowItWorksSection() {
         {t.howItWorks.steps.map((step, i) => {
           const number = `0${i + 1}`
           const icon = stepIcons[i]
+          const isLast = i === t.howItWorks.steps.length - 1
           return (
-            <div
-              key={number}
-              className="bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all"
-            >
+            <div key={number} className="relative">
+              <div className="bg-white dark:bg-surface border border-border rounded-3xl p-8 hover:border-primary transition-all h-full">
 
-              <div className="font-heading text-6xl opacity-20 mb-5">
-                {number}
+                <div className="font-heading text-6xl opacity-20 mb-5">
+                  {number}
+                </div>
+
+                <div className="text-3xl mb-5 ">
+                  {icon}
+                </div>
+
+                <h3 className="font-semibold text-lg mb-3">
+                  {step.title}
+                </h3>
+
+                <p className="text-text-secondary leading-relaxed">
+                  {step.description}
+                </p>
+
               </div>
 
-              <div className="text-3xl mb-5 ">
-                {icon}
-              </div>
-
-              <h3 className="font-semibold text-lg mb-3">
-                {step.title}
-              </h3>
-
-              <p className="text-text-secondary leading-relaxed">
-                {step.description}
-              </p>
-
+              {!isLast && (
+                <div className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-background border border-border items-center justify-center">
+                  <ArrowRight className="w-3 h-3 text-primary" />
+                </div>
+              )}
             </div>
           )
         })}

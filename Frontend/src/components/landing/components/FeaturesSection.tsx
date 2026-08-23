@@ -27,7 +27,7 @@ export function Features() {
           <div className="text-primary uppercase tracking-[0.2em] text-xs font-medium mb-4">
             {t.features.eyebrow}
           </div>
-          <h2 className="font-heading text-4xl sm:text-5xl tracking-tight text-text-primary leading-tight mb-4">
+          <h2 className="font-heading text-5xl sm:text-6xl tracking-tight text-text-primary leading-[0.95] mb-4">
             {t.features.title}
           </h2>
         </motion.div>

@@ -29,7 +29,7 @@ export default function HeroSection() {
   }, [posState]);
 
   return (
-    <section className="relative min-h-screen overflow-hidden px-8 pt-32 pb-20 flex items-center justify-center bg-background">
+    <section className="relative min-h-screen overflow-hidden px-8 pt-1.5 pb-16 flex items-center justify-center bg-background">
       {/* Background */}
       <div ref={containerRef} className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -47,8 +47,9 @@ export default function HeroSection() {
           </video>
         </motion.div>
         <div className="absolute inset-0 bg-background/40" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_20%,rgba(45,212,191,0.08)_0%,transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_20%_80%,rgba(168,85,247,0.06)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_30%_10%,rgba(153,69,255,0.14)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_20%,rgba(0,194,255,0.08)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_20%_80%,rgba(20,241,149,0.05)_0%,transparent_60%)]" />
         {/* Smooth bottom gradient to blend the video and cover the bottom portion completely */}
         <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-linear-to-t from-background via-background/95 to-transparent z-1" />
       </div>
@@ -58,13 +59,8 @@ export default function HeroSection() {
 
       <div className="relative z-10 max-w-7xl w-full grid lg:grid-cols-2 gap-16 items-center">
         {/* LEFT */}
-        <div>
-          <div className="inline-flex items-center gap-2 bg-white dark:bg-surface border border-border rounded-full px-4 py-2 text-xs text-text-secondary mb-6">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            {t.hero.live}
-          </div>
-
-          <h1 className="font-heading text-5xl lg:text-7xl leading-none tracking-[-0.04em] text-text-primary mb-6">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <h1 className="font-heading text-6xl lg:text-8xl leading-[0.92] tracking-[-0.045em] text-text-primary mb-6">
             {t.hero.badge}
             <br />
             <span className="italic font-light opacity-80">
@@ -78,7 +74,7 @@ export default function HeroSection() {
             {t.hero.subtitle}
           </p>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-4">
             <button
               onClick={() =>
                 document
