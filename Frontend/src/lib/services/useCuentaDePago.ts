@@ -1,6 +1,7 @@
 "use client"
 
 import { usePrivy } from "@privy-io/react-auth"
+import { useWallets } from "@privy-io/react-auth/solana"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
 interface CuentaVinculada {
@@ -43,9 +44,19 @@ export function elegirCuentaDePago(cuentas: CuentaVinculada[]): string | null {
  */
 export function useCuentaDePago(): string | null {
   const { user } = usePrivy()
+  const { wallets } = useWallets()
   const guardada = useMerchantStore((s) => s.walletAddress)
+
+  // En Privy v3 la wallet de Solana (incluida la embebida) aparece acá, no
+  // en user.linkedAccounts — ese solo la refleja bastante después de creada
+  // y a veces nunca, dejando al comercio esperando para siempre en el
+  // onboarding aunque la wallet ya exista. Mismo criterio que usePrivyWallet.
+  const solanaWallets = wallets as unknown as { address: string; standardWallet?: { name?: string } }[]
+  const embebidaDelHookDeWallets = solanaWallets.find((w) =>
+    w.standardWallet?.name?.toLowerCase().includes("privy")
+  )
 
   const deLaSesion = elegirCuentaDePago((user?.linkedAccounts ?? []) as CuentaVinculada[])
 
-  return deLaSesion ?? guardada ?? null
+  return embebidaDelHookDeWallets?.address ?? deLaSesion ?? guardada ?? null
 }
