@@ -1,11 +1,20 @@
 "use client"
 
+import { useState } from "react"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { shortenAddress } from "@/lib/utils"
 import { Trash2 } from "lucide-react"
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 export function TreasurySettings() {
   const { destinations, removeDestination } = useMerchantStore()
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; label: string } | null>(null)
+
+  const confirmRemoval = () => {
+    if (!pendingRemoval) return
+    removeDestination(pendingRemoval.id)
+    setPendingRemoval(null)
+  }
 
   return (
     <div className="glass rounded-lg p-4 space-y-4">
@@ -34,9 +43,9 @@ export function TreasurySettings() {
                 {dest.percentage}%
               </span>
               <button
-                onClick={() => removeDestination(dest.id)}
+                onClick={() => setPendingRemoval({ id: dest.id, label: dest.label })}
                 aria-label={`Remove ${dest.label}`}
-                className="text-on-surface-variant hover:text-error transition-colors p-2 -m-2"
+                className="text-on-surface-variant hover:text-error transition-colors p-2 -m-2 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -44,6 +53,15 @@ export function TreasurySettings() {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={pendingRemoval !== null}
+        onOpenChange={(open) => !open && setPendingRemoval(null)}
+        title={`Remove ${pendingRemoval?.label ?? "this account"}?`}
+        description="This account will stop receiving its share of future payments. This can't be undone from here — you'll need to add it again if you change your mind."
+        confirmLabel="Remove account"
+        onConfirm={confirmRemoval}
+      />
     </div>
   )
 }
