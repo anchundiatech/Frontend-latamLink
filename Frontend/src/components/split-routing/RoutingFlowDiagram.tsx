@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { ArrowDown, DollarSign } from "lucide-react"
 
-const colors = ["#a855f7", "#2dd4bf", "#adc6ff"]
+const colors = ["#9945ff", "#00c2ff", "#14f195", "#ff9f43"]
 
 interface RoutingFlowDiagramProps {
   destinations: { label: string; percentage: number }[]

@@ -72,44 +72,44 @@ export function RevenueChart() {
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#9945ff" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#9945ff" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis
                 dataKey="name"
-                stroke="rgba(255,255,255,0.2)"
-                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 12 }}
+                stroke="var(--color-border)"
+                tick={{ fill: "var(--color-text-secondary)", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                stroke="rgba(255,255,255,0.2)"
-                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 12 }}
+                stroke="var(--color-border)"
+                tick={{ fill: "var(--color-text-secondary)", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) => `$${value}`}
               />
               <Tooltip
                 contentStyle={{
-                  background: "rgba(19, 27, 46, 0.9)",
+                  background: "var(--color-surface-bright)",
                   backdropFilter: "blur(12px)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "0.25rem",
-                  color: "#dae2fd",
+                  color: "var(--color-text-primary)",
                   fontSize: "0.75rem",
                 }}
-                labelStyle={{ color: "#dae2fd" }}
+                labelStyle={{ color: "var(--color-text-primary)" }}
               />
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#a855f7"
+                stroke="#9945ff"
                 strokeWidth={2}
                 fill="url(#revenueGradient)"
                 dot={false}
-                activeDot={{ r: 4, fill: "#a855f7", stroke: "#dae2fd", strokeWidth: 2 }}
+                activeDot={{ r: 4, fill: "#9945ff", stroke: "var(--color-surface-bright)", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

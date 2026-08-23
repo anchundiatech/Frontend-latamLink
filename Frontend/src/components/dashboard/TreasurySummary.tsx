@@ -7,9 +7,9 @@ import { useMerchantStore } from "@/lib/store/useMerchantStore"
 
 const icons = [Wallet, PiggyBank, ArrowRightLeft]
 const colors = [
-  { color: "text-electric-purple", bg: "bg-electric-purple/10", bar: "#a855f7" },
-  { color: "text-electric-teal", bg: "bg-electric-teal/10", bar: "#2dd4bf" },
-  { color: "text-tertiary", bg: "bg-tertiary/10", bar: "#adc6ff" },
+  { color: "text-electric-purple", bg: "bg-electric-purple/10", bar: "#9945ff" },
+  { color: "text-electric-teal", bg: "bg-electric-teal/10", bar: "#00c2ff" },
+  { color: "text-accent-alert", bg: "bg-accent-alert/10", bar: "#ff9f43" },
 ]
 
 export function TreasurySummary() {
