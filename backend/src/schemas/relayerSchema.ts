@@ -58,6 +58,7 @@ export const submitPaymentSchema = z.object({
 
 export const payoutBuildSchema = z.object({
   ownerPubkey: pubkeyString,
+  merchantPda: pubkeyString,
   mint: pubkeyString,
   destination: pubkeyString,
   amount: amountToBigInt,

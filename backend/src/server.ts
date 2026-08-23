@@ -252,9 +252,10 @@ export function createApp(): Express {
   // (esa cuenta no tiene SOL) y el comerciante firma, porque es su dinero.
   app.post("/payouts/build", operatorOnly, validateBody(payoutBuildSchema), async (req, res) => {
     try {
-      const { ownerPubkey, mint, destination, amount, decimals } = req.body;
+      const { ownerPubkey, merchantPda, mint, destination, amount, decimals } = req.body;
       const result = await buildPayoutTransaction(connection, relayer.publicKey, {
         ownerPubkey,
+        merchantPda,
         mint,
         destination,
         amount,
