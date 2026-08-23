@@ -2,8 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { PublicKey, Connection } from "@solana/web3.js"
+import { encodeURL } from "@solana/pay"
+import type { Address } from "@solana/kit"
 import { generateReferenceKey, watchForPayment } from "./solanaPay"
-import { fetchBackendConfig, toMinimalUnits } from "./useBackendConfig"
+import { fetchBackendConfig } from "./useBackendConfig"
 import { convertUsdToToken, getSolUsdPrice } from "./priceFeed"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
@@ -13,7 +15,7 @@ import type { PaymentStatus } from "@/lib/payments/paymentStatus"
 const connection = new Connection(config.rpcEndpoint, "confirmed")
 
 export function useSolanaPay() {
-  const { name, merchantPda } = useMerchantStore()
+  const { name, merchantPda, walletAddress } = useMerchantStore()
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle")
   const [solanaPayUrl, setSolanaPayUrl] = useState<string | null>(null)
   const [referenceKey, setReferenceKey] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export function useSolanaPay() {
       // El cobro se arma contra el comercio on-chain: sin él no hay reparto
       // posible, así que no se genera un QR que cobraría de más y repartiría
       // de menos.
-      if (!merchantPda) {
+      if (!merchantPda || !walletAddress) {
         return {
           referenceKey: null as unknown as PublicKey,
           solanaPayUrl: null,
@@ -53,6 +55,15 @@ export function useSolanaPay() {
       try {
         config = await fetchBackendConfig()
       } catch {
+        return {
+          referenceKey: null as unknown as PublicKey,
+          solanaPayUrl: null,
+          cryptoAmount: null,
+          error: "config_unavailable" as const,
+        }
+      }
+
+      if (token === "usdc" && !config.paymentTokenMint) {
         return {
           referenceKey: null as unknown as PublicKey,
           solanaPayUrl: null,
@@ -78,17 +89,22 @@ export function useSolanaPay() {
         }
       }
 
-      // El QR apunta a nuestro endpoint (Solana Pay, "transaction request") en
-      // vez de codificar una transferencia suelta: así el pago ejecuta `pay()`
-      // y conserva el split y las comisiones. La billetera recibe la
-      // transacción ya firmada por el relayer, que paga el fee de red.
-      const requestUrl = new URL("/api/pay", window.location.origin)
-      requestUrl.searchParams.set("merchant", merchantPda)
-      requestUrl.searchParams.set("amount", toMinimalUnits(usdAmount, config.tokenDecimals))
-      requestUrl.searchParams.set("reference", ref.publicKey.toBase58())
-      requestUrl.searchParams.set("label", name || "LatamLink Pay")
-
-      const url = `solana:${encodeURIComponent(requestUrl.toString())}`
+      // QR de transferencia directa (Solana Pay "transfer request"), armado
+      // con el SDK oficial: las wallets móviles no reconocen de forma
+      // confiable el patrón "transaction request" (el link a /api/pay) al
+      // escanear con la cámara, así que el cliente paga directo a la wallet
+      // del comercio. Esto sacrifica el reparto automático entre varios
+      // destinos — solo alcanza a la wallet del comercio, no a un split de
+      // varias cuentas — hasta que se arme una página de checkout con
+      // wallet-adapter que sí soporte ese flujo.
+      const url = encodeURL({
+        recipient: walletAddress as Address,
+        amount: cryptoEquivalent,
+        splToken: token === "usdc" ? (config.paymentTokenMint as Address) : undefined,
+        reference: ref.publicKey.toBase58() as Address,
+        label: name || "LatamLink Pay",
+        message: `${name || "LatamLink Pay"} — cobro`,
+      }).toString()
 
       setSolanaPayUrl(url)
       setReferenceKey(ref.publicKey.toBase58())
@@ -100,7 +116,7 @@ export function useSolanaPay() {
         error: null,
       }
     },
-    [merchantPda, name, stopWatching]
+    [merchantPda, walletAddress, name, stopWatching]
   )
 
   const startWatching = useCallback(
