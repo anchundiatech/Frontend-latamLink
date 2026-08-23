@@ -88,7 +88,10 @@ export async function createMerchant(
 
   // Aleatorio de 64 bits: con Date.now() dos altas en el mismo milisegundo
   // derivaban la misma PDA y la segunda revertía tras todo el trabajo de RPC.
-  const merchantId = randomBytes(8).readBigUInt64LE(0);
+  // Se apaga el bit más alto para que el valor entre siempre en un bigint con
+  // signo de Postgres (si no, la mitad de los ids generados no entraban en la
+  // base y el comercio quedaba creado on-chain pero sin registro en catálogo).
+  const merchantId = randomBytes(8).readBigUInt64LE(0) & 0x7fffffffffffffffn;
   const merchantPda = deriveMerchantPda(platformOwner.publicKey, merchantId);
   const vault = deriveVaultPda(merchantPda);
   const gasVault = deriveGasVaultPda(merchantPda);
