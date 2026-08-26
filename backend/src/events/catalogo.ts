@@ -56,6 +56,7 @@ export function registrarCobro(pago: {
   posFee: string;
   gasFee: string;
   dust: string;
+  token: "USDC" | "SOL";
   timestamp: string;
   status: "CONFIRMED";
 }): Promise<unknown> {

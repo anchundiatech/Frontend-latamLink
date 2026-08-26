@@ -37,6 +37,9 @@ export async function conciliarCobro(
     posFee: evento.posFee.toString(),
     gasFee: evento.gasFee.toString(),
     dust: evento.dust.toString(),
+    // El contrato solo mueve el stablecoin configurado del comercio: no hay
+    // forma de pagar con SOL nativo a través de pay().
+    token: "USDC",
     // El contrato guarda el momento del cobro en segundos.
     timestamp: new Date(Number(evento.timestamp) * 1000).toISOString(),
     status: "CONFIRMED",

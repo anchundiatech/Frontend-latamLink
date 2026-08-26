@@ -45,6 +45,15 @@ export function convertUsdToToken(usdAmount: number, solUsdPrice: number): numbe
   return usdAmount / solUsdPrice
 }
 
+// Redondea hacia abajo a precisión de lamport (9 decimales). Una división de
+// punto flotante como usdAmount/solUsdPrice casi nunca cae justo en un número
+// entero de lamports; sin este redondeo, algunas wallets (Phantom) se cuelgan
+// calculando la comisión de un monto con más de 9 decimales en vez de
+// mostrar un error.
+export function roundDownToLamports(solAmount: number): number {
+  return Math.floor(solAmount * 1e9) / 1e9
+}
+
 export function resetPriceCache(): void {
   cachedPrice = null
   cachedAt = 0

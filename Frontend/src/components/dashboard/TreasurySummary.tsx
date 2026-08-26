@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Wallet, PiggyBank, ArrowRightLeft, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
+import { useTxStore } from "@/lib/store/useTxStore"
 
 const icons = [Wallet, PiggyBank, ArrowRightLeft]
 const colors = [
@@ -14,6 +15,11 @@ const colors = [
 
 export function TreasurySummary() {
   const { destinations, totalVolume } = useMerchantStore()
+  const transactions = useTxStore((s) => s.transactions)
+  // Merchant.totalVolume en Postgres nunca se actualiza tras un cobro (nadie
+  // lo incrementa todavía), así que sin este fallback esta sección quedaba
+  // en $0.00 aunque ya hubiera pagos reales — mismo fallback que StatsCards.
+  const revenueTotal = totalVolume || transactions.reduce((sum, tx) => sum + tx.amount, 0)
 
   return (
     <motion.div
@@ -45,7 +51,7 @@ export function TreasurySummary() {
             {destinations.map((dest, i) => {
               const Icon = icons[i % icons.length]
               const c = colors[i % colors.length]
-              const share = (totalVolume * dest.percentage) / 100
+              const share = (revenueTotal * dest.percentage) / 100
               return (
                 <div
                   key={dest.id}

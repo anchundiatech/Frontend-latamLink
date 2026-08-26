@@ -17,6 +17,10 @@ import {
   getAssociatedTokenAddressSync,
   mintTo,
 } from "@solana/spl-token";
+import {
+  createCreateMetadataAccountV3Instruction,
+  PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID,
+} from "@metaplex-foundation/mpl-token-metadata";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getConnection, KEYS_DIR } from "../src/config.js";
@@ -46,6 +50,55 @@ function loadOrCreateKeypair(name: string): Keypair {
   writeFileSync(path, JSON.stringify(Array.from(kp.secretKey)), { mode: 0o600 });
   console.log(`Keypair ${name} creado: ${kp.publicKey.toBase58()}`);
   return kp;
+}
+
+// Sin esto, el mint de prueba no tiene nombre ni símbolo en ningún lado: las
+// wallets (Phantom, Solflare) no lo reconocen como "USDC" y algunas se cuelgan
+// calculando la comisión en vez de mostrarlo como token desconocido. Solo el
+// dueño de la mint authority puede crear esta cuenta, por eso no se puede
+// hacer sobre un mint de USDC-Dev compartido que no creamos nosotros.
+async function ensureTokenMetadata(
+  connection: Connection,
+  owner: Keypair,
+  mint: PublicKey,
+): Promise<void> {
+  const [metadataPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("metadata"), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    TOKEN_METADATA_PROGRAM_ID,
+  );
+
+  if (await connection.getAccountInfo(metadataPda)) {
+    console.log(`Metadata del mint ya existe: ${metadataPda.toBase58()}`);
+    return;
+  }
+
+  const ix = createCreateMetadataAccountV3Instruction(
+    {
+      metadata: metadataPda,
+      mint,
+      mintAuthority: owner.publicKey,
+      payer: owner.publicKey,
+      updateAuthority: owner.publicKey,
+    },
+    {
+      createMetadataAccountArgsV3: {
+        data: {
+          name: "USDC (Dev)",
+          symbol: "USDC",
+          uri: "",
+          sellerFeeBasisPoints: 0,
+          creators: null,
+          collection: null,
+          uses: null,
+        },
+        isMutable: true,
+        collectionDetails: null,
+      },
+    },
+  );
+
+  const sig = await sendAndConfirmTransaction(connection, new Transaction().add(ix), [owner]);
+  console.log(`Metadata del mint creada: ${metadataPda.toBase58()} (tx ${sig.slice(0, 8)}…)`);
 }
 
 async function ensureSol(
@@ -103,6 +156,8 @@ async function main(): Promise<void> {
     mint = await createMint(connection, owner, owner.publicKey, null, USDC_DECIMALS);
     console.log(`Mint creado: ${mint.toBase58()}`);
   }
+
+  await ensureTokenMetadata(connection, owner, mint);
 
   // 2. ATAs: usuario (paga), owner (pos_fee_destination), destinos A y B
   const atas = {

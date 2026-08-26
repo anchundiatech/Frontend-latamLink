@@ -17,6 +17,7 @@ interface ApiPayment {
   txSignature: string
   payerPubkey: string
   amountGross: string
+  token: "USDC" | "SOL"
   timestamp: string
   status: "PENDING" | "CONFIRMED" | "FAILED"
   terminal?: { posTerminalId: string }
@@ -29,7 +30,10 @@ interface TxStore {
   fetch: (merchantDbId: string, terminalId: string) => Promise<void>
 }
 
-const TOKEN_DECIMALS = 6
+// USDC (6 decimales) y SOL (9, lamports) se guardan en su propia unidad
+// mínima — sin esto, un pago en SOL se leería con el monto mil veces más
+// grande de lo real.
+const DECIMALS: Record<PaymentTx["token"], number> = { USDC: 6, SOL: 9 }
 const CACHE_MS = 30_000
 
 let inFlight: Promise<void> | null = null
@@ -72,8 +76,8 @@ export const useTxStore = create<TxStore>((set) => ({
         set({
           transactions: payments.map((p) => ({
             id: p.id,
-            amount: Number(p.amountGross) / 10 ** TOKEN_DECIMALS,
-            token: "USDC" as const,
+            amount: Number(p.amountGross) / 10 ** DECIMALS[p.token],
+            token: p.token,
             status: estadoLegible[p.status],
             date: new Date(p.timestamp),
             terminal: p.terminal?.posTerminalId ?? terminalId,
