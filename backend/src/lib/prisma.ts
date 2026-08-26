@@ -17,6 +17,13 @@ export function serializeBigInt<T>(value: T): T {
   if (Array.isArray(value)) {
     return value.map((item) => serializeBigInt(item)) as unknown as T;
   }
+  // Object.entries(new Date()) es [] (el valor no vive en propiedades
+  // enumerables): sin este caso, cualquier campo DateTime de Prisma
+  // (timestamp, createdAt...) se convertía en `{}` y el frontend recibía una
+  // fecha inválida.
+  if (value instanceof Date) {
+    return value.toISOString() as unknown as T;
+  }
   if (value !== null && typeof value === "object") {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value)) {
