@@ -25,4 +25,17 @@ describe("serializeBigInt — evita perder precisión de montos on-chain en JSON
     const input = { name: "comercio", isActive: true, count: 3, note: null };
     assert.deepEqual(serializeBigInt(input), input);
   });
+
+  it("convierte un Date a ISO string en vez de un objeto vacío", () => {
+    const timestamp = new Date("2026-01-15T10:30:00.000Z");
+    assert.equal(serializeBigInt(timestamp), "2026-01-15T10:30:00.000Z");
+  });
+
+  it("convierte un Date anidado (ej. Payment.timestamp)", () => {
+    const input = { amountGross: 1_000_000n, timestamp: new Date("2026-01-15T10:30:00.000Z") };
+    assert.deepEqual(serializeBigInt(input), {
+      amountGross: "1000000",
+      timestamp: "2026-01-15T10:30:00.000Z",
+    });
+  });
 });

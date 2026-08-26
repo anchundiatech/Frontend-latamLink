@@ -90,6 +90,10 @@ model Payment {
   posFee              BigInt        @map("pos_fee")
   gasFee              BigInt        @map("gas_fee")
   dust                BigInt
+  // Moneda del cobro: decide con cuántos decimales se lee amountGross/posFee/
+  // gasFee/dust. Todo lo registrado antes de este campo fue en USDC, por eso
+  // el default cubre esas filas viejas sin tocarlas a mano.
+  token               String        @default("USDC")
   timestamp           DateTime
   status              PaymentStatus @default(PENDING)
 

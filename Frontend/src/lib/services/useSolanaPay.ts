@@ -6,7 +6,7 @@ import { encodeURL } from "@solana/pay"
 import type { Address } from "@solana/kit"
 import { generateReferenceKey, watchForPayment } from "./solanaPay"
 import { fetchBackendConfig } from "./useBackendConfig"
-import { convertUsdToToken, getSolUsdPrice } from "./priceFeed"
+import { convertUsdToToken, getSolUsdPrice, roundDownToLamports } from "./priceFeed"
 import { useMerchantStore } from "@/lib/store/useMerchantStore"
 import { useTxStore } from "@/lib/store/useTxStore"
 import { config } from "@/lib/config"
@@ -52,9 +52,9 @@ export function useSolanaPay() {
         }
       }
 
-      let config
+      let backendConfig
       try {
-        config = await fetchBackendConfig()
+        backendConfig = await fetchBackendConfig()
       } catch {
         return {
           referenceKey: null as unknown as PublicKey,
@@ -64,7 +64,7 @@ export function useSolanaPay() {
         }
       }
 
-      if (token === "usdc" && !config.paymentTokenMint) {
+      if (token === "usdc" && !backendConfig.paymentTokenMint) {
         return {
           referenceKey: null as unknown as PublicKey,
           solanaPayUrl: null,
@@ -75,15 +75,15 @@ export function useSolanaPay() {
 
       const ref = generateReferenceKey()
 
-      // El cobro on-chain siempre se hace en el token configurado en el
-      // backend (hoy un stablecoin): elegir "Solana" acá no cambia qué token
-      // se mueve, solo le muestra al comercio a cuánto SOL equivale el monto
-      // en moneda local, a título informativo.
+      // El comercio elige de verdad qué moneda cobra: USDC mueve el
+      // stablecoin configurado en el backend, SOL mueve SOL nativo. Acá solo
+      // se calcula a cuánto equivale el monto en moneda local en la moneda
+      // elegida.
       let cryptoEquivalent = usdAmount
       if (token === "sol") {
         try {
           const solPrice = await getSolUsdPrice()
-          cryptoEquivalent = convertUsdToToken(usdAmount, solPrice)
+          cryptoEquivalent = roundDownToLamports(convertUsdToToken(usdAmount, solPrice))
         } catch {
           // Sin cotización no se bloquea el cobro: se sigue mostrando el
           // monto en moneda local nada más.
@@ -98,12 +98,12 @@ export function useSolanaPay() {
       // destinos — solo alcanza a la wallet del comercio, no a un split de
       // varias cuentas — hasta que se arme una página de checkout con
       // wallet-adapter que sí soporte ese flujo.
-      currentMintRef.current = token === "usdc" ? config.paymentTokenMint : null
+      currentMintRef.current = token === "usdc" ? backendConfig.paymentTokenMint : config.solMint
 
       const url = encodeURL({
         recipient: walletAddress as Address,
         amount: cryptoEquivalent,
-        splToken: token === "usdc" ? (config.paymentTokenMint as Address) : undefined,
+        splToken: token === "usdc" ? (backendConfig.paymentTokenMint as Address) : undefined,
         reference: ref.publicKey.toBase58() as Address,
         label: name || "LatamLink Pay",
         message: concept ? `${name || "LatamLink Pay"} — ${concept}` : `${name || "LatamLink Pay"} — cobro`,

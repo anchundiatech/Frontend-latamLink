@@ -5,6 +5,11 @@ export const PROGRAM_ID = new PublicKey(
   "GSeGuv2K3meepgSHCehP5jGkRnjRZk96a9vsPSSJ7TjC",
 );
 
+// Placeholder estándar para "SOL nativo" en APIs (mismo que usa Jupiter y
+// otras apps): no es un mint real, pero permite que el cliente indique "esta
+// transferencia es de SOL, no de un token SPL" sin inventar un campo aparte.
+export const NATIVE_SOL_MINT = "So11111111111111111111111111111111111111112";
+
 export const MAX_DESTINATIONS = 10;
 
 // El contrato con 10 destinos consume mucho CU (los tests usan 1M).
