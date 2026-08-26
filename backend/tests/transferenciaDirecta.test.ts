@@ -1,8 +1,17 @@
 import { strict as assert } from "node:assert";
 import { describe, it, mock } from "node:test";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { conciliarTransferenciaDirecta } from "../src/events/transferenciaDirecta.js";
-import { NATIVE_SOL_MINT } from "../src/solana/constants.js";
+
+// catalogo.ts lee CATALOG_API_URL/CATALOG_RELAYER_KEY al importarse (son
+// `const` de nivel superior, no se releen en cada llamada). En CI no hay
+// .env real, así que sin esto el módulo aborta con "Falta configurar
+// CATALOG_API_URL..." antes de que el fetch mockeado entre en juego. Se
+// fijan acá y se importa dinámicamente para que corran después.
+process.env.CATALOG_API_URL ??= "http://localhost:3002";
+process.env.CATALOG_RELAYER_KEY ??= "clave-de-test";
+
+const { conciliarTransferenciaDirecta } = await import("../src/events/transferenciaDirecta.js");
+const { NATIVE_SOL_MINT } = await import("../src/solana/constants.js");
 
 // El comercio recibe SOL nativo en su propia cuenta (sin ATA), así que el
 // cobro se lee de preBalances/postBalances en vez de post/preTokenBalances.
