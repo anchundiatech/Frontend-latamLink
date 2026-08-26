@@ -130,6 +130,7 @@ export const createPayment = async (req: Request, res: Response) => {
       posFee,
       gasFee,
       dust,
+      token,
       timestamp,
       status,
     } = req.body;
@@ -157,6 +158,7 @@ export const createPayment = async (req: Request, res: Response) => {
         posFee: BigInt(posFee),
         gasFee: BigInt(gasFee),
         dust: BigInt(dust),
+        token: token || 'USDC',
         timestamp: new Date(timestamp),
       },
     });

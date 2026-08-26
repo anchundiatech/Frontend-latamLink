@@ -42,6 +42,7 @@ export const createPaymentSchema = z.object({
   posFee: z.string().transform((val) => BigInt(val)),
   gasFee: z.string().transform((val) => BigInt(val)),
   dust: z.string().transform((val) => BigInt(val)),
+  token: z.enum(['USDC', 'SOL']).default('USDC'),
   timestamp: z.string().datetime("Formato de fecha inválido"),
   status: z.enum(['PENDING', 'CONFIRMED', 'FAILED']).default('PENDING'),
 });
