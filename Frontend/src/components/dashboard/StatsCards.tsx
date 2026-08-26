@@ -8,6 +8,7 @@ import { formatCurrency, formatSOL, formatUSDC } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useMerchantStore } from "@/lib/store/useMerchantStore";
 import { useTransactions } from "@/lib/services/useTransactions";
+import { useBackendConfig } from "@/lib/services/useBackendConfig";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { config } from "@/lib/config";
@@ -23,11 +24,15 @@ export function StatsCards() {
     paymentToken,
   } = useMerchantStore();
   const { transactions } = useTransactions();
+  const { config: backendConfig } = useBackendConfig();
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
 
   useEffect(() => {
-    if (!walletAddress) {
+    // El mint de USDC en uso es el que configuró el backend (en devnet es uno
+    // propio, no el de lib/config.ts) — sin esto se consultaba el balance de
+    // un token que la wallet del comercio nunca tuvo.
+    if (!walletAddress || (paymentToken === "usdc" && !backendConfig?.paymentTokenMint)) {
       setBalance(null);
       return;
     }
@@ -41,7 +46,7 @@ export function StatsCards() {
           const lamports = await connection.getBalance(pubkey);
           setBalance(lamports / 1_000_000_000);
         } else {
-          const mint = new PublicKey(config.usdcMint);
+          const mint = new PublicKey(backendConfig!.paymentTokenMint!);
           const ata = await getAssociatedTokenAddress(mint, pubkey);
           const accountInfo = await connection.getTokenAccountBalance(ata);
           setBalance(accountInfo.value.uiAmount);
@@ -54,11 +59,19 @@ export function StatsCards() {
     };
 
     fetchBalance();
-  }, [walletAddress, paymentToken]);
+  }, [walletAddress, paymentToken, backendConfig]);
 
-  const totalRevenue =
-    totalVolume || transactions.reduce((sum, tx) => sum + tx.amount, 0);
-  const paymentCount = totalPaymentsReceived || transactions.length;
+  // Merchant.totalVolume/totalPaymentsReceived (Postgres) se pisan a 0 cada
+  // vez que useMerchantSync vuelve a sincronizar (nadie los actualiza ahí
+  // todavía), y eso resetea el contador local de incrementPayments() a mitad
+  // de camino: con el orden viejo, "Total Revenue" terminaba mostrando solo
+  // el último cobro después de un refresh en vez de la suma real. El
+  // historial de transacciones (Postgres vía /api/payments) es la fuente
+  // confiable — se prioriza siempre que ya haya datos cargados.
+  const totalRevenue = transactions.length
+    ? transactions.reduce((sum, tx) => sum + tx.amount, 0)
+    : totalVolume;
+  const paymentCount = transactions.length || totalPaymentsReceived;
 
   const walletConnected = !!walletAddress;
   const balanceDisplay = walletConnected
