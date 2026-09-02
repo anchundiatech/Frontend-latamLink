@@ -1,6 +1,7 @@
 <div align="center">
-
+<div align="center">
 <img src="Frontend/public/Logo.webp" alt="LatamLink Pay" width="120" height="120" />
+</div>
 
 <img src="https://img.shields.io/badge/LATAMLINK-PAY-00D2BD?style=for-the-badge&labelColor=8B34FA" alt="LatamLink Pay"/>
 
@@ -17,7 +18,7 @@
 ![Zustand](https://img.shields.io/badge/Zustand-433E38?style=flat-square)
 ![Radix UI](https://img.shields.io/badge/Radix_UI-161618?style=flat-square)
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
+
 
 **Blockchain**
 
@@ -32,6 +33,7 @@
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
 
 **Infraestructura y herramientas**
 
@@ -45,9 +47,7 @@
 
 ---
 
-Plataforma de pagos para comercios sobre **Solana**: alta de comercio sin
-frase semilla (Privy), cobro por QR (Solana Pay) en USDC, y retiro con
-comisión de la plataforma descontada en ese momento.
+Es un terminal de pagos adaptativo que permite a cualquier dispositivo convertirse en un punto de aceptación de activos digitales, utilizando USD como unidad de cuenta y stablecoins/cripto como medio de liquidación
 
 ## Estructura del repositorio
 
